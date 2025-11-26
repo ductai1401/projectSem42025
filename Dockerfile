@@ -1,13 +1,14 @@
 # Build stage
-FROM maven:3.9.8-eclipse-temurin-21 AS build
-WORKDIR /projectSem4
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /app
 COPY . .
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # Run stage
-FROM openjdk:21-jdk-slim
-WORKDIR /projectSem4
-COPY --from=build /projectSem4/target/*-0.0.1.jar app.jar
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+# Copy JAR thực tế (Spring Boot executable JAR)
+COPY --from=build /app/target/projectSem4-0.0.1.jar app.jar
 EXPOSE 8989
 ENTRYPOINT ["java", "-jar", "app.jar"]
