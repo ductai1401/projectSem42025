@@ -6,10 +6,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import projectSem4.*;
-
 import java.util.HashMap;
 import java.util.Map;
 @Service
