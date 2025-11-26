@@ -1,0 +1,202 @@
+/*------------------*
+# Shop Pages
+*------------------*/
+.tab-content .tab-pane.active .grid-view .product-card {
+  animation: zoomIn 0.5s ease;
+  animation-duration: 1s;
+}
+.tab-content .tab-pane.active .grid-view-list .col-12 {
+  animation: fadeInRight 0.5s ease;
+  animation-duration: 1s;
+}
+.grid-view-five-column {
+  .col-xl-3 {
+    @include min-screen(1200) {
+      flex: 0 0 auto;
+      width: 20%;
+    }
+  }
+}
+
+.grid-view-list {
+  .product-card {
+    display: flex;
+    @include max-screen(575) {
+      flex-direction: column;
+    }
+    .product-thumb-nail {
+      @include max-screen(575) {
+        text-align: center;
+      }
+
+      @include max-screen(576, 767) {
+        max-width: 200px;
+        flex: 200px;
+      }
+      .product-image-hover-style {
+        @include max-screen(575) {
+          display: block;
+          right: 0;
+          margin: 0 auto;
+        }
+      }
+    }
+    .product-cart-btn-wrap {
+      display: inline-block;
+      position: static;
+      transform: translate(0, 0px);
+      opacity: 1;
+      .add-to-cart-btn {
+        padding: 15px 25px;
+      }
+    }
+    p {
+      margin: 30px 0px;
+    }
+    &::after {
+      display: none;
+    }
+    .product-content {
+      flex: 1;
+    }
+  }
+}
+.nav-tabs {
+  border-bottom: 0px;
+}
+
+.shop-grid-nav .nav .nav-item {
+  & + .nav-item {
+    margin-left: 15px;
+  }
+  .nav-link {
+    overflow: hidden;
+    display: block;
+    height: 45px;
+    width: 45px;
+    background: url("../images/logo/grid-list.png") no-repeat;
+    transition: 0.3s ease;
+    border-radius: 100%;
+    &.grid {
+      background-position: 0 0;
+      &:hover,
+      &.active {
+        background-color: $danger;
+        background-position: 0 100%;
+      }
+    }
+    &.list {
+      background-position: 100% 0;
+      &:hover,
+      &.active {
+        background-color: $danger;
+        background-position: 100% 100%;
+      }
+    }
+  }
+  line-height: 1;
+}
+
+.total-products {
+  margin-left: 50px;
+  line-height: 20px;
+  padding: 5px;
+  @include max-screen(992, 1199) {
+    margin-left: 30px;
+  }
+  @include max-screen(991) {
+    margin-left: 20px;
+  }
+}
+
+.shop-grid-nav .nav .nav-link {
+  color: #a5a8a9;
+  padding: 0;
+  text-align: center;
+  background: $white;
+  font-size: 30px;
+  line-height: 1;
+  border: 0px;
+  border-radius: 4px;
+}
+
+.shop-grid-nav .nav .nav-link.active,
+.shop-grid-nav .nav .nav-link:hover {
+  color: $success;
+}
+
+.shop-grid-button {
+  select {
+    cursor: pointer;
+    border: 0;
+    width: auto;
+    padding: 2px 30px 2px 15px;
+    line-height: 24px;
+    font-size: 14px;
+    color: $body-color;
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.product-option {
+  position: relative;
+  select {
+    border: 1px solid #ebebeb;
+    padding: 2px 15px;
+    line-height: 24px;
+    font-size: 14px;
+    color: $body-color;
+    text-align: left;
+    text-transform: uppercase;
+    width: 70px;
+    height: 40px;
+    &:focus {
+      border-color: #e5e5e5;
+    }
+  }
+}
+
+.shop-grid-menu {
+  background: $white;
+  width: calc(100% - 145px);
+  border: 1px solid #ebebeb;
+}
+
+.shop-grid-menu .dropdown-item {
+  line-height: 24px;
+  font-size: 14px;
+  padding: 3px 15px;
+  color: $dark;
+}
+
+.shop-grid-menu .dropdown-item:hover {
+  background: $warning;
+  color: $white;
+}
+
+.sort-by {
+  min-width: 70px;
+  line-height: 20px;
+  padding: 5px;
+  margin-left: 50px;
+  @include max-screen(991) {
+    margin-left: 0px;
+  }
+}
+
+.shop-grid-5 {
+  .col-xl-2 {
+    @include min-screen(1200) {
+      width: 20%;
+    }
+  }
+}
+
+.Showing {
+  color: $dark;
+}
+/*------------------*
+    # Shop Pages End
+    *------------------*/

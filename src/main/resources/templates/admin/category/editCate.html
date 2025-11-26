@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Chỉnh Sửa Danh Mục</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="category-section container-fluid">
+        <h3>✏️ Chỉnh Sửa Danh Mục</h3>
+
+        <form th:action="@{/admin/categories/edit}" method="post">
+            <input type="hidden" name="categoryId" th:value="${category.categoryId}">
+
+            <div class="mb-3">
+                <label class="form-label">Tên Danh Mục</label>
+                <input type="text" name="name" class="form-control" th:value="${category.categoryName}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Danh Mục Cha (Nếu Có)</label>
+                <select name="parentId" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option th:each="parent : ${categories}" th:value="${parent.categoryId}" th:text="${parent.categoryName}" th:selected="${category.parentCategory != null && category.parentCategory.categoryId == parent.categoryId}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Cập Nhật</button>
+                <a href="/category" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

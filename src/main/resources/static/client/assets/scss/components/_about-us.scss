@@ -1,0 +1,104 @@
+/*------------------*
+# About Us Page
+*------------------*/
+
+.about-content .title {
+  font-weight: 600;
+  color: $dark;
+  text-transform: capitalize;
+  font-size: 35px;
+  line-height: 1.4;
+}
+
+.about-content .sub-title {
+  font-size: 1.4;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: $dark;
+}
+
+.about-info .title {
+  font-size: 34px;
+  font-weight: 500;
+  color: $dark;
+}
+
+.single-service {
+  .title {
+    font-size: 20px;
+    font-weight: 500;
+    color: $dark;
+  }
+}
+
+.service-section {
+  .single-blog {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.progress-section {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  @include min-screen(1200) {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+  background-color: #f7f7f7;
+}
+.skill-bar {
+}
+.skills {
+  & + .skills {
+    margin-top: 30px;
+  }
+}
+
+.progress-title {
+  color: $dark;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 0;
+  text-transform: capitalize;
+}
+.skills-title {
+  color: $dark;
+  padding-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.progress-content {
+  p {
+    margin-top: 20px;
+  }
+}
+.progress-bar {
+  width: 0;
+  background-color: rgb(255, 69, 69);
+}
+
+.progress {
+  height: 6px;
+}
+
+.about-social {
+  background: $white;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+  .social-link {
+    color: $dark;
+  }
+}
+/* *******************
+      about us page End
+    **********************/

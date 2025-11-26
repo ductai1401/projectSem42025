@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}"
+	>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - Trade Platform</title>
+   
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .sidebar .brand {
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-item {
+            margin: 5px 15px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .stat-card .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        .stat-card.revenue .stat-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-card.orders .stat-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.products .stat-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.customers .stat-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .stat-change.positive { color: #27ae60; }
+        .stat-change.negative { color: #e74c3c; }
+        .chart-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .table-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+	<div layout:fragment="content">
+   <!-- Sidebar -->
+    <!--  <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-store"></i> Seller Panel
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" th:href="@{/seller/dashboard}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/products}">
+                    <i class="fas fa-box"></i> Sản phẩm
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/orders}">
+                    <i class="fas fa-shopping-cart"></i> Đơn hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/flash-sales}">
+                    <i class="fas fa-bolt"></i> Flash Sale
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/coupons}">
+                    <i class="fas fa-ticket-alt"></i> Mã giảm giá
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/reviews}">
+                    <i class="fas fa-star"></i> Đánh giá
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/statistics}">
+                    <i class="fas fa-chart-line"></i> Thống kê
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/messages}">
+                    <i class="fas fa-envelope"></i> Tin nhắn
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/seller/shop-settings}">
+                    <i class="fas fa-cog"></i> Cài đặt Shop
+                </a>
+            </li>
+        </ul>
+    </div> -->
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div>
+                <h4 class="mb-0">Dashboard</h4>
+                <small class="text-muted">Xin chào, <span th:text="${shopName}">Tên Shop</span></small>
+            </div>
+            <div class="user-info">
+                <img src="https://via.placeholder.com/40" alt="Avatar" class="user-avatar" th:src="${userAvatar}">
+                <div>
+                    <strong th:text="${userName}">Người dùng</strong>
+                    <br>
+                    <small class="text-muted">Seller</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card revenue">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')}">0</div>
+                    <div class="stat-label">Doanh thu tháng này</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> <span th:text="${revenueGrowth}">12.5</span>% so với tháng trước
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card orders">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-value" th:text="${totalOrders}">0</div>
+                    <div class="stat-label">Đơn hàng</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> <span th:text="${orderGrowth}">8.2</span>% so với tháng trước
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card products">
+                    <div class="stat-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div class="stat-value" th:text="${totalProducts}">0</div>
+                    <div class="stat-label">Sản phẩm</div>
+                    <div class="stat-change">
+                        <span th:text="${activeProducts}">0</span> đang hoạt động
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card customers">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(rating, 1, 'COMMA', 2, 'POINT')}">0.0</div>
+                    <div class="stat-label">Đánh giá Shop</div>
+                    <div class="stat-change">
+                        <span th:text="${totalReviews}">0</span> đánh giá
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <div class="chart-title">Doanh thu 7 ngày gần đây</div>
+                    <canvas id="revenueChart" height="80"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <div class="chart-title">Trạng thái đơn hàng</div>
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Đơn hàng gần đây</h5>
+                <a href="#" th:href="@{/seller/orders}" class="btn btn-sm btn-primary">Xem tất cả</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${recentOrders}">
+                            <td><strong th:text="${order.orderID}">ORD001</strong></td>
+                            <td th:text="${order.buyerName}">Nguyễn Văn A</td>
+                            <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">28/10/2025 10:30</td>
+                            <td><strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500,000 đ</strong></td>
+                            <td>
+                                <span class="badge badge-status" 
+                                      th:classappend="${order.status == 1} ? 'badge-warning' : 
+                                                      ${order.status == 2} ? 'badge-info' : 
+                                                      ${order.status == 3} ? 'badge-primary' : 
+                                                      ${order.status == 4} ? 'badge-success' : 'badge-secondary'"
+                                      th:text="${order.status == 1} ? 'Chờ xác nhận' : 
+                                               ${order.status == 2} ? 'Đã xác nhận' : 
+                                               ${order.status == 3} ? 'Đang giao' : 
+                                               ${order.status == 4} ? 'Hoàn thành' : 'Đã hủy'">
+                                    Chờ xác nhận
+                                </span>
+                            </td>
+                            <td>
+                                <a href="#" th:href="@{/seller/orders/{id}(id=${order.orderID})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div layout:fragment="scripts" >
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script th:inline="javascript">
+        // Revenue Chart
+        var revenueData = /*[[${revenueChartData}]]*/ [120000, 150000, 180000, 200000, 170000, 220000, 250000];
+        var revenueLabels = /*[[${revenueChartLabels}]]*/ ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+        
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+        var revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenueData,
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + 'đ';
+                            }
+                        }
+                    }]
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return tooltipItem.yLabel.toLocaleString('vi-VN') + ' đ';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Order Status Chart
+        var orderStatusData = /*[[${orderStatusData}]]*/ [15, 8, 12, 45];
+        var ctx2 = document.getElementById('orderStatusChart').getContext('2d');
+        var orderStatusChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Chờ xác nhận', 'Đã xác nhận', 'Đang giao', 'Hoàn thành'],
+                datasets: [{
+                    data: orderStatusData,
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(23, 162, 184, 0.8)',
+                        'rgba(0, 123, 255, 0.8)',
+                        'rgba(40, 167, 69, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        });
+    </script>
+    </div>
+</body>
+</html>

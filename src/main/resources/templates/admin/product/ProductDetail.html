@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Chi tiết sản phẩm</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+#productGallery img {
+	display: block;
+}
+
+.btn-del-photo {
+	line-height: 1;
+	padding: 2px 6px;
+}
+
+.position-relative .btn-del-photo, .position-relative .btn-remove-preview
+	{
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	z-index: 5;
+}
+
+.btn-del-photo, .btn-remove-preview {
+	background: #dc3545 !important;
+	color: #fff !important;
+	border: 0 !important;
+	opacity: .95;
+}
+
+.btn-del-photo:hover, .btn-remove-preview:hover {
+	opacity: 1;
+}
+
+.position-relative {
+	overflow: hidden;
+	border-radius: .375rem;
+}
+
+.fs-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: .35rem;
+	border: 1px solid #e9ecef;
+	border-radius: 999px;
+	padding: .25rem .6rem;
+	font-size: .875rem;
+	background: #f8f9fa;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- PAGE HEADER -->
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<h3 class="mb-0" th:text="${product.productName}">Tên sản
+							phẩm</h3>
+						<small class="text-muted"> Product ID: <span
+							th:text="${product.productId}">#</span>
+						</small>
+						<!-- Hidden để script lấy id -->
+						<input type="hidden" id="productIdHidden"
+							th:value="${product.productId}">
+					</div>
+					<div class="d-flex gap-2">
+						<a class="btn btn-light border" th:href="@{/admin/product/}">←
+							Quay lại</a>
+					</div>
+				</div>
+
+				<div class="row g-3">
+					<!-- Cột trái: ảnh + thông tin + gallery -->
+					<div class="col-md-4">
+						<img
+							th:src="${#strings.isEmpty(product.image) ? '/images/no-image.png' : '/uploads/' + product.image}"
+							alt="Ảnh sản phẩm" class="img-fluid rounded border" />
+
+						<div class="mt-2">
+							<div>
+								<b>Danh mục:</b> <span th:text="${product.categoryName}">Danh
+									mục</span>
+							</div>
+							<div>
+								<b>Cửa hàng:</b> <span th:text="${product.shopName}">Shop</span>
+							</div>
+							<div>
+								<b>Trạng thái:</b> <span
+									th:text="${product.status == 1 ? 'Hiển thị' : 'Ẩn'}">Hiển
+									thị</span>
+							</div>
+							<div>
+								<b>Ngày tạo:</b> <span
+									th:text="${#temporals.format(product.createdAt, 'dd/MM/yyyy HH:mm')}">--</span>
+							</div>
+						</div>
+
+						<hr class="my-3">
+
+						<!-- THƯ VIỆN ẢNH -->
+						<div
+							class="d-flex align-items-center justify-content-between mb-2">
+							<b>Hình ảnh</b>
+							<div>
+								<button type="button" id="btnAddPhotos"
+									class="btn btn-sm btn-primary">+ Thêm hình</button>
+								<input type="file" id="photoInput" class="d-none"
+									accept="image/*" multiple>
+							</div>
+						</div>
+
+						<div id="productGallery" class="row g-2">
+							<div th:each="img : ${productImages}"
+								class="col-4 col-sm-3 col-md-4">
+								<div class="position-relative border rounded overflow-hidden">
+									<img th:src="@{/uploads/{f}(f=${img.url})}" alt="photo"
+										class="w-100" style="height: 100px; object-fit: cover;">
+									<button type="button"
+										class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 btn-del-photo"
+										th:attr="data-id=${img.id}" title="Xoá ảnh">&times;</button>
+								</div>
+							</div>
+
+							<div th:if="${#lists.isEmpty(productImages)}" class="col-12">
+								<div class="text-muted small">Chưa có ảnh</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Cột phải -->
+					<div class="col-md-8">
+
+						<!-- FLASH SALE -->
+						<div class="card border-0 shadow-sm mb-3">
+							<div
+								class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+								<b>Flash Sale</b>
+
+								<div>
+									<button th:if="${currentFlashSale != null}"
+										class="btn btn-sm btn-outline-danger" id="btnCancelFs">
+										❌ Hủy khỏi Flash Sale</button>
+
+									<button th:if="${currentFlashSale == null}"
+										class="btn btn-sm btn-primary" data-bs-toggle="modal"
+										data-bs-target="#attachFsModal" data-toggle="modal"
+										data-target="#attachFsModal">⚡ Thêm vào Flash Sale</button>
+								</div>
+							</div>
+
+							<div class="card-body">
+								<!-- Đang tham gia -->
+								<div th:if="${currentFlashSale != null}">
+									<div class="mb-2">
+										<span class="fs-pill">ID: <b
+											th:text="${currentFlashSale.flashSaleId}">1</b></span> <span
+											class="fs-pill">Tên: <b
+											th:text="${currentFlashSale.name}">Flash Sale</b></span> <span
+											class="fs-pill">Bắt đầu: <b
+											th:text="${#temporals.format(currentFlashSale.startDate,'dd/MM/yyyy HH:mm')}">--</b>
+										</span> <span class="fs-pill">Kết thúc: <b
+											th:text="${#temporals.format(currentFlashSale.endDate,'dd/MM/yyyy HH:mm')}">--</b>
+										</span>
+									</div>
+
+									<div
+										th:if="${flashSaleItems != null and !#lists.isEmpty(flashSaleItems)}"
+										class="table-responsive">
+										<table class="table table-sm align-middle">
+											<thead>
+												<tr>
+													<th style="width: 120px">FS Item ID</th>
+													<th>Product ID</th>
+													<th style="width: 140px" class="text-end">Số lượng</th>
+													<th style="width: 160px" class="text-end">% Giảm</th>
+													<th style="width: 160px" class="text-end">Tổng đã bán</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr th:each="it : ${flashSaleItems}">
+													<td th:text="${it.flashSaleItemId}">#</td>
+													<td th:text="${it.productId}">PID</td>
+													<td class="text-end" th:text="${it.quantity}">0</td>
+													<td class="text-end" th:text="${it.percern}">0</td>
+													<td class="text-end" th:text="${it.totalAmount}">0</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+
+									<div
+										th:if="${flashSaleItems == null or #lists.isEmpty(flashSaleItems)}"
+										class="text-muted small">Sản phẩm đang ở Flash Sale
+										nhưng chưa cấu hình item chi tiết.</div>
+								</div>
+
+								<!-- Chưa tham gia -->
+								<div th:if="${currentFlashSale == null}" class="text-muted">
+									Sản phẩm chưa tham gia Flash Sale. Bấm “⚡ Thêm vào Flash Sale”
+									để gắn nhanh.</div>
+							</div>
+						</div>
+
+						<!-- TÙY CHỌN -->
+						<div class="card border-0 shadow-sm mb-3">
+							<div
+								class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+								<b>Tùy chọn</b> <a class="btn btn-sm btn-primary"
+									th:href="@{/admin/product/{id}/options/edit(id=${product.productId})}">
+									✏️ Chỉnh sửa option </a>
+							</div>
+							<div class="card-body">
+								<div
+									th:if="${productOptionPairs == null or #lists.isEmpty(productOptionPairs)}"
+									class="text-muted">Không có tùy chọn</div>
+								<div th:if="${productOptionPairs != null}">
+									<div th:each="op : ${productOptionPairs}">
+										<span class="badge bg-light text-dark border me-2 mb-2"
+											th:text="${op.key}">Key</span> <span
+											class="badge bg-primary me-3 mb-2" th:text="${op.value}">Value</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- BIẾN THỂ -->
+						<div class="card border-0 shadow-sm">
+							<div
+								class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+								<b>Biến thể</b> <a class="btn btn-sm btn-outline-primary"
+									th:href="@{/admin/product/{id}/variants/add(id=${product.productId})}">
+									+ Thêm biến thể </a>
+							</div>
+							<div class="card-body p-0">
+								<div class="table-responsive">
+									<table class="table mb-0">
+										<thead>
+											<tr>
+												<th>Tên biến thể</th>
+												<th>SKU</th>
+												<th>Giá</th>
+												<th>Tồn kho</th>
+												<th>Trạng thái</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr th:each="v : ${variants}">
+												<td th:text="${v.varianName}">Tên</td>
+												<td th:text="${v.sku}">SKU</td>
+												<td th:text="${v.price}">0</td>
+												<td th:text="${v.stockQuantity}">0</td>
+												<td th:text="${v.status ? 'Active' : 'Inactive'}">Active</td>
+											</tr>
+											<tr th:if="${#lists.isEmpty(variants)}">
+												<td colspan="5" class="text-center text-muted">Chưa có
+													biến thể</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div class="modal fade" id="addPhotosModal" tabindex="-1"
+							aria-labelledby="addPhotosLabel" aria-hidden="true">
+							<div class="modal-dialog modal-dialog-scrollable modal-md">
+								<div class="modal-content"
+									style="max-width: 600px; margin: auto;">
+									<div class="modal-header">
+										<h5 class="modal-title" id="addPhotosLabel">Thêm hình ảnh
+											sản phẩm</h5>
+										<button type="button" class="btn-close"
+											data-bs-dismiss="modal" aria-label="Đóng"></button>
+									</div>
+
+									<div class="modal-body">
+										<div class="mb-2">
+											<input type="file" id="modalPhotoInput" accept="image/*"
+												multiple class="form-control"> <small
+												class="text-muted"> Bạn có thể chọn nhiều ảnh một
+												lần. </small>
+										</div>
+
+										<div id="previewWrap" class="row g-2">
+											<!-- JS sẽ render preview kèm nút xoá -->
+										</div>
+									</div>
+
+									<div class="modal-footer">
+										<div class="me-auto small text-muted" id="uploadStatus"></div>
+										<button type="button" class="btn btn-light"
+											data-bs-dismiss="modal">Hủy</button>
+										<button type="button" class="btn btn-primary"
+											id="btnConfirmUpload" disabled>Xác nhận tải lên</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Modal: Gắn sản phẩm vào Flash Sale (chọn FS + nhập số lượng & %) -->
+						<!-- Modal: Gắn sản phẩm vào Flash Sale (chọn FS + nhập số lượng & %) -->
+						<div class="modal fade" id="attachFsModal" tabindex="-1"
+							aria-labelledby="attachFsLabel" aria-hidden="true" role="dialog">
+							<div class="modal-dialog modal-dialog-centered" role="document"
+								style="max-width: 520px">
+								<div class="modal-content">
+									<div class="modal-header">
+										<div>
+											<h5 class="modal-title" id="attachFsLabel">Gắn sản phẩm
+												vào Flash Sale</h5>
+											<!-- Hiển thị dải thời gian trên tiêu đề (script sẽ set) -->
+											<small class="text-muted d-block" id="fsm-fsRangeTop"></small>
+										</div>
+
+										<!-- Nút đóng: tương thích BS5 (btn-close) & BS4 (close) -->
+										<button type="button" class="btn-close d-inline-block"
+											data-bs-dismiss="modal" aria-label="Đóng"></button>
+										<button type="button" class="close d-none"
+											data-dismiss="modal" aria-label="Đóng">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+
+									<div class="modal-body">
+										<!-- Hidden để script dùng -->
+										<input type="hidden" id="fsm-productId"
+											th:value="${product.productId}">
+										<!-- Ưu tiên product.shopId, fallback session.shopId -->
+										<input type="hidden" id="fsm-shopId"
+											th:value="${product.shopId != null ? product.shopId : session.shopId}">
+
+										<!-- Chọn Flash Sale -->
+										<div class="form-group mb-3">
+											<label class="form-label">Flash Sale của shop</label> <select
+												id="fsm-flashSaleId" class="form-control form-select">
+												<option value="">-- chọn flash sale --</option>
+											</select>
+											<!-- Cả hai id đều có để tương thích các script khác nhau -->
+											<small class="text-muted d-block mt-1" id="fsm-range"
+												style="min-height: 1rem;"></small> <small
+												class="text-muted d-block mt-1" id="fsm-fsRange"
+												style="min-height: 1rem;"></small>
+										</div>
+
+										<!-- Nhập số lượng & % giảm -->
+										<div class="form-row row g-2">
+											<div class="form-group col-12 col-md-6">
+												<label class="form-label">Số lượng</label> <input
+													type="number" min="0" class="form-control"
+													id="fsm-quantity" placeholder="VD: 10">
+											</div>
+											<div class="form-group col-12 col-md-6">
+												<label class="form-label">% giảm (0–99)</label> <input
+													type="number" min="0" max="99" class="form-control"
+													id="fsm-percent" placeholder="VD: 15">
+											</div>
+										</div>
+
+										<div id="fsm-alert" class="alert alert-danger mt-2 d-none"></div>
+									</div>
+
+									<div class="modal-footer">
+										<button class="btn btn-light" data-bs-dismiss="modal"
+											data-dismiss="modal">Đóng</button>
+										<button class="btn btn-primary" id="fsm-attach-btn">Gắn
+											vào Flash Sale</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /col-md-8 -->
+				</div>
+				<!-- /row -->
+
+			</div>
+			<!-- /.container-fluid -->
+		</div>
+		<!-- /.content-wrapper -->
+	</div>
+	<!-- /layout:fragment -->
+
+	<!-- SCRIPT -->
+	<div layout:fragment="scripts">
+		<!-- Script gallery cũ của bạn (nếu có) -->
+		<script th:src="@{/admin/script/productDetailScript.js}"></script>
+	</div>
+</body>
+</html>

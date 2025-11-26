@@ -1,0 +1,20 @@
+.brand-carousel {
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.brand-carousel-item {
+  a {
+    display: block;
+    text-align: center;
+  }
+  img {
+    opacity: 0.6;
+    transition: ease-in-out 0.3s all;
+  }
+  &:hover {
+    img {
+      opacity: 1;
+    }
+  }
+}

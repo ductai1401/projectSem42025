@@ -1,0 +1,17 @@
+.contact-info {
+  font-weight: 700;
+  color: $white;
+  text-align: right;
+  text-transform: uppercase;
+  i {
+    font-size: 24px;
+    margin-right: 7px;
+    vertical-align: -2px;
+  }
+  a {
+    color: inherit;
+    &:hover {
+      color: $success;
+    }
+  }
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Phê duyệt người bán</title>
+    <style>
+        .seller-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid #dee2e6;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+        .seller-section .form-label {
+            font-weight: 600;
+        }
+        .seller-section .form-control,
+        .seller-section .form-select {
+            border: none;
+            border-bottom: 2px solid #0d6efd;
+            border-radius: 0;
+            background-color: transparent;
+            padding-left: 0;
+        }
+        .seller-section .form-control:focus,
+        .seller-section .form-select:focus {
+            box-shadow: none;
+            border-color: #0a58ca;
+        }
+        .seller-section table {
+            margin-top: 2rem;
+        }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .modal-dialog {
+            max-width: 800px;
+            margin: 6rem auto;
+        }
+        @media (min-width: 768px) {
+            .modal-dialog-centered {
+                align-items: center;
+            }
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            border-top: none;
+        }
+        .modal-footer .btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="seller-section container-fluid">
+        <h3 class="mb-4">➕ Phê duyệt đăng ký tài khoản người bán</h3>
+
+        <!-- Bộ lọc tìm kiếm -->
+        <form class="row row-cols-lg-auto g-3 align-items-end mb-3 justify-content-end" method="get" th:action="@{/admin/approvals/sellers}">
+            <div class="col-md-3">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên, email, cửa hàng" th:value="${keyword}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+            </div>
+        </form>
+
+        <!-- Danh sách chờ phê duyệt -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>👤 Tên người đăng ký</th>
+                    <th>📧 Email</th>
+                    <th>🏪 Tên cửa hàng</th>
+                    <th>📅 Ngày đăng ký</th>
+                    <th>🔧 Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Trần Văn C</td>
+                    <td>cstore@gmail.com</td>
+                    <td>Cửa hàng C</td>
+                    <td>10/07/2025</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#approveSellerModal"
+                                data-id="1"
+                                data-name="Trần Văn C"
+                                data-email="cstore@gmail.com"
+                                data-store="Cửa hàng C"
+                                data-date="10/07/2025">👁 Xem</button>
+                        <a href="#" class="btn btn-danger btn-sm">🗑 Xóa</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chi tiết người đăng ký -->
+<div class="modal fade" id="approveSellerModal" tabindex="-1" aria-labelledby="approveSellerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveSellerModalLabel">Chi tiết đăng ký</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalSellerId" name="sellerId" />
+                <p><strong>Họ tên:</strong> <span id="modalName"></span></p>
+                <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+                <p><strong>Tên cửa hàng:</strong> <span id="modalStore"></span></p>
+                <p><strong>Ngày đăng ký:</strong> <span id="modalDate"></span></p>
+            </div>
+            <div class="modal-footer">
+                <form th:action="@{/admin/approvals/sellers/handle}" method="post">
+                    <input type="hidden" name="sellerId" id="footerSellerId" />
+                    <button type="submit" name="action" value="approve" class="btn btn-success">✅ Phê duyệt</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-secondary">❌ Từ chối</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('approveSellerModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                document.getElementById('modalName').textContent = button.getAttribute('data-name');
+                document.getElementById('modalEmail').textContent = button.getAttribute('data-email');
+                document.getElementById('modalStore').textContent = button.getAttribute('data-store');
+                document.getElementById('modalDate').textContent = button.getAttribute('data-date');
+                document.getElementById('modalSellerId').value = button.getAttribute('data-id');
+                document.getElementById('footerSellerId').value = button.getAttribute('data-id');
+            });
+        }
+    });
+</script>
+</div>
+</body>
+</html>

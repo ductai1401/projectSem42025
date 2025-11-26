@@ -1,0 +1,32 @@
+.page-item {
+  margin: 0px 10px;
+  &.active .page-link {
+    color: $white;
+    background: $danger;
+    border-color: $danger;
+  }
+}
+
+.page-link {
+  text-align: center;
+  width: 35px;
+  height: 35px;
+  line-height: 1;
+  font-weight: 400;
+  font-size: 14px;
+  color: $dark;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f6f6f6;
+  border-color: #f6f6f6;
+  border-radius: 50% !important;
+  &:focus {
+    background-color: transparent;
+  }
+  &:hover {
+    color: $white;
+    background-color: $danger;
+    border-color: $danger;
+  }
+}

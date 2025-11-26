@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Ví - Trade Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .main-content {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .wallet-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 25px;
+        }
+        .wallet-balance {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .wallet-label {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        .wallet-actions {
+            margin-top: 20px;
+        }
+        .wallet-actions .btn {
+            margin-right: 10px;
+            border: 2px solid #fff;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-weight: 600;
+        }
+        .wallet-actions .btn:hover {
+            background: #fff;
+            color: #667eea;
+        }
+        .stat-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .stat-box .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .stat-box.revenue .stat-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-box.commission .stat-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .stat-box.net .stat-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .earnings-table {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+	<div layout:fragment="content">
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h4 class="mb-0"><i class="fas fa-wallet"></i> Quản lý Ví</h4>
+            <small class="text-muted">Theo dõi và quản lý thu nhập của shop</small>
+        </div>
+
+        <!-- Wallet Card - Từ bảng Wallets -->
+        <div class="wallet-card">
+            <div class="wallet-label">Số dư khả dụng</div>
+            <div class="wallet-balance" th:text="${#numbers.formatDecimal(wallet.balance, 0, 'COMMA', 0, 'POINT')} + ' ' + ${wallet.currency}">
+                0 VND
+            </div>
+            <div class="wallet-label">
+                Trạng thái: 
+                <span class="badge badge-light">
+                    <span th:if="${wallet.status == 1}">Hoạt động</span>
+                    <span th:if="${wallet.status == 0}">Đã khóa</span>
+                </span>
+            </div>
+            <div class="wallet-label mt-2">
+                Cập nhật: <span th:text="${#temporals.format(wallet.lastUpdated, 'dd/MM/yyyy HH:mm')}">--</span>
+            </div>
+            <div class="wallet-actions">
+                <button class="btn" data-toggle="modal" data-target="#withdrawModal">
+                    <i class="fas fa-money-bill-wave"></i> Rút tiền
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics - Từ bảng PlatformEarnings -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-box revenue">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalBaseAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                        0 đ
+                    </div>
+                    <div class="stat-label">Tổng doanh thu (BaseAmount)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box commission">
+                    <div class="stat-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalCommission, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                        0 đ
+                    </div>
+                    <div class="stat-label">Tổng hoa hồng platform</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box net">
+                    <div class="stat-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalShopNetIncome, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                        0 đ
+                    </div>
+                    <div class="stat-label">Thu nhập ròng shop</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form class="form-inline" th:action="@{/seller/wallet}" method="get">
+                <label class="mr-2">Lọc theo thời gian:</label>
+                <input type="date" class="form-control mr-2" name="startDate" 
+                       th:value="${param.startDate}" placeholder="Từ ngày">
+                <input type="date" class="form-control mr-2" name="endDate" 
+                       th:value="${param.endDate}" placeholder="Đến ngày">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+                <a th:href="@{/seller/wallet}" class="btn btn-secondary ml-2">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </form>
+        </div>
+
+        <!-- Earnings Table - Từ bảng PlatformEarnings -->
+        <div class="earnings-table">
+            <h5 class="mb-4"><i class="fas fa-chart-line"></i> Chi tiết thu nhập từng đơn hàng</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày tạo</th>
+                            <th>Doanh thu</th>
+                            <th>Giảm giá Shop</th>
+                            <th>Giảm giá Platform</th>
+                            <th>Phí ship</th>
+                            <th>Hoa hồng</th>
+                            <th>Thu nhập Shop</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="earning : ${earnings}" th:if="${earnings != null and !earnings.isEmpty()}">
+                            <td>
+                                <a th:href="@{/seller/orders/{id}(id=${earning.orderId})}" 
+                                   th:text="${earning.orderId}">ORD001</a>
+                            </td>
+                            <td th:text="${#temporals.format(earning.createdAt, 'dd/MM/yyyy')}">--</td>
+                            <td th:text="${#numbers.formatDecimal(earning.baseAmount - earning.refundedAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            <td class="text-danger" th:text="'-' + ${#numbers.formatDecimal(earning.discountShop ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            <td class="text-danger" th:text="'-' + ${#numbers.formatDecimal(earning.discountPlatform ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            <td th:text="${#numbers.formatDecimal(earning.shippingFee ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            <td class="text-danger" th:text="'-' + ${#numbers.formatDecimal(earning.platformNetIncome ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            <td class="text-success font-weight-bold" 
+                                th:text="${#numbers.formatDecimal(earning.shopNetIncome ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                        </tr>
+                        <tr th:if="${earnings == null or earnings.isEmpty()}">
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                Chưa có dữ liệu thu nhập
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/seller/wallet(page=${page - 1}, startDate=${param.startDate}, endDate=${param.endDate})}">
+                            Trước
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/seller/wallet(page=${i}, startDate=${param.startDate}, endDate=${param.endDate})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${page == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/seller/wallet(page=${page + 1}, startDate=${param.startDate}, endDate=${param.endDate})}">
+                            Sau
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-money-bill-wave"></i> Yêu cầu rút tiền</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form th:action="@{/seller/wallet/withdraw}" method="post">
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Số dư khả dụng: 
+                            <strong th:text="${#numbers.formatDecimal(wallet.balance, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</strong>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Số tiền rút <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="amount" required 
+                                   min="50000" th:max="${wallet.balance}" step="1000"
+                                   placeholder="Nhập số tiền muốn rút (tối thiểu 50,000đ)">
+                            <small class="form-text text-muted">Phí rút tiền: 0đ | Thời gian xử lý: 1-3 ngày làm việc</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngân hàng <span class="text-danger">*</span></label>
+                            <select class="form-control" name="bankCode" required>
+                                <option value="">Chọn ngân hàng</option>
+                                <option value="VCB">Vietcombank</option>
+                                <option value="TCB">Techcombank</option>
+                                <option value="MB">MBBank</option>
+                                <option value="VTB">Vietinbank</option>
+                                <option value="ACB">ACB</option>
+                                <option value="BIDV">BIDV</option>
+                                <option value="AGRIBANK">Agribank</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Số tài khoản <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="accountNumber" required
+                                   placeholder="Nhập số tài khoản ngân hàng">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tên chủ tài khoản <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="accountName" required
+                                   placeholder="Nhập tên chủ tài khoản">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea class="form-control" name="note" rows="2" 
+                                      placeholder="Ghi chú thêm (không bắt buộc)"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Xác nhận rút tiền
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div layout:fragment="scripts">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        // Format number input
+        $('input[name="amount"]').on('input', function() {
+            let val = $(this).val().replace(/[^0-9]/g, '');
+            $(this).val(val);
+        });
+
+        // Validate withdraw form
+        $('form[action*="withdraw"]').on('submit', function(e) {
+            let amount = parseInt($('input[name="amount"]').val());
+            let maxAmount = parseInt($(this).find('input[name="amount"]').attr('max'));
+            
+            if (amount < 50000) {
+                e.preventDefault();
+                alert('Số tiền rút tối thiểu là 50,000đ');
+                return false;
+            }
+            
+            if (amount > maxAmount) {
+                e.preventDefault();
+                alert('Số tiền rút vượt quá số dư khả dụng');
+                return false;
+            }
+            
+            return confirm('Bạn có chắc chắn muốn rút ' + amount.toLocaleString('vi-VN') + 'đ?');
+        });
+    </script>
+</div>
+</body>
+</html>

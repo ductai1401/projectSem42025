@@ -1,0 +1,98 @@
+<div th:fragment="refundList(refunds)">
+	<div class="table-responsive">
+		<table class="table table-striped align-middle">
+			<thead>
+				<tr>
+					<th>Mã hoàn tiền</th>
+					<th>Đơn hàng</th>
+					<th>Số tiền</th>
+					<th>Lý do</th>
+					<th>Trạng thái</th>
+					<th>Ngày tạo</th>
+					<th>Hành động</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="refund : ${refunds}">
+					<td th:text="${refund.refundId}"></td>
+					<td th:text="${refund.orderId}"></td>
+					<td
+						th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')}"></td>
+					<td th:text="${refund.reason}"></td>
+					<td><span th:if="${refund.status == 'PENDING'}"
+						class="badge bg-warning">Pending</span> <span
+						th:if="${refund.status == 'SHOP_APPROVED' or refund.status == 'ADMIN_APPROVED'}"
+						class="badge bg-success">Approve</span> <span
+						th:if="${refund.status == 'SHOP_REJECTED' or refund.status == 'ADMIN_REJECTED'}"
+						class="badge bg-danger">Reject</span> <span
+						th:if="${refund.status == 'ESCALATED'}" class="badge bg-warning">Pending</span>
+						<span th:if="${refund.status == 'WAITING_FOR_RETURN'}"
+						class="badge bg-info">Waiting for return</span> <span
+						th:if="${refund.status == 'RETURNING'}" class="badge bg-primary">Returning</span>
+						<span th:if="${refund.status == 'RETURNED'}"
+						class="badge bg-secondary">Returned</span> <span
+						th:if="${refund.status == 'PROCESSING_REFUND'}"
+						class="badge bg-warning">Processing refund</span> <span
+						th:if="${refund.status == 'REFUNDED'}" class="badge bg-success">Refunded</span>
+						<span th:if="${#strings.isEmpty(refund.status)}"
+						class="badge bg-dark">Unknown</span></td>
+					<td
+						th:text="${#temporals.format(refund.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+					<td>
+						<!-- Nút xem chi tiết --> <a
+						th:href="@{'/refund/' + ${refund.refundId}}"
+						class="btn btn-sm btn-info mb-1">Chi tiết</a> <!-- Hủy khi PENDING -->
+						<button th:if="${refund.status == 'PENDING'}"
+							th:onclick="'cancelRefund(' + ${refund.refundId} + ')'"
+							class="btn btn-sm btn-danger mb-1">Hủy</button> <!-- Xác nhận đã gửi trả hàng -->
+						<button th:if="${refund.status == 'WAITING_FOR_RETURN'}"
+							th:onclick="'confirmReturning(' + ${refund.refundId} + ')'"
+							class="btn btn-sm btn-warning mb-1">Đã gửi trả hàng</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	
+	
+	<script th:inline="javascript">
+		
+		
+			function cancelRefund(refundId) {
+				if (!confirm('Are you sure you want to cancel this refund?'))
+					return;
+				$.post('/refund/cancel', {
+					refundId : refundId
+				}, function(res) {
+					
+					if(res.success){
+						alert('Refund cancelled successfully!');
+						location.reload();
+					}else {
+						alert(res.message);
+					}
+					
+				}).fail(function() {
+					alert('Error cancelling refund.');
+				});
+			}
+
+			function confirmReturning(refundId) {
+				if (!confirm('Confirm that you have returned the item?'))
+					return;
+				$.post('/refund/confirm_return', {
+					refundId : refundId
+				}, function(res) {
+					if(res.success){
+						alert('Return confirmed!');
+						location.reload();
+					}else {
+						alert(res.message);
+					}
+					
+				}).fail(function() {
+					alert('Error confirming return.');
+				});
+			}
+		</script>
+</div>

@@ -1,0 +1,36 @@
+<div th:fragment="detail">
+    <div class="mb-3">
+        <p><strong>Order ID:</strong> <span th:text="${order.orderId}"></span></p>
+        <p><strong>Customer:</strong> <span th:text="${order.buyerName}"></span></p>
+        <p><strong>Order Date:</strong> <span th:text="${#temporals.format(order.orderDate,'dd/MM/yyyy HH:mm')}"></span></p>
+        <p th:if="${order.confirmedAt != null}"><strong>Confirmed At:</strong> <span th:text="${#temporals.format(order.confirmedAt,'dd/MM/yyyy HH:mm')}"></span></p>
+        <p th:if="${order.completedAt != null}"><strong>Completed At:</strong> <span th:text="${#temporals.format(order.completedAt,'dd/MM/yyyy HH:mm')}"></span></p>
+        <p th:if="${order.cancelledAt != null}"><strong>Cancelled At:</strong> <span th:text="${#temporals.format(order.cancelledAt,'dd/MM/yyyy HH:mm')}"></span></p>
+        <p ><strong>Payment Method:</strong> <span th:text="${order.paymentMethod}"></span></p>
+        <p ><strong>Total Amount:</strong>
+            <span th:text="|${#numbers.formatDecimal(order.totalAmount,0,'COMMA',0,'POINT')} đ|"></span>
+        </p>
+    </div>
+
+    <h6>Products</h6>
+    <ul class="list-group mb-3">
+        <li class="list-group-item d-flex justify-content-between align-items-center"
+            th:each="item : ${order.items}">
+            <div>
+                <div th:text="${item.productVariantName}">Product Name</div>
+                <small>Quantity: <span th:text="${item.quantity}"></span> ×
+                       <span th:text="|${#numbers.formatDecimal(item.unitPrice,0,'COMMA',0,'POINT')} đ|"></span></small>
+                <div th:if="${item.flashSaleName != null}" class="text-danger small">
+                    Flash Sale: <span th:text="${item.flashSaleName}"></span>
+                </div>
+            </div>
+            <span class="font-weight-bold"
+                  th:text="|${#numbers.formatDecimal(item.subtotal,0,'COMMA',0,'POINT')} đ|">0 đ</span>
+        </li>
+    </ul>
+
+    <div class="text-right font-weight-bold">
+        Shipping Fee: <span th:text="|${#numbers.formatDecimal(order.shippingFee,0,'COMMA',0,'POINT')} đ|"></span><br/>
+        Total: <span th:text="|${#numbers.formatDecimal(order.totalAmount,0,'COMMA',0,'POINT')} đ|"></span>
+    </div>
+</div>

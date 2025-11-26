@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Shop Management - Admin</title>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+/>
+
+<style>
+
+/* Design System */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --card-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* Page Header */
+.page-header-admin {
+    background: var(--primary-gradient);
+    padding: 30px;
+    border-radius: 15px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.page-header-admin h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.stat-card.total::before { background: var(--info-gradient); }
+.stat-card.active::before { background: var(--success-gradient); }
+.stat-card.pending::before { background: var(--warning-gradient); }
+.stat-card.blocked::before { background: var(--danger-gradient); }
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.stat-card.total .stat-icon { background: var(--info-gradient); color: white; }
+.stat-card.active .stat-icon { background: var(--success-gradient); color: white; }
+.stat-card.pending .stat-icon { background: var(--warning-gradient); color: white; }
+.stat-card.blocked .stat-icon { background: var(--danger-gradient); color: white; }
+
+.stat-card h5 {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Tabs */
+.nav-tabs-admin {
+    background: white;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    margin-bottom: 25px;
+    display: flex;
+    gap: 8px;
+}
+
+.nav-tabs-admin .nav-link {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 25px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs-admin .nav-link:hover {
+    background: #f6f8fb;
+    color: #667eea;
+}
+
+.nav-tabs-admin .nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Filter Card */
+.filter-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+/* Table */
+.table-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+}
+
+.table-admin {
+    margin: 0;
+}
+
+.table-admin thead {
+    background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+}
+
+.table-admin thead th {
+    border: none;
+    padding: 15px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table-admin tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-admin tbody tr:hover {
+    background: #f6f8fb;
+    transform: scale(1.01);
+}
+
+.table-admin tbody td {
+    padding: 18px 15px;
+    vertical-align: middle;
+    border: none;
+}
+
+/* Shop Info */
+.shop-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.shop-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid #e8e8e8;
+}
+
+.shop-details h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.shop-details small {
+    color: #666;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-active {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.badge-pending {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+.badge-blocked {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.badge-inactive {
+    background: #6c757d;
+    color: white;
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-view {
+    background: var(--info-gradient);
+    color: white;
+}
+
+.btn-approve {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-block {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.btn-notify {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    padding: 20px 30px;
+    border: none;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+/* Charts */
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+}
+
+.chart-title {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #667eea;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 5rem;
+    color: #e8e8e8;
+    margin-bottom: 20px;
+}
+
+/* Pagination */
+.pagination-admin {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 0;
+}
+
+.pagination-admin .page-link {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination-admin .page-link:hover {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+}
+
+.pagination-admin .page-item.active .page-link {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease;
+}
+</style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        
+        <!-- Header -->
+        <div class="page-header-admin animate-fade-in">
+            <h1><i class="bi bi-shop me-3"></i>Shop Management</h1>
+            <p class="mb-0 opacity-75">Manage all shops on the platform</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid animate-fade-in">
+            <div class="stat-card total">
+                <div class="stat-icon">
+                    <i class="bi bi-shop-window"></i>
+                </div>
+                <h5>Total Shops</h5>
+                <div class="stat-value" id="stat-total">0</div>
+                <small class="text-muted">All registered shops</small>
+            </div>
+
+            <div class="stat-card active">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <h5>Active Shops</h5>
+                <div class="stat-value" id="stat-active">0</div>
+                <small class="text-muted">Currently operating</small>
+            </div>
+
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h5>Pending Approval</h5>
+                <div class="stat-value" id="stat-pending">0</div>
+                <small class="text-muted">Awaiting review</small>
+            </div>
+
+            <div class="stat-card blocked">
+                <div class="stat-icon">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <h5>Blocked Shops</h5>
+                <div class="stat-value" id="stat-blocked">0</div>
+                <small class="text-muted">Suspended or banned</small>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs-admin animate-fade-in" id="shopTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-status="0" href="#">
+                    <i class="bi bi-list-ul me-2"></i>All Shops
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-status="1" href="#">
+                    <i class="bi bi-clock me-2"></i>Pending
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-status="2" href="#">
+                    <i class="bi bi-check-circle me-2"></i>Active
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-status="3" href="#">
+                    <i class="bi bi-x-circle me-2"></i>Blocked
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-status="4" href="#">
+                    <i class="bi bi-x-circle me-2"></i>Inactive
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-status="4" href="#">
+                    <i class="bi bi-x-circle me-2"></i>Closed
+                </a>
+            </li>
+        </ul>
+
+        <!-- Filters -->
+        <div class="filter-card animate-fade-in">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label><i class="bi bi-search me-2"></i>Search</label>
+                    <input id="searchBox" class="form-control" type="text"
+                           placeholder="Shop name, owner name..." />
+                </div>
+                <div class="col-md-3">
+                    <label><i class="bi bi-funnel me-2"></i>Rating</label>
+                    <select id="ratingFilter" class="form-select">
+                        <option value="">All Ratings</option>
+                        <option value="5">5 Stars</option>
+                        <option value="4">4+ Stars</option>
+                        <option value="3">3+ Stars</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label><i class="bi bi-calendar me-2"></i>Sort By</label>
+                    <select id="sortBy" class="form-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="rating">Highest Rating</option>
+                        <option value="revenue">Highest Revenue</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label><i class="bi bi-list-ol me-2"></i>Per Page</label>
+                    <select id="pageSize" class="form-select">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shops Table -->
+        <div class="table-card animate-fade-in">
+            <div class="table-responsive">
+                <table class="table table-admin">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-hash me-2"></i>ID</th>
+                            <th><i class="bi bi-shop me-2"></i>Shop Info</th>
+                            <th><i class="bi bi-person me-2"></i>Owner</th>
+                            <th><i class="bi bi-star me-2"></i>Rating</th>
+                            <th><i class="bi bi-cash me-2"></i>Revenue</th>
+                            <th><i class="bi bi-calendar me-2"></i>Created</th>
+                            <th><i class="bi bi-flag me-2"></i>Status</th>
+                            <th class="text-center"><i class="bi bi-gear me-2"></i>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shopsContainer">
+                        <!-- JS will render rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="noData" class="empty-state" style="display: none;">
+            <i class="bi bi-shop"></i>
+            <h5>No Shops Found</h5>
+            <p>There are no shops matching your filters</p>
+        </div>
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination pagination-admin" id="pagination"></ul>
+        </nav>
+
+    </div>
+
+    <!-- Shop Detail Modal -->
+ <!--    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shop me-2"></i>Shop Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detailBody">
+                    Content loaded via AJAX
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Action Modal (Approve/Block) -->
+    <div class="modal fade" id="actionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="actionForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="actionModalTitle">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Confirm Action
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="actionShopId" />
+                        <input type="hidden" id="actionType" />
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span id="actionMessage"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="actionReason">
+                                <i class="bi bi-chat-text me-2"></i>Reason (Optional)
+                            </label>
+                            <textarea id="actionReason" class="form-control" rows="3"
+                                      placeholder="Enter reason for this action..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-action btn-approve" id="confirmActionBtn">
+                            <i class="bi bi-check-circle me-1"></i>Confirm
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Notification Modal -->
+    <div class="modal fade" id="notifyModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="notifyForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-bell me-2"></i>Send Notification
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="notifyShopId" />
+                        
+                        <div class="form-group mb-3">
+                            <label for="notifyTitle">
+                                <i class="bi bi-tag me-2"></i>Title
+                            </label>
+                            <input type="text" id="notifyTitle" class="form-control" 
+                                   placeholder="Notification title" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="notifyMessage">
+                                <i class="bi bi-chat-text me-2"></i>Message
+                            </label>
+                            <textarea id="notifyMessage" class="form-control" rows="4"
+                                      placeholder="Notification message..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notifyType">
+                                <i class="bi bi-tag me-2"></i>Type
+                            </label>
+                            <select id="notifyType" class="form-select">
+                                <option value="1">Info</option>
+                                <option value="2">Warning</option>
+                                <option value="3">Alert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-action btn-notify">
+                            <i class="bi bi-send me-1"></i>Send
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div layout:fragment="scripts">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+    let currentStatus = 0;
+    let currentPage = 1;
+    let pageSize = 10;
+
+    $(document).ready(function() {
+        loadShops(1);
+
+        // Tab change
+        $('#shopTabs .nav-link').on('click', function(e) {
+            e.preventDefault();
+            $('#shopTabs .nav-link').removeClass('active');
+            $(this).addClass('active');
+            currentStatus = $(this).data('status');
+            loadShops(1);
+        });
+
+        // Filters
+        $('#searchBox, #ratingFilter, #sortBy, #pageSize').on('input change', function() {
+            pageSize = parseInt($('#pageSize').val()) || 10;
+            loadShops(1);
+        });
+
+        // Pagination
+        $(document).on('click', '#pagination a.page-link', function(e) {
+            e.preventDefault();
+            const p = parseInt($(this).data('page'));
+            if (!isNaN(p) && p >= 1) loadShops(p);
+        });
+
+        // View details
+        $(document).on('click', '.btn-view', function() {
+            const shopId = $(this).data('id');
+            loadShopDetails(shopId);
+        });
+
+        // Approve
+        $(document).on('click', '.btn-approve', function() {
+            const shopId = $(this).data('id');
+            showActionModal(shopId, 'approve');
+        });
+
+        // Block
+        $(document).on('click', '.btn-block', function() {
+            const shopId = $(this).data('id');
+            showActionModal(shopId, 'block');
+        });
+
+        // Notify
+        $(document).on('click', '.btn-notify', function() {
+            const shopId = $(this).data('id');
+            $('#notifyShopId').val(shopId);
+            $('#notifyModal').modal('show');
+        });
+
+        // Submit action
+        $('#actionForm').on('submit', function(e) {
+            e.preventDefault();
+            submitAction();
+        });
+
+        // Submit notification
+        $('#notifyForm').on('submit', function(e) {
+            e.preventDefault();
+            sendNotification();
+        });
+    });
+
+    function loadShops(page) {
+        $('#shopsContainer').html('<tr><td colspan="8" class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-3">Loading...</p></td></tr>');
+
+        $.ajax({
+            url: '/admin/shop/list',
+            method: 'GET',
+            data: {
+                page: page,
+                size: pageSize,
+                status: currentStatus,
+                search: $('#searchBox').val(),
+                rating: $('#ratingFilter').val(),
+                sort: $('#sortBy').val()
+            },
+            success: function(res) {
+                renderShops(res.shops);
+                renderPagination(res.totalPages, res.page);
+                updateStats(res.stats);
+                currentPage = page;
+            },
+            error: function() {
+                Swal.fire('Error!', 'Failed to load shops', 'error');
+            }
+        });
+    }
+
+    function renderShops(shops) {
+        const $container = $('#shopsContainer');
+        $container.empty();
+
+        if (!shops || shops.length === 0) {
+            $('#noData').show();
+            $('.table-card').hide();
+            return;
+        }
+
+        $('#noData').hide();
+        $('.table-card').show();
+
+        shops.forEach(shop => {
+            const status = getStatusBadge(shop.status);
+            const tr = `
+                <tr>
+                    <td><strong>${shop.shopId}</strong></td>
+                    <td>
+                        <div class="shop-info">
+                            <img src="${shop.logoUrl || '/images/default-shop.png'}" 
+                                 class="shop-logo" alt="${shop.shopName}" />
+                            <div class="shop-details">
+                                <h6>${shop.shopName}</h6>
+                                <small>${shop.productsCount || 0} products</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div><strong>${shop.ownerName}</strong></div>
+                        <small class="text-muted">${shop.ownerEmail}</small>
+                    </td>
+                    <td>
+                        <div>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <strong>${shop.rating.toFixed(1)}</strong>
+                        </div>
+                        <small class="text-muted">${shop.reviewsCount || 0} reviews</small>
+                    </td>
+                    <td>
+                        <strong class="text-success">
+                            ${formatCurrency(shop.totalRevenue || 0)}
+                        </strong>
+                    </td>
+                    <td>
+                        <small>${formatDate(shop.createdAt)}</small>
+                    </td>
+                    <td>
+                        <span class="status-badge ${status.class}">
+                            <i class="bi bi-${status.icon}"></i>
+                            ${status.text}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <a class="btn btn-action btn-view btn-sm" href="/admin/shop/shop_detail/${shop.shopId}" data-id="${shop.shopId}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            ${shop.status === 1 ? `
+                                <button class="btn btn-action btn-approve btn-sm" data-id="${shop.shopId}">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            ` : ''}
+                            ${shop.status === 2 ? `
+                                <button class="btn btn-action btn-block btn-sm" data-id="${shop.shopId}">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-action btn-notify btn-sm" data-id="${shop.shopId}">
+                                <i class="bi bi-bell"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            $container.append(tr);
+        });
+    }
+
+    function getStatusBadge(status) {
+        const map = {
+            1: { text: 'Pending', class: 'badge-pending', icon: 'clock' },
+            2: { text: 'Active', class: 'badge-active', icon: 'check-circle' },
+            3: { text: 'Blocked', class: 'badge-blocked', icon: 'x-circle' },
+            4: { text: 'Inactive', class: 'badge-inactive', icon: 'pause-circle' },
+            5: { text: 'CLOSED', class: 'badge-inactive', icon: 'pause-circle' }
+        };
+        return map[status] || map[0];
+    }
+
+    function renderPagination(total, page) {
+        const $pagination = $('#pagination');
+        $pagination.empty();
+
+        if (total <= 1) return;
+
+        if (page > 1) {
+            $pagination.append(`<li class="page-item"><a class="page-link" href="#" data-page="${page-1}"><i class="bi bi-chevron-left"></i></a></li>`);
+        }
+
+        const max = 7;
+        let start = Math.max(1, page - Math.floor(max/2));
+        let end = Math.min(total, start + max - 1);
+
+        for (let p = start; p <= end; p++) {
+            $pagination.append(`<li class="page-item ${p===page?'active':''}"><a class="page-link" href="#" data-page="${p}">${p}</a></li>`);
+        }
+
+        if (page < total) {
+            $pagination.append(`<li class="page-item"><a class="page-link" href="#" data-page="${page+1}"><i class="bi bi-chevron-right"></i></a></li>`);
+        }
+    }
+
+    function updateStats(stats) {
+        if (!stats) return;
+        $('#stat-total').text(stats.total || 0);
+        $('#stat-active').text(stats.active || 0);
+        $('#stat-pending').text(stats.pending || 0);
+        $('#stat-blocked').text(stats.blocked || 0);
+    }
+
+    /* function loadShopDetails(shopId) {
+        $('#detailBody').html('<div class="text-center py-5"><div class="spinner-border"></div><p class="mt-3">Loading...</p></div>');
+        $('#detailModal').modal('show');
+
+        $.ajax({
+            url: '/admin/shop/' + shopId,
+            method: 'GET',
+            success: function(html) {
+                $('#detailBody').html(html);
+            },
+            error: function() {
+                $('#detailBody').html('<div class="alert alert-danger">Failed to load shop details</div>');
+            }
+        });
+    } */
+
+    function showActionModal(shopId, action) {
+        $('#actionShopId').val(shopId);
+        $('#actionType').val(action);
+
+        if (action === 'approve') {
+            $('#actionModalTitle').html('<i class="bi bi-check-circle me-2"></i>Approve Shop');
+            $('#actionMessage').text('Are you sure you want to approve this shop? The shop will be able to sell products on the platform.');
+            $('#confirmActionBtn').removeClass('btn-block').addClass('btn-approve');
+        } else if (action === 'block') {
+            $('#actionModalTitle').html('<i class="bi bi-x-circle me-2"></i>Block Shop');
+            $('#actionMessage').text('Are you sure you want to block this shop? The shop will not be able to sell products.');
+            $('#confirmActionBtn').removeClass('btn-approve').addClass('btn-block');
+        }
+
+        $('#actionModal').modal('show');
+    }
+
+    function submitAction() {
+        const shopId = $('#actionShopId').val();
+        const action = $('#actionType').val();
+        const reason = $('#actionReason').val();
+
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        $.ajax({
+            url: '/admin/shop/' + shopId + '/' + action,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ reason: reason }),
+            success: function(res) {
+                $('#actionModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: res.message || 'Action completed successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    loadShops(currentPage);
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: xhr.responseJSON?.message || 'Action failed'
+                });
+            }
+        });
+    }
+
+    function sendNotification() {
+        const shopId = $('#notifyShopId').val();
+        const title = $('#notifyTitle').val();
+        const message = $('#notifyMessage').val();
+        const type = $('#notifyType').val();
+
+        Swal.fire({
+            title: 'Sending...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        $.ajax({
+            url: '/admin/shops/' + shopId + '/notify',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                title: title,
+                message: message,
+                type: parseInt(type)
+            }),
+            success: function(res) {
+                $('#notifyModal').modal('hide');
+                $('#notifyForm')[0].reset();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sent!',
+                    text: 'Notification sent successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to send notification'
+                });
+            }
+        });
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    }
+    </script>
+</div>
+</body>
+</html>

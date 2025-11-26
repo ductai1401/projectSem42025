@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+<title layout:fragment="title">Create New Category</title>
+<style>
+.picker-panel {
+	background: #fff;
+	border: 1px solid #eef0f3;
+	border-radius: 14px;
+	padding: 10px;
+	height: 320px;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+	min-width: 260px;
+}
+
+.picker-title {
+	font-weight: 600;
+	font-size: .95rem;
+	color: #475569;
+	margin: 4px 6px 8px;
+}
+
+.picker-list {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+	overflow: auto;
+	flex: 1;
+}
+
+.picker-list .item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-radius: 10px;
+	cursor: pointer;
+	user-select: none;
+	transition: all .15s ease;
+	border: 1px solid transparent;
+}
+
+.picker-list .item:hover {
+	background: #f6f8fb;
+	border-color: #edf1f7;
+}
+
+.picker-list .item.active {
+	background: #eef6ff;
+	border-color: #cfe5ff;
+}
+
+.picker-list .item .chev {
+	opacity: .5;
+}
+
+.badge.bg-light.border {
+	font-weight: 500;
+}
+
+.form-control-lg {
+	border-radius: 12px;
+}
+
+.card {
+	border-radius: 16px;
+}
+
+.placeholder, .loading {
+	color: #64748b;
+	font-size: .9rem;
+}
+
+.levels-strip {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 8px;
+	margin-bottom: -8px;
+	scroll-behavior: smooth;
+}
+
+.levels-strip::-webkit-scrollbar {
+	height: 10px;
+}
+
+.levels-strip::-webkit-scrollbar-track {
+	background: #f1f5f9;
+	border-radius: 8px;
+}
+
+.levels-strip::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 8px;
+}
+
+.levels-strip::-webkit-scrollbar-thumb:hover {
+	background: #94a3b8;
+}
+
+.level-col {
+	flex: 0 0 auto;
+}
+
+@media ( max-width : 767.98px) {
+	.picker-panel {
+		height: 260px;
+	}
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+				<!-- PAGE HEADER -->
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<h3 class="mb-1 fw-semibold">Create New Category</h3>
+						<small class="text-muted">Catalog / Categories / Create</small>
+					</div>
+					<div class="d-flex gap-2">
+						<a th:href="@{/category/}" class="btn btn-light border">← Back
+							to list</a>
+					</div>
+				</div>
+
+				<!-- FORM -->
+				<form th:action="@{/category/create}" method="post"
+					id="createCategoryForm" enctype="multipart/form-data" novalidate>
+
+					<div class="row g-3">
+						<!-- LEFT: CATEGORY PICKER -->
+						<div class="col-12 col-lg-7">
+							<div class="card shadow-sm border-0">
+								<div class="card-header bg-white border-0 pb-0">
+									<div class="d-flex align-items-center justify-content-between">
+										<div>
+											<div class="fw-semibold">Parent Category (Optional)</div>
+											<div class="text-muted small">Chọn theo cấp (Level 1 →
+												2 → 3 → ...)</div>
+										</div>
+										<button type="button" id="btnClearParent"
+											class="btn btn-sm btn-outline-secondary">Clear</button>
+									</div>
+								</div>
+								<div class="card-body pt-3">
+									<div id="catBreadcrumb" class="mb-3 d-flex flex-wrap gap-2">
+										<span class="badge bg-light text-muted border">No
+											parent (top-level)</span>
+									</div>
+									<div class="input-group mb-3">
+										<span class="input-group-text bg-white border-end-0">🔍</span>
+										<input type="text" id="searchInput"
+											class="form-control border-start-0"
+											placeholder="Search category name...">
+										<button class="btn btn-primary" type="button" id="btnSearch">Search</button>
+									</div>
+									<div id="levelsStrip" class="levels-strip">
+										<div class="level-col" id="col-L1">
+											<div class="picker-panel">
+												<div class="picker-title">Level 1</div>
+												<ul class="picker-list" id="list-L1"></ul>
+											</div>
+										</div>
+									</div>
+									<input type="hidden" name="parentID" id="parentID" value="">
+								</div>
+							</div>
+						</div>
+
+						<!-- RIGHT: FORM DETAILS -->
+						<div class="col-12 col-lg-5">
+							<div class="card shadow-sm border-0 h-100">
+								<div class="card-body">
+									<!-- Category Name -->
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Category Name <span
+											class="text-danger">*</span></label> <input type="text"
+											name="categoryName" id="categoryName"
+											class="form-control form-control-lg"
+											placeholder="Ví dụ: Điện thoại, Laptop..."
+											th:value="${form != null} ? ${form.categoryName} : ''" />
+									</div>
+
+									<!-- Description -->
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Description</label>
+										<textarea name="description" id="description"
+											class="form-control" rows="3"
+											placeholder="Mô tả ngắn về danh mục..."
+											th:text="${form != null} ? ${form.description} : ''"></textarea>
+									</div>
+
+									<!-- Image -->
+									<!-- Image Upload -->
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Upload Image</label> <input
+											type="file" name="imageFile" id="imageFile"
+											class="form-control" accept="image/*">
+									</div>
+
+
+									<!-- Category Options -->
+									<div class="mb-3">
+										<label
+											class="form-label fw-semibold d-flex justify-content-between align-items-center">
+											<span>Category Options (key → value)</span>
+											<button type="button" id="btnAddOption"
+												class="btn btn-sm btn-outline-primary">+ Add</button>
+										</label>
+										<div id="optionsContainer" class="d-flex flex-column gap-2"></div>
+										<input type="hidden" name="categoryOption" id="categoryOption">
+									</div>
+
+									<!-- Sort Order -->
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Sort Order</label> <input
+											type="number" name="sortOrder" id="sortOrder"
+											class="form-control" min="0"
+											th:value="${form != null} ? ${form.sortOrder} : 0">
+									</div>
+
+									<!-- Status -->
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Status</label> <select
+											name="status" id="status" class="form-select">
+											<option value="1"
+												th:selected="${form != null and form.status == 1}">Active</option>
+											<option value="0"
+												th:selected="${form != null and form.status == 0}">Inactive</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="card-footer bg-white border-0">
+									<div class="d-flex gap-2 justify-content-end">
+										<a th:href="@{/category/}" class="btn btn-light border">Cancel</a>
+										<button type="submit" class="btn btn-success px-4"
+											id="btnSave">Save</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script>
+(function(){
+  // =========================== CATEGORY PICKER (giữ nguyên) ===========================
+  const API_ROOTS   = '/api/category/roots';
+  const API_CHILDREN= '/api/category/children?parentId=';
+  const API_SEARCH  = '/api/category/search?keyword=';
+  const levelsStrip   = document.getElementById('levelsStrip');
+  const listL1        = document.getElementById('list-L1');
+  const breadcrumb    = document.getElementById('catBreadcrumb');
+  const parentIDInput = document.getElementById('parentID');
+  const searchInput   = document.getElementById('searchInput');
+  const btnSearch     = document.getElementById('btnSearch');
+  let path = [];
+
+  const fetchJSON = async (url) => { const res = await fetch(url); return res.json(); };
+  const setLoading = (ul, on=true) => { ul.innerHTML = on ? '<div class="loading px-2 py-1">Loading…</div>' : ''; };
+  const createLi = (item) => { const li=document.createElement('li'); li.className='item'; li.dataset.id=item.categoryId; li.dataset.name=item.categoryName; li.innerHTML=`<span>${item.categoryName}</span><span class='chev'>&rsaquo;</span>`; return li; };
+  const renderList = (ul, items) => { ul.innerHTML=''; if(!items.length){ul.innerHTML='<div class="text-muted small px-2 py-1 placeholder">No data</div>'; return;} items.forEach(it=>ul.appendChild(createLi(it))); };
+  const updateBreadcrumb = () => { breadcrumb.innerHTML=''; if(!path.length){breadcrumb.innerHTML='<span class="badge bg-light text-muted border">No parent (top-level)</span>'; parentIDInput.value=''; return;} path.forEach(p=>{breadcrumb.innerHTML+=`<span class="badge bg-primary-subtle text-primary-emphasis border">${p.name}</span>`;}); parentIDInput.value=path[path.length-1].id; };
+  const removePanelsAfter=(i)=>{let c;while((c=document.getElementById(`col-L${i+1}`))){c.remove();i++;}};
+  const attachClickHandler=(levelIndex)=>{document.getElementById(`list-L${levelIndex}`).addEventListener('click',async e=>{const li=e.target.closest('.item');if(!li)return;path=path.slice(0,levelIndex-1);path.push({id:li.dataset.id,name:li.dataset.name,level:levelIndex});updateBreadcrumb();removePanelsAfter(levelIndex);const children=await fetchJSON(API_CHILDREN+li.dataset.id);if(children.length){const col=document.createElement('div');col.className='level-col';col.id=`col-L${levelIndex+1}`;col.innerHTML=`<div class="picker-panel"><div class="picker-title">Level ${levelIndex+1}</div><ul class="picker-list" id="list-L${levelIndex+1}"></ul></div>`;levelsStrip.appendChild(col);attachClickHandler(levelIndex+1);renderList(document.getElementById(`list-L${levelIndex+1}`),children);} });};
+  attachClickHandler(1); (async()=>{setLoading(listL1,true);renderList(listL1,await fetchJSON(API_ROOTS));})();
+  btnSearch.addEventListener('click',async()=>{const kw=searchInput.value.trim();path=[];updateBreadcrumb();removePanelsAfter(1);renderList(listL1,await fetchJSON(kw?API_SEARCH+kw:API_ROOTS));});
+
+  // =========================== CATEGORY OPTIONS (key-value JSON) ===========================
+  const btnAddOption=document.getElementById("btnAddOption");
+  const optionsContainer=document.getElementById("optionsContainer");
+  const hiddenOption=document.getElementById("categoryOption");
+  let optionCount=0; const MAX_OPTIONS=10;
+
+  function createOptionRow(){const div=document.createElement("div");div.className="input-group";
+    const key=document.createElement("input");key.className="form-control";key.placeholder="Key (vd: opt1)";key.dataset.role="key";
+    const val=document.createElement("input");val.className="form-control";val.placeholder="Value (vd: Thương hiệu)";val.dataset.role="value";
+    const rm=document.createElement("button");rm.type="button";rm.className="btn btn-outline-danger";rm.textContent="×";rm.onclick=()=>{div.remove();optionCount--;};
+    div.appendChild(key);div.appendChild(val);div.appendChild(rm);return div;}
+  btnAddOption.addEventListener("click",()=>{if(optionCount>=MAX_OPTIONS){alert("Chỉ được thêm tối đa "+MAX_OPTIONS+" option!");return;} optionCount++;optionsContainer.appendChild(createOptionRow());});
+  document.getElementById("createCategoryForm").addEventListener("submit",e=>{const obj={};let valid=true;optionsContainer.querySelectorAll(".input-group").forEach(row=>{const k=row.querySelector("input[data-role='key']").value.trim();const v=row.querySelector("input[data-role='value']").value.trim();if(k){if(obj[k]!==undefined){alert("Key '"+k+"' bị trùng!");valid=false;return;}obj[k]=v||"";}});if(!valid){e.preventDefault();return;} hiddenOption.value=Object.keys(obj).length?JSON.stringify(obj):"";});
+})();
+</script>
+	</div>
+</body>
+</html>

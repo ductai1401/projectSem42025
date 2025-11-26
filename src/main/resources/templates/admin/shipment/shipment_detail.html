@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <title>Shipment Details - Admin</title>
+    <style>
+        .timeline {
+            position: relative;
+            padding: 20px 0 20px 40px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #0d6efd 0%, #6c757d 100%);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #0d6efd;
+            z-index: 1;
+        }
+        .timeline-item.completed::before {
+            background: #28a745;
+            border-color: #28a745;
+        }
+        .timeline-item.failed::before {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #0d6efd;
+        }
+        .proof-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/admin/shipments}">Shipment Management</a>
+                </li>
+                <li class="breadcrumb-item active" th:text="${shipment.shipmentID}">SHIP001</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Left Column - Shipment Info -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-box-seam me-2"></i>Shipment Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td width="40%"><strong>Shipment ID:</strong></td>
+                                        <td>
+                                            <span class="badge bg-primary fs-6"
+                                                  th:text="${shipment.shipmentID}">SHIP001</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Order ID:</strong></td>
+                                        <td>
+                                            <a th:href="@{'/admin/orders/' + ${shipment.orderId}}"
+                                               th:text="${shipment.orderId}">ORDER001</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Shipper:</strong></td>
+                                        <td>
+                                            <span th:if="${shipment.shipper != null}">
+                                                <a th:href="@{'/admin/shippers/' + ${shipment.shipper.shipperID}}"
+                                                   th:text="${shipment.shipper.fullName}">Nguyen Van A</a>
+                                                <br>
+                                                <small class="text-muted" th:text="${shipment.shipper.phoneNumber}">
+                                                    0901234567
+                                                </small>
+                                            </span>
+                                            <span th:unless="${shipment.shipper != null}" class="text-muted">
+                                                Not assigned
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="badge" th:classappend="${shipment.statusClass}"
+                                                  th:text="${shipment.statusText}">Delivering</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td width="40%"><strong>Created At:</strong></td>
+                                        <td th:text="${#temporals.format(shipment.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                            24/10/2025 10:00
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Assigned At:</strong></td>
+                                        <td th:text="${shipment.assignedAt != null ? #temporals.format(shipment.assignedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                            N/A
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Picked Up:</strong></td>
+                                        <td th:text="${shipment.pickedAt != null ? #temporals.format(shipment.pickedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                            N/A
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Delivered:</strong></td>
+                                        <td th:text="${shipment.deliveredAt != null ? #temporals.format(shipment.deliveredAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                            N/A
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-geo-alt me-2"></i>Address Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">
+                                    <i class="bi bi-shop me-2"></i>Pickup Address
+                                </h6>
+                                <p th:text="${shipment.pickupAddress}">
+                                    123 Nguyen Hue, District 1, Ho Chi Minh City
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">
+                                    <i class="bi bi-house me-2"></i>Delivery Address
+                                </h6>
+                                <p th:text="${shipment.deliveryAddress}">
+                                    456 Le Loi, District 3, Ho Chi Minh City
+                                </p>
+                                <hr>
+                                <p class="mb-1">
+                                    <strong>Recipient:</strong>
+                                    <span th:text="${shipment.recipientName}">Tran Thi B</span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Phone:</strong>
+                                    <span th:text="${shipment.recipientPhone}">0912345678</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proof Images -->
+                <div class="card mb-4" th:if="${shipment.proofImages != null and !shipment.proofImages.isEmpty()}">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-camera me-2"></i>Delivery Proof Images
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4" th:each="img : ${shipment.proofImages}">
+                                <img th:src="${img}" class="proof-image img-thumbnail"
+                                     onclick="viewImage(this.src)" alt="Proof">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failed Reason -->
+                <div class="card mb-4" th:if="${shipment.failedReason != null}">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Failed Delivery Reason
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${shipment.failedReason}">Recipient unavailable</p>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-4" th:if="${shipment.notes != null}">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sticky me-2"></i>Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${shipment.notes}">Notes about the shipment</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Timeline -->
+            <div class="col-lg-4">
+                <div class="card sticky-top" style="top: 20px;">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Shipment History
+                        </h5>
+                    </div>
+                    <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                        <div class="timeline">
+                            <div class="timeline-item"
+                                 th:each="history : ${shipmentHistory}"
+                                 th:classappend="${history.status == 6} ? 'completed' : (${history.status == 7} ? 'failed' : '')">
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong th:text="${history.statusText}">Picked Up</strong>
+                                        <small class="text-muted"
+                                               th:text="${#temporals.format(history.createdAt, 'HH:mm dd/MM')}">
+                                            10:30 24/10
+                                        </small>
+                                    </div>
+                                    <p class="mb-2 small" th:if="${history.description != null}"
+                                       th:text="${history.description}">
+                                        Shipper successfully picked up the package
+                                    </p>
+                                    <small class="text-muted" th:if="${history.updatedByName != null}">
+                                        <i class="bi bi-person"></i>
+                                        Updated by: <span th:text="${history.updatedByName}">Admin</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="d-flex gap-2 justify-content-end">
+                    <button class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print Shipment
+                    </button>
+                    <button class="btn btn-warning" th:if="${shipment.status < 6}"
+                            data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                        <i class="bi bi-arrow-repeat"></i> Update Status
+                    </button>
+                    <button class="btn btn-danger" th:if="${shipment.status < 6}"
+                            onclick="confirmCancelShipment()">
+                        <i class="bi bi-x-circle"></i> Cancel Shipment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Shipment Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{'/admin/shipments/' + ${shipment.shipmentID} + '/update-status'}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">New Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="2">Assigned to Shipper</option>
+                                <option value="3">Picking Up</option>
+                                <option value="4">Picked Up</option>
+                                <option value="5">Delivering</option>
+                                <option value="6">Delivered</option>
+                                <option value="7">Delivery Failed</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div class="modal fade" id="imageViewerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">View Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="Proof Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function viewImage(src) {
+            document.getElementById('modalImage').src = src;
+            new bootstrap.Modal(document.getElementById('imageViewerModal')).show();
+        }
+
+        function confirmCancelShipment() {
+            if (confirm('Are you sure you want to cancel this shipment?')) {
+                window.location.href = '/admin/shipments/' + /*[[${shipment.shipmentID}]]*/ '' + '/cancel';
+            }
+        }
+
+        function viewShipment(shipmentId) {
+            window.location.href = '/admin/shipments/' + shipmentId;
+        }
+
+        function assignShipper(shipmentId) {
+            document.getElementById('assignShipmentId').value = shipmentId;
+            document.getElementById('assignShipperForm').action = '/admin/shipments/' + shipmentId + '/assign';
+            new bootstrap.Modal(document.getElementById('assignShipperModal')).show();
+        }
+
+        function updateStatus(shipmentId) {
+            document.getElementById('updateShipmentId').value = shipmentId;
+            document.getElementById('updateStatusForm').action = '/admin/shipments/' + shipmentId + '/update-status';
+            new bootstrap.Modal(document.getElementById('updateStatusModal')).show();
+        }
+
+        function viewShipper(shipperId) {
+            window.location.href = '/admin/shippers/' + shipperId;
+        }
+
+        function editShipper(shipperId) {
+            fetch('/admin/shippers/' + shipperId + '/data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editShipperId').value = data.shipperID;
+                    document.getElementById('editFullName').value = data.fullName;
+                    document.getElementById('editPhoneNumber').value = data.phoneNumber;
+                    document.getElementById('editStatus').value = data.status;
+                    document.getElementById('editShipperForm').action = '/admin/shippers/' + shipperId + '/update';
+                    new bootstrap.Modal(document.getElementById('editShipperModal')).show();
+                });
+        }
+
+        function toggleShipperStatus(shipperId) {
+            if (confirm('Are you sure you want to change this shipper\'s status?')) {
+                fetch('/admin/shippers/' + shipperId + '/toggle-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(() => location.reload());
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

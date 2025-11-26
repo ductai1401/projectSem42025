@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<title layout:fragment="title">Product Detail</title>
+<link rel="stylesheet" th:href="@{/client/style/productDetailStyle.css}" />
+</head>
+<body>
+	<div layout:fragment="content">
+		<!-- breadcrumb -->
+		<nav class="breadcrumb-section bg-light bread-crumb-padding">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<ol
+							class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+							<li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+							<li class="breadcrumb-item active"
+								th:text="${product.productName}">Product name</li>
+						</ol>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<section>
+			<div class="container">
+				<div class="row mb-n4">
+					<!-- LEFT: Gallery -->
+					<div class="col-md-5 mb-4">
+						<div class="modal-gallery-slider">
+							<div class="gallery">
+								<div class="swiper-container">
+									<div class="swiper-wrapper">
+										<div class="swiper-slide product-modal-gallery-item"
+											th:if="${product.image}">
+											<img th:src="@{'/uploads/' + ${product.image}}" alt="cover">
+										</div>
+										<div class="swiper-slide product-modal-gallery-item"
+											th:each="img : ${productImages}">
+											<img th:src="@{'/uploads/' + ${img.imageUrl}}" alt="gallery">
+										</div>
+										<div class="swiper-slide product-modal-gallery-item"
+											th:if="${#lists.isEmpty(productImages)}"
+											th:unless="${product.image}">
+											<img th:src="@{/images/no-image.png}" alt="no-image">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="gallery-thumbs">
+								<div class="swiper-container">
+									<div class="swiper-wrapper">
+										<div class="swiper-slide product-modal-gallery-thumbs-item"
+											th:if="${product.image}">
+											<a href="javascript:void(0)"><img
+												th:src="@{'/uploads/' + ${product.image}}" alt="thumb"></a>
+										</div>
+										<div class="swiper-slide product-modal-gallery-thumbs-item"
+											th:each="img : ${productImages}">
+											<a href="javascript:void(0)"><img
+												th:src="@{'/uploads/' + ${img.imageUrl}}" alt="thumb"></a>
+										</div>
+										<div class="swiper-slide product-modal-gallery-thumbs-item"
+											th:if="${#lists.isEmpty(productImages)}"
+											th:unless="${product.image}">
+											<a href="javascript:void(0)"><img
+												th:src="@{/images/no-image.png}" alt="thumb"></a>
+										</div>
+									</div>
+								</div>
+								<div class="swiper-pagination"></div>
+							</div>
+						</div>
+					</div>
+
+					<!-- RIGHT: Info -->
+					<div class="col-md-7 mb-4">
+						<div class="modal-product-des">
+							<h3 class="modal-product-title">
+								<a href="#" th:text="${product.productName}">Product name</a>
+							</h3>
+
+							<!-- FLASH SALE BADGE -->
+							<div th:if="${flashSale != null}" class="mb-2">
+								<span class="badge bg-danger"> Flash Sale <span
+									th:if="${flashSale.percern != null}"> -<span
+										th:text="${flashSale.percern}">0</span>%
+								</span>
+								</span>
+
+								<!-- Countdown -->
+								<div id="fsCountdown" class="mt-2 small"
+									th:attr="data-start=${#temporals.format(flashSale.startDate,'yyyy-MM-dd''T''HH:mm:ss')},
+                            data-end=${#temporals.format(flashSale.endDate,'yyyy-MM-dd''T''HH:mm:ss')}">
+									<span class="state fw-semibold text-danger">—</span> <span
+										class="clock ms-1 text-danger">--:--:--</span>
+								</div>
+							</div>
+
+							<!-- Giá -->
+							<div class="product-price-wrapp-lg">
+								<span class="product-regular-price-lg" id="priceDisplay"
+									th:attr="data-fs-percern=${flashSale != null ? flashSale.percern : 0}"
+									th:text="${#lists.isEmpty(variants)
+                              ? (product.price != null ? product.price : '—')
+                              : variants.get(0).price}">0</span>
+
+								<del id="priceOriginal" class="text-muted ms-2"
+									th:if="${flashSale != null}"
+									th:text="${#lists.isEmpty(variants)
+                              ? (product.price != null ? product.price : '') 
+                              : (variants.get(0).price != null ? variants.get(0).price : '')}"></del>
+							</div>
+
+							<!-- === UI biến thể === -->
+							<div class="product-variants">
+								<!-- Color -->
+								<div class="product-variants-item mb-3">
+									<span class="control-label d-block mb-2">Color</span>
+									<div id="colorSwatches" class="d-flex flex-wrap gap-2">
+										<span class="colorValue" th:each="c : ${colorValues}"
+											th:attr="data-value=${c}, title=${c}"></span> <small
+											class="text-muted"
+											th:if="${colorValues == null or colorValues.isEmpty()}">—</small>
+									</div>
+								</div>
+								<!-- Size -->
+								<div class="product-variants-item">
+									<span class="control-label d-block mb-2">Size</span>
+									<div id="sizeOptions" class="d-flex flex-wrap gap-3">
+										<span class="sizeValue" th:each="s : ${sizeValues}"
+											th:attr="data-value=${s}" th:text="${s}">M</span> <small
+											class="text-muted"
+											th:if="${sizeValues == null or sizeValues.isEmpty()}">—</small>
+									</div>
+								</div>
+							</div>
+							<!-- /UI biến thể -->
+
+							<!-- Add to cart + wishlist -->
+							<div class="product-add-to-cart">
+								<span class="control-label">Quantity</span>
+								<div class="product-count style d-flex my-4">
+									<div class="count d-flex">
+										<input id="qtyInput" type="number" min="1" max="100" step="1"
+											value="1">
+										<div class="button-group">
+											<button class="count-btn increment" type="button">
+												<span class="ion-chevron-up"></span>
+											</button>
+											<button class="count-btn decrement" type="button">
+												<span class="ion-chevron-down"></span>
+											</button>
+										</div>
+									</div>
+									<div class="d-flex gap-2">
+										<button id="btnAddToCart" class="btn btn-dark" type="button">
+											<i class="ion-bag"></i> Add to cart
+										</button>
+										<form th:action="@{/client/wishlist/add}" method="post"
+											class="m-0">
+											<input type="hidden" name="productId"
+												th:value="${product.productId}">
+											<button type="submit" class="btn btn-outline-dark">
+												<i class="ion-ios-heart"></i> Wishlist
+											</button>
+										</form>
+									</div>
+								</div>
+							</div>
+
+							<!-- DỮ LIỆU BIẾN THỂ Ẩn (để JS đọc) -->
+							<div id="variantData" style="display: none;">
+								<div th:each="v : ${variants}" class="v-item"
+									th:attr="data-id=${v.variantId}, data-price=${v.price}, data-name=${v.varianName}, data-image=${v.image}"></div>
+							</div>
+						</div>
+					</div>
+					<!-- /RIGHT -->
+				</div>
+			</div>
+		</section>
+
+		<!-- SHOP / STORE PANEL -->
+		<section class="shop-panel-bleed" th:if="${shop != null}">
+			<div class="container-fluid px-0">
+				<div class="card border-0 rounded-0 shadow-sm mb-4">
+					<div class="card-body">
+
+						<!-- Header: Left = avatar + name + actions | Right = metrics -->
+						<div
+							class="shop-head d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+							<!-- LEFT: Logo + Tên + Buttons -->
+							<div
+								class="shop-identity d-flex align-items-center gap-3 flex-grow-1">
+								<a th:href="@{|/shop/${shop.shopId}|}"
+									class="shop-avatar flex-shrink-0"> <img
+									th:src="${shop.logo != null} ? @{'/uploads/shops/' + ${shop.logo}} : @{/images/shop-default.png}"
+									alt="shop avatar">
+								</a>
+
+								<div class="shop-main w-100">
+									<!-- Tên + thời gian cập nhật + (actions đẩy sang phải nếu đủ rộng) -->
+									<div class="d-flex flex-wrap align-items-center gap-2">
+										<div class="flex-grow-1 min-w-0">
+											<div class="shop-title-row d-flex align-items-center gap-2">
+												<a class="shop-name text-truncate text-decoration-none"
+													th:href="@{|/shop/${shop.shopId}|}"
+													th:text="${shop.shopName}">Shop name</a> <small
+													class="text-muted"> Cập nhật: <span
+													th:text="${shop.updatedAt != null ? #temporals.format(shop.updatedAt,'dd/MM/yyyy HH:mm') : '—'}">—</span>
+												</small>
+											</div>
+										</div>
+
+										<!-- Actions đặt cùng hàng với tên (rút xuống dưới khi hẹp) -->
+										<div class="shop-actions d-flex flex-wrap gap-2">
+											<a class="btn btn-outline-dark btn-sm"
+												th:href="@{|/chat?shopId=${shop.shopId}|}"> <i
+												class="ion-ios-chatboxes"></i> Chat ngay
+											</a> <a class="btn btn-dark btn-sm"
+												th:href="@{|/shop/${shop.shopId}|}"> <i
+												class="ion-android-home"></i> Xem shop
+											</a>
+										</div>
+									</div>
+
+									<!-- Mô tả ngắn (tuỳ chọn) -->
+									<p class="text-muted small mb-0 mt-1 text-truncate-2"
+										th:text="${shop.description}">Mô tả shop…</p>
+								</div>
+							</div>
+
+							<!-- RIGHT: Metrics -->
+							<div class="shop-metrics d-grid">
+								<div class="metric">
+									<div class="label text-muted">Đánh giá</div>
+									<div class="value fw-semibold"
+										th:text="${shop.rating != null ? #numbers.formatDecimal(shop.rating,1,'POINT',1,'COMMA') : '—'}">—</div>
+								</div>
+
+								<div class="metric">
+									<div class="label text-muted">Sản phẩm</div>
+									<div class="value fw-semibold"
+										th:text="${shopProductCount != null ? shopProductCount : 0}">0</div>
+								</div>
+
+								<div class="metric" th:if="${shop.phone != null}">
+									<div class="label text-muted">Liên hệ</div>
+									<div class="value fw-semibold" th:text="${shop.phone}">SĐT</div>
+								</div>
+
+								<div class="metric">
+									<div class="label text-muted">Tham gia</div>
+									<div class="value fw-semibold"
+										th:text="${shop.createdAt != null ? #temporals.format(shop.createdAt,'dd/MM/yyyy') : '—'}">—</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<!-- /card-body -->
+				</div>
+			</div>
+		</section>
+
+		<!-- REVIEWS -->
+		<section class="section-padding-bottom section-padding-top">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<ul class="nav nav-tabs single-product-tab justify-content-center"
+							id="myTab" role="tablist">
+							<li class="nav-item" role="presentation"><a class="nav-link"
+								data-bs-toggle="tab" href="#description" role="tab">Description</a></li>
+							<li class="nav-item" role="presentation"><a class="nav-link"
+								data-bs-toggle="tab" href="#productdetails" role="tab"
+								aria-selected="false">Product Option</a></li>
+							<li class="nav-item" role="presentation"><a
+								class="nav-link active" data-bs-toggle="tab" href="#reviews"
+								role="tab" aria-selected="true">Reviews</a></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="tab-content" id="myTabContent">
+					<div class="tab-pane fade" id="description" role="tabpanel">
+						<div class="row">
+							<div class="col-12">
+								<div class="single-product-desc">
+									<div
+										th:if="${product.description != null and #strings.trim(product.description) != ''}"
+										th:utext="${product.description}"></div>
+									<div
+										th:unless="${product.description != null and #strings.trim(product.description) != ''}">
+										<p class="text-muted">Chưa có mô tả cho sản phẩm này.</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="tab-pane fade" id="productdetails" role="tabpanel">
+						<div class="row">
+							<div class="col-12">
+								<div class="single-product-desc">
+									<div class="product-anotherinfo-wrapper">
+										<ul id="productOptionList"></ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- hidden field chứa JSON -->
+					<input type="hidden" id="productOptionJson"
+						th:value="${product.productOption}">
+
+					<!-- Reviews -->
+					<div class="tab-pane fade active show" id="reviews" role="tabpanel">
+						<div class="single-product-desc">
+							<div class="row">
+								<div class="col-lg-12">
+									<div
+										class="d-flex justify-content-between align-items-center mb-2">
+										<h5 class="m-0">Reviews</h5>
+										<small class="text-muted"> Trung bình: <span
+											id="rvAvg"
+											th:text="${rvData.averageRating != null} ? ${#numbers.formatDecimal(rvData.averageRating,1,'POINT',1,'COMMA')} : '—'">—</span>
+											★ · Tổng: <span id="rvTotal" th:text="${rvData.total}">0</span>
+										</small>
+									</div>
+
+									<div id="rvList">
+										<div th:if="${rvData.data == null or rvData.data.isEmpty()}"
+											class="rv-empty">Chưa có đánh giá cho sản phẩm này.</div>
+
+										<div th:each="rv : ${rvData.data}" class="rv-item pt-3 mt-3">
+											<div class="d-flex justify-content-between">
+												<strong
+													th:text="${rv.userName != null ? rv.userName : 'Người dùng'}">Người
+													dùng</strong> <small class="text-muted"
+													th:text="${rv.createdAt != null ? #temporals.format(rv.createdAt, 'yyyy-MM-dd HH:mm') : ''}">2025-08-12
+													19:36</small>
+											</div>
+											<div class="my-1 rv-stars"
+												th:utext="${#strings.repeat('&#9733;', rv.rating != null ? rv.rating : 0)}">★★★★★</div>
+											<div th:text="${rv.reviewText}">Nội dung review…</div>
+
+											<div class="rv-medias d-flex flex-wrap gap-2 mt-2"
+												th:if="${rv.medias != null and !rv.medias.isEmpty()}">
+												<th:block th:each="m : ${rv.medias}">
+													<th:block th:switch="${m.type}">
+														<video th:case="1" class="me-2 mb-2 rounded" width="96"
+															height="96" muted playsinline
+															th:src="@{'/uploads/reviews/' + ${m.mediaUrl}}"></video>
+														<img th:case="*" class="me-2 mb-2 rounded"
+															th:src="@{'/uploads/reviews/' + ${m.mediaUrl}}"
+															alt="media">
+													</th:block>
+												</th:block>
+											</div>
+										</div>
+									</div>
+
+									<div id="rvPaging"
+										class="d-flex justify-content-between align-items-center mt-3"
+										th:if="${rvData.total > 6}">
+										<button class="btn btn-outline-secondary btn-sm" id="rvPrev">Trước</button>
+										<div class="small">
+											Trang <span id="rvPage">1</span>
+										</div>
+										<button class="btn btn-outline-secondary btn-sm" id="rvNext">Sau</button>
+									</div>
+
+									<input type="hidden" id="productId"
+										th:value="${product.productId}">
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /Reviews -->
+				</div>
+			</div>
+		</section>
+
+		<!-- featured product start -->
+		<div class="featured-product-section section-padding-bottom">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<section class="section-title text-center">
+							<h3 class="title">Featured Products</h3>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- featured product end -->
+
+		<!-- Lightbox for review medias -->
+		<div id="rvLightbox" class="hidden">
+			<div id="rvLbOverlay"></div>
+			<div id="rvLbWrap">
+				<div id="rvLbBox">
+					<button id="rvLbClose" type="button" class="rvLbBtn">×</button>
+					<button id="rvLbPrev" type="button" class="rvLbBtn">‹</button>
+					<button id="rvLbNext" type="button" class="rvLbBtn">›</button>
+
+					<div id="rvLbInner">
+						<img id="rvLbImg" alt="media" class="hidden" />
+						<video id="rvLbVid" class="hidden" controls></video>
+					</div>
+
+					<div id="rvLbCap"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div layout:fragment="scripts">
+		<script type="text/javascript" th:inline="javascript">
+    let roles = /*[[${session.roles}]]*/null;
+    let isLoggedIn = roles != null;
+  </script>
+		<script th:src="@{/client/script/productDetailScript.js}"></script>
+		<script>
+    (function(){
+      const el = document.getElementById('fsCountdown');
+      if (!el) return;
+
+      const startStr = el.getAttribute('data-start');
+      const endStr   = el.getAttribute('data-end');
+
+      const toDate = (str) => {
+        if (!str) return null;
+        const s = str.replace(' ', 'T');
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
+      const start = toDate(startStr);
+      const end   = toDate(endStr);
+      if (!start || !end) return;
+
+      const stateEl = el.querySelector('.state');
+      const clockEl = el.querySelector('.clock');
+      const badgeEl = document.querySelector('.badge.bg-danger, .badge.bg-warning');
+
+      const fmtRemain = (ms) => {
+        if (ms < 0) ms = 0;
+        const sec = Math.floor(ms / 1000);
+        const d = Math.floor(sec / 86400);
+        const h = Math.floor((sec % 86400) / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        const dd = d > 0 ? (d + 'd ') : '';
+        const pad = (n) => String(n).padStart(2, '0');
+        return dd + [pad(h), pad(m), pad(s)].join(':');
+      };
+
+      const endFlashSaleUI = () => {
+        el.classList.add('text-muted');
+        el.textContent = 'Đã kết thúc';
+        if (badgeEl) {
+          badgeEl.classList.remove('bg-danger','bg-warning');
+          badgeEl.classList.add('bg-secondary');
+          badgeEl.textContent = 'Flash Sale đã kết thúc';
+        }
+        const originalEl = document.getElementById('priceOriginal');
+        if (originalEl) {
+          originalEl.style.display = 'none';
+          originalEl.textContent = '';
+        }
+        const priceDisplay = document.getElementById('priceDisplay');
+        if (priceDisplay) {
+          priceDisplay.style.textDecoration = 'none';
+          priceDisplay.removeAttribute('data-fs-percern');
+        }
+      };
+
+      const tick = () => {
+        const now = new Date();
+        if (now < start) {
+          stateEl.textContent = 'Bắt đầu sau:';
+          clockEl.textContent = fmtRemain(start - now);
+          el.classList.remove('text-muted');
+          if (badgeEl) {
+            badgeEl.classList.remove('bg-danger');
+            badgeEl.classList.add('bg-warning');
+          }
+        } else if (now >= start && now <= end) {
+          stateEl.textContent = 'Kết thúc sau:';
+          clockEl.textContent = fmtRemain(end - now);
+          el.classList.remove('text-muted');
+          if (badgeEl) {
+            badgeEl.classList.remove('bg-warning');
+            badgeEl.classList.add('bg-danger');
+          }
+        } else {
+          clearInterval(timer);
+          endFlashSaleUI();
+        }
+      };
+
+      const timer = setInterval(tick, 1000);
+      tick();
+    })();
+  </script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!-- Order List Fragment -->
+    <div th:fragment="orderListFragment(orders)">
+        <!-- Check if orders exist -->
+        <div th:if="${orders != null and !orders.isEmpty()}">
+            <div th:each="order : ${orders}" th:if="${order.status != 7}">
+                <div class="order-card mb-3 border border-5 p-3">
+                    <!-- Order Header -->
+                    <div class="order-card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="order-id">
+                                    <i class="bi bi-receipt me-2"></i>
+                                    Đơn hàng #<span th:text="${order.orderId}"></span>
+                                </span>
+                                <div class="order-date mt-1">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                </div>
+                            </div>
+                            <span class="order-status-badge"
+                                  th:classappend="${order.status == 0 ? 'status-unpaid' : 
+                                                   order.status == 1 ? 'status-pending' : 
+                                                   order.status == 2 ? 'status-preparing' : 
+                                                   order.status == 3 ? 'status-shipping' : 
+                                                   order.status == 4 ? 'status-cancelled' : 
+                                                   order.status == 5 ? 'status-completed' : 'status-default'}">
+                                <i class="bi"
+                                   th:classappend="${order.status == 0 ? 'bi-credit-card' : 
+                                                    order.status == 1 ? 'bi-clock-history' : 
+                                                    order.status == 2 ? 'bi-box-seam' : 
+                                                    order.status == 3 ? 'bi-truck' : 
+                                                    order.status == 4 ? 'bi-x-circle' : 
+                                                    order.status == 5 ? 'bi-check-circle' : 'bi-question-circle'}"></i>
+                                <span th:text="${order.statusText}"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Order Body -->
+                    <div class="order-card-body">
+                        <div class="row">
+                            <!-- Left: Order Items -->
+                            <div class="col-lg-7">
+                                <h6 class="mb-3 text-muted">
+                                    <i class="bi bi-bag-check me-2"></i>Sản phẩm đã đặt
+                                </h6>
+                                
+                                <!-- Order Items -->
+                                <div th:if="${order.items != null and !order.items.isEmpty()}">
+                                    <div th:each="item, iterStat : ${order.items}" 
+                                         class="order-product-item"
+                                         th:classappend="${iterStat.index < 2 ? '' : 'collapsed-item'}">
+                                        <div class="product-image-wrapper">
+                                            <img th:src="${item.productVariantImage}" 
+                                                 th:alt="${item.productVariantName}"
+                                                 onerror="this.src='/images/noimage.png'"/>
+                                        </div>
+                                        <div class="product-details flex-grow-1">
+                                            <div class="product-name" th:text="${item.productVariantName}">
+                                                Product Name
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <div>
+                                                    <span class="product-price" 
+                                                          th:text="${#numbers.formatDecimal(item.unitFinalPrice, 0, 'POINT', 0, 'COMMA')} + '₫'">
+                                                        100,000₫
+                                                    </span>
+                                                    <span class="product-quantity ms-2">
+                                                        x<span th:text="${item.quantity}">1</span>
+                                                    </span>
+                                                </div>
+                                                <div class="product-total text-primary fw-bold">
+                                                    <span th:text="${#numbers.formatDecimal(item.finalPrice, 0, 'POINT', 0, 'COMMA')} + '₫'">
+                                                        100,000₫
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Show More Button -->
+                                    <div th:if="${#lists.size(order.items) > 2}" class="text-center mt-2">
+                                        <button class="btn btn-sm btn-outline-secondary btn-show-more" 
+                                                type="button"
+                                                th:attr="data-order-id=${order.orderId}">
+                                            <i class="bi bi-chevron-down me-1"></i>
+                                            Xem thêm <span th:text="${#lists.size(order.items) - 2}">0</span> sản phẩm
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- No Items -->
+                                <div th:if="${order.items == null or order.items.isEmpty()}" 
+                                     class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Không có sản phẩm trong đơn hàng
+                                </div>
+                            </div>
+
+                            <!-- Right: Order Summary -->
+                            <div class="col-lg-5">
+                                <div class="order-summary">
+                                    <h6 class="mb-3 text-muted">
+                                        <i class="bi bi-calculator me-2"></i>Chi tiết thanh toán
+                                    </h6>
+                                    
+                                    <!-- Shipping Info -->
+                                    <div class="summary-row">
+                                        <span>
+                                            <i class="bi bi-truck me-2"></i>Phí vận chuyển
+                                        </span>
+                                        <span th:if="${order.shippingFee > 0}"
+                                              th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'POINT', 0, 'COMMA')} + '₫'">
+                                            30,000₫
+                                        </span>
+                                        <span th:if="${order.shippingFee == 0}" class="text-success fw-bold">
+                                            Miễn phí
+                                        </span>
+                                    </div>
+
+                                    <!-- Discount Info -->
+                                    <div th:if="${order.discounts != null and !order.discounts.isEmpty()}" 
+                                         class="voucher-section">
+                                        <div class="summary-row">
+                                            <span>
+                                                <i class="bi bi-ticket-perforated me-2"></i>Voucher áp dụng
+                                            </span>
+                                        </div>
+                                        <div class="voucher-list">
+                                            <div th:each="discount : ${order.discounts}" class="voucher-item">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi bi-tag-fill text-warning me-1"></i>
+                                                        <small th:text="${discount.couponType}">Loại voucher</small>
+                                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                                            Mã: <span th:text="${discount.couponCode}">CODE123</span>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-success fw-bold">
+                                                        -<span th:text="${#numbers.formatDecimal(discount.discountValue, 0, 'POINT', 0, 'COMMA')}">10,000</span>₫
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-3">
+
+                                    <!-- Total Amount -->
+                                    <div class="order-total-section">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="order-total-label">
+                                                <i class="bi bi-cash-stack me-2"></i>Tổng thanh toán
+                                            </span>
+                                            <span class="order-total-amount" 
+                                                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} + '₫'">
+                                                500,000₫
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Footer - Action Buttons -->
+                    <div class="order-card-footer">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <!-- Left: Additional Info -->
+                            <div class="order-info-extra">
+                                <small class="text-muted">
+                                    <i class="bi bi-box-seam me-1"></i>
+                                    <span th:text="${#lists.size(order.items)}">3</span> sản phẩm
+                                </small>
+                            </div>
+                            
+                            <!-- Right: Action Buttons -->
+                            <div class="order-actions">
+                                <!-- Status 0: UNPAID -->
+                                <div th:if="${order.status == 0}">
+                                    <button class="btn btn-danger btn-sm btn-pay" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-credit-card me-1"></i>Thanh toán ngay
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm btn-cancel" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                                    </button>
+                                </div>
+
+                                <!-- Status 1: PENDING -->
+                                <div th:if="${order.status == 1}">
+                                    <button class="btn btn-outline-warning btn-sm" disabled>
+                                        <i class="bi bi-clock-history me-1"></i>Đang chờ xử lý
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm btn-cancel" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                                    </button>
+                                </div>
+
+                                <!-- Status 2: PREPARING -->
+                                <div th:if="${order.status == 2}">
+                                    <button class="btn btn-outline-danger btn-sm btn-cancel" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm btn-contact">
+                                        <i class="bi bi-chat-dots me-1"></i>Liên hệ Shop
+                                    </button>
+                                </div>
+
+                                <!-- Status 3: SHIPPING -->
+                                <div th:if="${order.status == 3}">
+                                    <button class="btn btn-outline-info btn-sm btn-track" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-geo-alt me-1"></i>Theo dõi đơn hàng
+                                    </button>
+                                </div>
+
+                                <!-- Status 4: CANCELLED -->
+                                <div th:if="${order.status == 4}">
+                                    <button class="btn btn-outline-secondary btn-sm btn-reorder" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Mua lại
+                                    </button>
+                                   <!--  <button class="btn btn-outline-primary btn-sm btn-view-detail" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-eye me-1"></i>Xem chi tiết
+                                    </button> -->
+                                </div>
+
+                                <!-- Status 5: COMPLETED -->
+                                <div th:if="${order.status == 5}">
+                                    <button class="btn btn-outline-secondary btn-sm btn-reorder" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Mua lại
+                                    </button>
+                                    <button class="btn btn-outline-warning btn-sm btn-refund" 
+                                    		th:if="${order.canRequestRefund}"
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Hoàn tiền 
+                                        
+                                    </button>
+                                    <button class="btn btn-warning btn-sm btn-review" 
+                                            th:attr="data-order-id=${order.orderId},
+                     						data-variant-id=${order.items[0].productVariantId}">
+                                        <i class="bi bi-star me-1"></i>Đánh giá
+                                    </button>
+                                    <!-- <button class="btn btn-warning btn-sm btn-review"
+									th:if="${order.items != null and !order.items.isEmpty()}"
+									th:attr="data-order-id=${order.orderId},
+                     data-variant-id=${order.items[0].productVariantId}">
+									<i class="bi bi-star me-1"></i>Đánh giá
+								</button> -->
+                                </div>
+                                <!-- Status 6 : Deliver_failed   -->
+                                <div th:if="${order.status == 6}">
+                                    <button class="btn btn-outline-secondary btn-sm btn-reorder" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Mua lại
+                                    </button>
+                                </div>
+                                <!-- Status 7 : refund_request   -->
+                                <div th:if="${order.status == 7}">
+                                    <button class="btn btn-outline-info btn-sm btn-track" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-geo-alt me-1"></i>Theo dõi đơn hàng
+                                    </button>
+                                </div>
+                                <!-- Status * : refunded   -->
+                                <div th:if="${order.status == 8}">
+                                    <button class="btn btn-outline-info btn-sm btn-track" 
+                                            th:attr="data-order-id=${order.orderId}">
+                                        <i class="bi bi-geo-alt me-1"></i>Mua lại
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Orders Found -->
+        <div th:unless="${orders != null and !orders.isEmpty()}" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h5>Không có đơn hàng</h5>
+            <p>Bạn chưa có đơn hàng nào trong mục này</p>
+        </div>
+        
+        <!-- <script type="text/javascript">
+        $(document).ready(function () {
+        	$(document).on("click", ".btn-refund", function () {
+                let orderId = $(this).data("order-id");
+
+                const $modal = $("#refundModal");
+                $modal.find("ul#refundItemsList").empty();
+                $modal.find("input[name=orderId]").val(orderId);
+                $modal.find("input[name=orderCode]").val("#" + orderId);
+                $modal.find("textarea[name=reason]").val("");
+
+                $.get("/account/orders/detail/" + orderId, function(order) {
+                    if (!order) {
+                        alert("Không lấy được thông tin đơn hàng.");
+                        return;
+                    }
+
+                    // Append items
+                    order.items.forEach(item => {
+                        let li = $(`
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="form-check me-2">
+                                    <input class="form-check-input refund-item-checkbox" type="checkbox" data-item-id="${item.orderItemId}">
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <img src="${item.productVariantImage}" style="width:50px; height:50px; object-fit:cover" class="me-2"/>
+                                    <div>
+                                        <div>${item.productVariantName}</div>
+                                        <small>Số lượng: <input type="number" class="form-control refund-item-qty" min="1" max="${item.quantity}" value="${item.quantity}" style="width:70px; display:inline-block;"></small>
+                                    </div>
+                                </div>
+                                <span>₫${item.unitFinalPrice}</span>
+                            </li>
+                        `);
+                        $modal.find("#refundItemsList").append(li);
+                    });
+
+                    let modal = new bootstrap.Modal(document.getElementById('refundModal'));
+                    modal.show();
+
+                }).fail(function() {
+                    alert("Lỗi khi lấy thông tin đơn hàng.");
+                });
+                
+                
+            });
+        	
+
+            // ===============================
+            // 1. PAY NOW (status 0)
+            // ===============================
+            $(document).on("click", ".btn-pay", function () {
+        	    let $btn = $(this);
+        	    let orderId = $btn.data("order-id");
+
+        	    // Disable nút để tránh spam
+        	    $btn.prop("disabled", true).text("Đang chuyển hướng...");
+
+        	    // Gọi API tạo lại link thanh toán
+        	    $.post("/checkout/continue", {orderId: orderId}, function (res) {
+        	        if (res.paymentUrl) {
+        	            window.location.href = res.paymentUrl;
+        	        } else {
+        	            alert("Không thể tạo link thanh toán, vui lòng thử lại.");
+        	            $btn.prop("disabled", false).text("Tiếp tục thanh toán");
+        	        }
+        	    }).fail(function () {
+        	        alert("Có lỗi xảy ra.");
+        	        $btn.prop("disabled", false).text("Tiếp tục thanh toán");
+        	    });
+        	});
+
+            // ===============================
+            // 2. CANCEL ORDER (status 0,1,2)
+            // ===============================
+            $(document).on("click", ".btn-cancel", function () {
+                let orderId = $(this).data("order-id");
+
+                Swal.fire({
+                    title: "Bạn chắc chắn muốn hủy đơn?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Có, hủy ngay",
+                    cancelButtonText: "Không"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        handleOrderAction(orderId, "/checkout/cancel");
+                    }
+                });
+            });
+
+            // ===============================
+            // 3. TRACK ORDER (status 3,7,8)
+            // ===============================
+            $(document).on("click", ".btn-track", function () {
+                let orderId = $(this).data("order-id");
+                window.location.href = "/account/orders/"+  orderId + "/tracking" ;
+            });
+
+            // ===============================
+            // 4. REORDER (status 4,5,6,8)
+            // ===============================
+            $(document).on("click", ".btn-reorder", function () {
+                let orderId = $(this).data("order-id");
+                handleOrderAction(orderId, "/orders/reorder");
+            });
+            
+            const btnSubmit = document.getElementById("btnSubmitRefund");
+            const refundForm = document.getElementById("refundForm");
+
+            btnSubmit.addEventListener("click", () => {
+                // Xóa tất cả lỗi trước khi submit
+                document.querySelectorAll("#refundForm div[id^='error']").forEach(div => div.innerHTML = "");
+
+                // Lấy item được chọn và số lượng
+                const refundItems = [];
+                document.querySelectorAll(".refund-item-checkbox:checked").forEach(cb => {
+                    const li = cb.closest("li");
+                    const qtyInput = li.querySelector(".refund-item-qty");
+                    const qty = parseInt(qtyInput.value);
+                    const maxQty = parseInt(qtyInput.getAttribute("max"));
+                    if(qty <= 0 || qty > maxQty){
+                        alert("Số lượng hoàn tiền không hợp lệ cho sản phẩm: " + li.querySelector("div div").textContent);
+                        return;
+                    }
+                    refundItems.push({
+                        itemId: cb.dataset.itemId,
+                        quantity: qty
+                    });
+                });
+
+                if(refundItems.length === 0){
+                    alert("Chọn ít nhất một sản phẩm để hoàn tiền");
+                    return;
+                }
+
+                const formData = new FormData(refundForm);
+                formData.append("items", JSON.stringify(refundItems)); // gửi array items dạng JSON
+
+                // Lấy file từ mediaContainer
+                for (const input of document.querySelectorAll("#mediaContainer input[type=file]")) {
+        		    if (input.files[0]) {
+        		        const file = input.files[0];
+        		        if (file.type.startsWith("image/") && file.size > 5 * 1024 * 1024) {
+        		            alert("Ảnh quá lớn (max 5MB): " + file.name);
+        		            return; // ✅ dừng hẳn
+        		        }
+        		        if (file.type.startsWith("video/") && file.size > 20 * 1024 * 1024) {
+        		            alert("Video quá lớn (max 20MB): " + file.name);
+        		            return;
+        		        }
+        		        formData.append("files", file);
+        		    }
+        		}
+                
+                console.log(formData);
+
+                fetch("/refund/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success){
+                        alert(data.message);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('refundModal'));
+                        modal.hide();
+                    } else {
+                        if (data.errors) {
+                            for (const [field, message] of Object.entries(data.errors)) {
+                                const errorDiv = document.getElementById("error" + field.charAt(0).toUpperCase() + field.slice(1));
+                                if (errorDiv) errorDiv.innerHTML = `<span class="text-danger">${message}</span>`;
+                            }
+                        } else {
+                            alert(data.message || "Yêu cầu hoàn tiền thất bại.");
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi upload:", err);
+                    alert("Có lỗi xảy ra khi gửi yêu cầu.");
+                });
+            });
+
+
+            // ===============================
+            // 6. REVIEW ORDER (status 5)
+            // ===============================
+            $(document).on("click", ".btn-review", function () {
+                let orderId = $(this).data("order-id");
+                window.location.href = "/orders/review/" + orderId;
+            });
+        });
+        
+        function handleOrderAction(orderId, url) {
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: { orderId: orderId },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: "Success",
+                            text: response.message,
+                            icon: "success"
+                        }).then(() => {
+                            location.reload(); // refresh UI
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: response.message,
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire("Lỗi!", "Không thể xử lý yêu cầu", "error");
+                }
+            });
+        }
+        
+        $(document).ready(function () {
+
+   
+
+/* 
+            // Mua lại
+            $(document).on("click", ".btn-reorder", function () {
+                let orderId = $(this).data("order-id");
+                $.post("/orders/reorder", {orderId: orderId}, function (res) {
+                    alert(res.message || "Sản phẩm đã được thêm lại giỏ hàng.");
+                    window.location.href = "/cart";
+                });
+            }); */
+
+            
+
+            // Đánh giá
+            $(document).on("click", ".btn-review", function () {
+                let orderId = $(this).data("order-id");
+                // Mở modal đánh giá
+                $("#reviewModal").modal("show").find("input[name=orderId]").val(orderId);
+            });
+            
+
+        });
+        </script> -->
+        
+    </div>
+     <!-- Inline Styles for Fragment -->
+    

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title layout:fragment="title">Login & Register</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- breadcrumb -->
+    <nav class="breadcrumb-section breadcrumb-bg1">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="bread-crumb-title">Login & Register</h2>
+                    <ol class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+                        <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Login & Register</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-register-area section-padding-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-7 col-md-12 mx-auto">
+                    <div class="login-register-wrapper">
+                        <!-- Tabs -->
+                        <div class="login-register-tab-list nav nav-tabs" role="tablist">
+                            <a class="nav-link"
+                               th:classappend="${activeTab}=='login' ? ' active' : ''"
+                               data-bs-toggle="tab" href="#lg1">
+                                <h4>Login</h4>
+                            </a>
+                            <a class="nav-link"
+                               th:classappend="${activeTab}=='register' ? ' active' : ''"
+                               data-bs-toggle="tab" href="#lg2">
+                                <h4>Register</h4>
+                            </a>
+                        </div>
+
+                        <div class="tab-content">
+                            <!-- LOGIN TAB -->
+                            <div id="lg1" class="tab-pane fade"
+                                 th:classappend="${activeTab}=='login' ? ' show active' : ''">
+                                <div class="login-form-container">
+                                    <div class="login-register-form">
+                                        <div class="text-success mb-2"
+                                             th:if="${registerSuccess}"
+                                             th:text="${registerSuccess}"></div>
+
+                                        <form id="loginForm" th:action="@{/do-login}" method="post">
+                                            <input type="hidden" th:if="${_csrf != null}"
+                                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                            <input type="text" name="user-email" id="email"
+                                                   placeholder="Your Email" required>
+                                            <input type="password" name="user-password" id="password"
+                                                   placeholder="Password" required>
+
+                                            <input type="hidden" name="deviceId" value="WEB123">
+                                            <input type="hidden" name="deviceType" value="WEB">
+
+                                            <div class="button-box d-flex justify-content-between align-items-center mb-3">
+                                                <div class="login-toggle-btn">
+                                                    <input id="remember" type="checkbox" name="remember">
+                                                    <label for="remember">Remember me</label>
+                                                </div>
+                                                <a th:href="@{/forgot-password}">Forgot Password?</a>
+                                            </div>
+
+                                            <div class="text-danger mb-2" th:if="${error}" th:text="${error}"></div>
+
+                                            <button type="submit" class="btn btn-dark"><span>Login</span></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REGISTER TAB -->
+                            <div id="lg2" class="tab-pane fade"
+                                 th:classappend="${activeTab}=='register' ? ' show active' : ''">
+                                <div class="login-form-container">
+                                    <div class="login-register-form">
+                                        <form th:action="@{/register}" method="post"
+                                              th:object="${registerRequest}">
+                                            <input type="hidden" th:if="${_csrf != null}"
+                                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                            <input type="text" th:field="*{fullName}" placeholder="Full name" required>
+                                            <input type="email" th:field="*{email}" placeholder="Email" required>
+                                            <input type="password" th:field="*{password}" placeholder="Password" required>
+                                            <input type="password" th:field="*{confirmPassword}" placeholder="Confirm password" required>
+                                            <input type="text" th:field="*{phoneNumber}" placeholder="Phone number">
+
+                                            <div class="text-danger mb-2"
+                                                 th:if="${registerError}"
+                                                 th:text="${registerError}"></div>
+
+                                            <button type="submit" class="btn btn-dark"><span>Register</span></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END REGISTER TAB -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

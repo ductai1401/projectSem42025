@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+<title layout:fragment="title">Coupon Management</title>
+<style>
+:root {
+	--lz-primary: #1a9cb7;
+	--lz-deep: #6b4bff;
+	--lz-bg: #f7f9fb;
+	--lz-card: #fff;
+	--lz-text: #1f2937;
+	--lz-muted: #6b7280;
+	--lz-border: #e5e7eb;
+}
+
+body {
+	background: var(--lz-bg);
+}
+
+.lz-hero {
+	background: linear-gradient(135deg, var(--lz-primary), var(--lz-deep));
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-shadow: 0 10px 25px rgba(27, 86, 143, .15);
+}
+
+.lz-hero h3 {
+	margin: 0;
+	font-weight: 700;
+}
+
+.btn-lz {
+	background: #fff;
+	color: var(--lz-deep);
+	border: none;
+	border-radius: 999px;
+	padding: .55rem 1rem;
+}
+
+.btn-lz:hover {
+	color: #fff;
+	background: #ff5a7d;
+}
+
+.lz-card {
+	background: var(--lz-card);
+	border: 1px solid var(--lz-border);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+	overflow: hidden;
+}
+
+.lz-toolbar {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--lz-border);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: flex-end;
+	background: linear-gradient(180deg, #fff, #fafbff);
+}
+
+.lz-input {
+	position: relative;
+	min-width: 320px;
+}
+
+.lz-input input {
+	padding-left: 42px;
+	border-radius: 999px;
+	border: 1px solid var(--lz-border);
+	height: 42px;
+}
+
+.lz-input .icon {
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--lz-muted);
+}
+
+.lz-input input:focus {
+	border-color: var(--lz-primary);
+	box-shadow: 0 0 0 4px rgba(26, 156, 183, .12);
+}
+
+.table-coupon thead th {
+	background: #fbfbff;
+	color: #64748b;
+	border-bottom-color: var(--lz-border);
+	font-weight: 600;
+}
+
+.btn-chip {
+	border-radius: 999px;
+	padding: .35rem .7rem;
+	font-size: .875rem;
+	border: 1px solid var(--lz-border);
+	background: #fff;
+	white-space: nowrap;
+}
+
+.btn-chip:hover {
+	border-color: var(--lz-primary);
+	color: var(--lz-primary);
+}
+
+.badge-status {
+	padding: 6px 14px;
+	border-radius: 999px;
+	font-size: .8rem;
+}
+
+.badge-active {
+	background: #d1fae5;
+	color: #059669;
+}
+
+.badge-inactive {
+	background: #e5e7eb;
+	color: #6b7280;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<!-- HERO -->
+		<div class="lz-hero mb-3">
+			<h3 class="mb-0">🎟 Coupon Management</h3>
+			<div class="actions">
+				<a class="btn btn-lz" th:href="@{/admin/coupons/create}">➕ New
+					Coupon</a>
+			</div>
+		</div>
+
+		<!-- CARD -->
+		<div class="lz-card">
+			<!-- Search -->
+			<div class="lz-toolbar">
+				<form class="d-flex gap-2 align-items-center" method="get"
+					th:action="@{/admin/coupons/index}">
+					<div class="lz-input">
+						<span class="icon">🔎</span> <input type="text" name="q"
+							placeholder="Search by code..." class="form-control"
+							th:value="${q}">
+					</div>
+					<button type="submit" class="btn btn-outline-primary">Search</button>
+				</form>
+			</div>
+
+			<!-- Table -->
+			<div class="table-responsive p-2">
+				<table class="table table-bordered table-hover table-coupon mb-0">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Code</th>
+							<th>Type</th>
+							<th>Discount</th>
+							<th>Min Order</th>
+							<th>Usage</th>
+							<th>Valid Period</th>
+							<th>Status</th>
+							<th style="width: 190px;">Actions</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<!-- No data -->
+						<tr th:if="${#lists.isEmpty(coupons)}">
+							<td colspan="9" class="text-center text-muted py-4">No
+								coupons found.</td>
+						</tr>
+
+						<!-- Data rows -->
+						<tr th:each="c, stat : ${coupons}">
+							<td th:text="${stat.index + 1 + page * size}"></td>
+							<td th:text="${c.code}"></td>
+							<td th:text="${c.couponType}"></td>
+
+							<td><span th:if="${c.discountType == 'PERCENT'}"
+								th:text="${c.discountValue + '%'}"></span> <span
+								th:if="${c.discountType == 'AMOUNT'}"
+								th:text="${#numbers.formatDecimal(c.discountValue, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+							</td>
+
+
+							<td
+								th:text="${#numbers.formatDecimal(c.minOrderAmount, 0, 'COMMA', 0, 'POINT')} + '₫'"></td>
+
+							<td th:text="${c.usedCount + '/' + c.usageLimit}"></td>
+
+							<td
+								th:text="${#temporals.format(c.startDate, 'dd/MM/yyyy')} + ' → ' + ${#temporals.format(c.endDate, 'dd/MM/yyyy')}"></td>
+
+							<td><span
+								th:classappend="${c.status == 1} ? 'badge-status badge-active' : 'badge-status badge-inactive'"
+								th:text="${c.status == 1 ? 'Active' : 'Inactive'}"> </span></td>
+
+							<td class="d-flex flex-wrap gap-2"><a
+								class="btn btn-sm btn-outline-primary btn-chip"
+								th:href="@{'/admin/coupons/' + ${c.couponId} + '/edit'}"> ✏️
+									Edit </a>
+
+								<form
+									th:action="@{'/admin/coupons/' + ${c.couponId} + '/delete'}"
+									method="post"
+									onsubmit="return confirm('Are you sure you want to delete this coupon?');">
+									<!-- Nếu dùng Spring Security, thêm CSRF ở đây:
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            -->
+									<button type="submit"
+										class="btn btn-sm btn-outline-danger btn-chip">🗑
+										Delete</button>
+								</form></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Pagination + summary -->
+			<div
+				class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+				<div class="text-muted small">
+					<span th:if="${total > 0}"
+						th:text="'Showing ' + (${page} * ${size} + 1) + '–' + (${page} * ${size} + ${#lists.size(coupons)}) + ' of ' + ${total} + ' coupons'">
+						Showing 1–10 of 10 coupons </span> <span th:if="${total == 0}"> No
+						coupons to display. </span>
+				</div>
+
+				<nav th:if="${total > size}">
+					<ul class="pagination pagination-sm mb-0">
+						<!-- Prev -->
+						<li class="page-item" th:classappend="${page == 0} ? ' disabled'">
+							<a class="page-link"
+							th:href="@{/admin/coupons/index(page=${page-1},size=${size},q=${q})}">
+								‹ </a>
+						</li>
+
+						<!-- Pages -->
+						<li class="page-item"
+							th:each="i : ${#numbers.sequence(0, (total - 1) / size)}"
+							th:classappend="${i == page} ? ' active'"><a
+							class="page-link" th:text="${i + 1}"
+							th:href="@{/admin/coupons/index(page=${i},size=${size},q=${q})}">
+								1 </a></li>
+
+						<!-- Next -->
+						<li class="page-item"
+							th:classappend="${(page + 1) * size >= total} ? ' disabled'">
+							<a class="page-link"
+							th:href="@{/admin/coupons/index(page=${page+1},size=${size},q=${q})}">
+								› </a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

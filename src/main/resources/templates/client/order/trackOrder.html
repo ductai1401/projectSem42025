@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title layout:fragment="title">Theo dõi đơn hàng</title>
+    <style layout:fragment="css">
+        .tracking-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        
+        .tracking-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .tracking-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .tracking-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .tracking-header h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .tracking-header .order-id {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .status-badge-large {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .tracking-body {
+            padding: 40px 30px;
+        }
+        
+        .timeline-vertical {
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .timeline-vertical::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-step {
+            position: relative;
+            padding-bottom: 40px;
+        }
+        
+        .timeline-step:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        
+        .timeline-step.completed::before {
+            border-color: #28a745;
+            background: #28a745;
+        }
+        
+        .timeline-step.completed::after {
+            content: '✓';
+            position: absolute;
+            left: -25px;
+            top: 4px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .timeline-step.active::before {
+            border-color: #007bff;
+            background: #007bff;
+            animation: pulse 2s infinite;
+        }
+        
+        .timeline-step.active::after {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
+            }
+        }
+        
+        .step-content {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border-left: 4px solid #e0e0e0;
+        }
+        
+        .timeline-step.completed .step-content {
+            border-left-color: #28a745;
+        }
+        
+        .timeline-step.active .step-content {
+            border-left-color: #007bff;
+            background: #e7f3ff;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .step-time {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .step-description {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .tracking-info-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+        
+        .shipper-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .shipper-info h6 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .shipper-detail {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .shipper-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        
+        .shipper-name {
+            flex-grow: 1;
+        }
+        
+        .call-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .call-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn-modern {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-action-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-action-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .quick-action-icon {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .quick-action-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .tracking-page {
+                padding: 20px 15px;
+            }
+            
+            .tracking-body {
+                padding: 30px 20px;
+            }
+            
+            .timeline-vertical {
+                padding-left: 35px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content" class="tracking-page">
+        <div class="tracking-container">
+            <div class="tracking-card">
+                <!-- Header -->
+                <div class="tracking-header">
+                    <h3>Theo dõi đơn hàng</h3>
+                    <div class="order-id">
+                        Mã đơn: <span th:text="${order.orderId}">#ORD20251116001</span>
+                    </div>
+                </div>
+                
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <span class="status-badge-large"
+                          th:classappend="${order.status == 1 ? 'bg-warning text-dark' :
+                                           order.status == 2 ? 'bg-info text-white' :
+                                           order.status == 3 ? 'bg-primary text-white' :
+                                           order.status == 4 ? 'bg-success text-white' :
+                                           order.status == 5 ? 'bg-danger text-white' :
+                                           'bg-secondary text-white'}"
+                          th:text="${statusText}">
+                        Đang giao hàng
+                    </span>
+                    <!-- <div class="mt-2 small text-muted" th:if="${order.estimatedDelivery != null}">
+                        <i class="bi bi-clock me-1"></i>
+                        Dự kiến giao: <span th:text="${#temporals.format(order.estimatedDelivery, 'dd/MM/yyyy')}">20/11/2024</span>
+                    </div> -->
+                </div>
+                
+                <!-- Tracking Body -->
+                <div class="tracking-body">
+                    <!-- Timeline -->
+                    <div class="timeline-vertical">
+                        <!-- Delivered -->
+                        <div class="timeline-step"
+                             th:classappend="${order.status >= 4 ? 'completed' : ''} + ${order.status == 4 ? ' active' : ''}">
+                            <div class="step-content">
+                                <div class="step-title">Giao hàng thành công</div>
+                                <div class="step-time" th:if="${order.completedAt != null}">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${#temporals.format(order.completedAt, 'dd/MM/yyyy HH:mm')}">18/11/2024 14:30</span>
+                                </div>
+                                <div class="step-description" th:if="${order.status == 4}">
+                                    Đơn hàng đã được giao thành công. Cảm ơn bạn đã mua hàng!
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Shipping -->
+                        <div class="timeline-step"
+                             th:classappend="${order.status >= 3 ? 'completed' : ''} + ${order.status == 3 ? ' active' : ''}">
+                            <div class="step-content">
+                                <div class="step-title">Đang giao hàng</div>
+                                <div class="step-time" th:if="${shipment != null and shipment.status >= 2}">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${#temporals.format(shipment.assignedAt, 'dd/MM/yyyy HH:mm')}">17/11/2024 09:00</span>
+                                </div>
+                                <div class="step-description" th:if="${order.status == 3}">
+                                    Đơn hàng đang trên đường giao đến bạn
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Confirmed -->
+                        <div class="timeline-step"
+                             th:classappend="${order.status >= 2 ? 'completed' : ''} + ${order.status == 2 ? ' active' : ''}">
+                            <div class="step-content">
+                                <div class="step-title">Đã xác nhận đơn hàng</div>
+                                <div class="step-time" th:if="${order.confirmedAt != null}">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${#temporals.format(order.confirmedAt, 'dd/MM/yyyy HH:mm')}">16/11/2024 15:00</span>
+                                </div>
+                                <div class="step-description" th:if="${order.status == 2}">
+                                    Shop đã xác nhận và đang chuẩn bị hàng
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Placed -->
+                        <div class="timeline-step completed">
+                            <div class="step-content">
+                                <div class="step-title">Đơn hàng đã đặt</div>
+                                <div class="step-time">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">16/11/2024 14:30</span>
+                                </div>
+                                <div class="step-description">
+                                    Đơn hàng đã được đặt thành công
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipper Info (if shipping) -->
+                    <div class="shipper-info" th:if="${order.status == 3 && shipper != null}">
+                        <h6>
+                            <i class="bi bi-person-badge me-2"></i>
+                            Thông tin người giao hàng
+                        </h6>
+                        <div class="shipper-detail">
+                           <!--  <img th:src="${shipper.avatar}" 
+                                 class="shipper-avatar"
+                                 onerror="this.src='/images/default-avatar.png'"
+                                 alt="Shipper"/> -->
+                            <div class="shipper-name">
+                                <div class="fw-bold" th:text="${shipper.fullName}">Nguyễn Văn B</div>
+                                <div class="small opacity-75">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <span th:text="${shipper.rating}">4.8</span>
+                                    <span class="ms-2">
+                                        <i class="bi bi-box-seam me-1"></i>
+                                        <span th:text="${shipper.totalDeliveries}">1,234</span> đơn
+                                    </span>
+                                </div>
+                            </div>
+                            <a th:href="'tel:' + ${shipper.phoneNumber}" class="call-btn">
+                                <i class="bi bi-telephone-fill"></i>
+                                Gọi
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Info -->
+                    <div class="tracking-info-box">
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-shop me-1"></i>
+                                Shop
+                            </span>
+                            <span class="info-value" th:text="${order.shopName}">Shop ABC</span>
+                        </div>
+                        
+                        <div class="info-row" th:if="${shipment != null}">
+                            <span class="info-label">
+                                <i class="bi bi-tag me-1"></i>
+                                Mã vận đơn
+                            </span>
+                            <span class="info-value" th:text="${shipment.shipmentId}">TRACK123456</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-box-seam me-1"></i>
+                                Số lượng sản phẩm
+                            </span>
+                            <span class="info-value" th:text="${#lists.size(order.items) - 2}">3 sản phẩm</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-cash me-1"></i>
+                                Tổng tiền
+                            </span>
+                            <span class="info-value text-danger">
+                                <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')}">480,000</span>₫
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-credit-card me-1"></i>
+                                Thanh toán
+                            </span>
+                            <span class="info-value" th:text="${order.paymentMethod == 'COD' ? 'Khi nhận hàng (COD)' : 'Đã thanh toán online'}">
+                                Khi nhận hàng (COD)
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                Địa chỉ giao hàng
+                            </span>
+                            <span class="info-value"  th:text="${address}">
+                                123 Đường ABC, P.1, Q.1, TP.HCM
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <div class="quick-action-card" onclick="viewOrderDetail()">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                            <div class="quick-action-label">Chi tiết đơn hàng</div>
+                        </div>
+                        
+                        <div class="quick-action-card" onclick="contactShop()" th:if="${order.status <= 3}">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-chat-dots"></i>
+                            </div>
+                            <div class="quick-action-label">Liên hệ Shop</div>
+                        </div>
+                         
+                        <div class="quick-action-card" onclick="cancelOrder()" th:if="${order.status <= 2}">
+                            <div class="quick-action-icon text-danger">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="quick-action-label text-danger">Hủy đơn</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a th:href="@{/account#order}" class="btn btn-outline-secondary btn-modern">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Quay lại
+                        </a>
+                        <a th:href="@{'/orders/' + ${order.orderId}}" class="btn btn-primary btn-modern">
+                            <i class="bi bi-eye me-2"></i>
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function viewOrderDetail() {
+            const orderId = '[[${order.orderId}]]';
+            window.location.href = '/orders/' + orderId;
+        }
+        
+        function contactShop() {
+            // Open chat with shop
+            console.log('Contact shop');
+        }
+        
+        function confirmReceived() {
+            if(confirm('Xác nhận bạn đã nhận được hàng?')) {
+                // Call API
+                console.log('Confirm received');
+            }
+        }
+        
+        function cancelOrder() {
+            if(confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
+                // Call API
+                console.log('Cancel order');
+            }
+        }
+    </script>
+</body>
+</html>

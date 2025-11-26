@@ -1,0 +1,17 @@
+.policy-list {
+   & + .policy-list{
+      margin-top: 60px;
+   }
+}
+
+.policy-title {
+  font-size: 25px;
+  @include min-screen(1200){
+     font-size: 35px;
+  }
+  color: $dark;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 10px;
+  text-transform: capitalize;
+}

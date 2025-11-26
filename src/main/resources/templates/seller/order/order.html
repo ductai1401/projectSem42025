@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Order Management</title>
+
+<style>
+/* Modern Design System */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --card-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    --card-shadow-hover: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* Header Section */
+.page-header-modern {
+    background: var(--primary-gradient);
+    padding: 30px;
+    border-radius: 15px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.page-header-modern h3 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.page-header-modern .stats-bar {
+    display: flex;
+    gap: 30px;
+    margin-top: 15px;
+}
+
+.page-header-modern .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-header-modern .stat-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* Modern Tabs */
+.nav-tabs-modern {
+    background: white;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.nav-tabs-modern .nav-item {
+    margin: 0;
+    flex: 1;
+    min-width: 120px;
+}
+
+.nav-tabs-modern .nav-link {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+    position: relative;
+    background: transparent;
+}
+
+.nav-tabs-modern .nav-link:hover {
+    background: #f6f8fb;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.nav-tabs-modern .nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.nav-tabs-modern .nav-link .badge-count {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255,255,255,0.9);
+    color: #667eea;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+}
+
+/* Filter Card */
+.filter-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+}
+
+.filter-card .form-control,
+.filter-card .form-select {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+}
+
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+.filter-card label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+/* Modern Table */
+.table-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.table-modern {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-modern thead {
+    background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+}
+
+.table-modern thead th {
+    border: none;
+    padding: 15px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table-modern tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-modern tbody tr:hover {
+    background: #f6f8fb;
+    transform: scale(1.01);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.table-modern tbody td {
+    padding: 18px 15px;
+    vertical-align: middle;
+    border: none;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.status-badge i {
+    font-size: 0.9rem;
+}
+
+.badge-unpaid {
+    background: linear-gradient(135deg, #adb5bd 0%, #6c757d 100%);
+    color: white;
+}
+
+.badge-pending {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+}
+
+.badge-processing {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.badge-shipped {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.badge-delivered {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.badge-cancelled {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.badge-refund {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-view {
+    background: var(--info-gradient);
+    color: white;
+}
+
+.btn-update {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-cancel {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Pagination */
+.pagination-modern {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 0;
+}
+
+.pagination-modern .page-item {
+    margin: 0;
+}
+
+.pagination-modern .page-link {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 45px;
+    text-align: center;
+}
+
+.pagination-modern .page-link:hover {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Modal Styling - FIX Z-INDEX */
+.modal {
+    z-index: 9999 !important; /* Cao hơn sidebar */
+}
+
+.modal-backdrop {
+    z-index: 9998 !important; /* Backdrop phải thấp hơn modal nhưng cao hơn sidebar */
+}
+
+.modal-dialog {
+    z-index: 10000 !important;
+}
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 10001;
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    padding: 20px 30px;
+    border: none;
+}
+
+.modal-header .close {
+    color: white;
+    opacity: 1;
+    text-shadow: none;
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+.modal-header .close:hover {
+    opacity: 0.8;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.modal-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 20px 30px;
+}
+
+/* Empty State */
+.no-data {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+}
+
+.no-data i {
+    font-size: 5rem;
+    color: #e8e8e8;
+    margin-bottom: 20px;
+}
+
+.no-data h5 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.no-data p {
+    color: #999;
+}
+
+/* Loading State */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f0f0f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Order Info Grid */
+.order-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.order-info-item {
+    background: #f6f8fb;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.order-info-item label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.order-info-item strong {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header-modern .stats-bar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-tabs-modern .nav-item {
+        min-width: 100px;
+    }
+    
+    .table-card {
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    .btn-action {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="container-fluid py-4">
+
+			<!-- Header -->
+			<div class="page-header-modern animate-fade-in">
+				<div class="d-flex justify-content-between align-items-center flex-wrap">
+					<div>
+						<h3><i class="bi bi-cart-check me-2"></i>Order Management</h3>
+						<p class="mb-0 opacity-75">Manage and track all your orders</p>
+					</div>
+					<div class="stats-bar">
+						<div class="stat-item">
+							<div class="stat-icon">
+								<i class="bi bi-clock-history"></i>
+							</div>
+							<div>
+								<small class="d-block opacity-75">Pending</small>
+								<strong id="stat-pending">0</strong>
+							</div>
+						</div>
+						<div class="stat-item">
+							<div class="stat-icon">
+								<i class="bi bi-truck"></i>
+							</div>
+							<div>
+								<small class="d-block opacity-75">Shipping</small>
+								<strong id="stat-shipping">0</strong>
+							</div>
+						</div>
+						<div class="stat-item">
+							<div class="stat-icon">
+								<i class="bi bi-check-circle"></i>
+							</div>
+							<div>
+								<small class="d-block opacity-75">Completed</small>
+								<strong id="stat-completed">0</strong>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tabs -->
+			<ul class="nav nav-tabs-modern animate-fade-in" id="orderTabs">
+				<li class="nav-item">
+					<a class="nav-link active" data-status="ALL" href="#">
+						<i class="bi bi-list-ul me-1"></i> All Orders
+						<span class="badge-count" id="count-all">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="PENDING" href="#">
+						<i class="bi bi-clock me-1"></i> Pending
+						<span class="badge-count" id="count-pending">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="PROCESSING" href="#">
+						<i class="bi bi-gear me-1"></i> Processing
+						<span class="badge-count" id="count-processing">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="SHIPPING" href="#">
+						<i class="bi bi-truck me-1"></i> Shipping
+						<span class="badge-count" id="count-shipping">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="DELIVERED" href="#">
+						<i class="bi bi-check-circle me-1"></i> Completed
+						<span class="badge-count" id="count-delivered">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="CANCELLED" href="#">
+						<i class="bi bi-x-circle me-1"></i> Cancelled
+						<span class="badge-count" id="count-cancelled">0</span>
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-status="REFUND" href="#">
+						<i class="bi bi-arrow-counterclockwise me-1"></i> Refund
+						<span class="badge-count" id="count-refund">0</span>
+					</a>
+				</li>
+			</ul>
+
+			<!-- Filters -->
+			<div class="filter-card animate-fade-in">
+			    <div class="row g-3">
+			        <div class="col-md-4 d-flex flex-column">
+			            <label for="searchBox">
+			                <i class="bi bi-search me-2"></i> Search
+			            </label>
+			            <input id="searchBox" class="form-control" type="text" placeholder="Order ID, Customer name..." />
+			        </div>
+			
+			        <div class="col-md-2 d-flex flex-column">
+			            <label for="paymentFilter">
+			                <i class="bi bi-credit-card me-2"></i> Payment
+			            </label>
+			            <select id="paymentFilter" class="form-select">
+			                <option value="">All Methods</option>
+			                <option value="COD">COD</option>
+			                <option value="VNPAY">VNPAY</option>
+			            </select>
+			        </div>
+			
+			        <div class="col-md-3 d-flex flex-column">
+			            <label for="dateFilter">
+			                <i class="bi bi-calendar me-2"></i> Date
+			            </label>
+			            <input id="dateFilter" class="form-control" type="date" />
+			        </div>
+			
+			        <div class="col-md-2 d-flex flex-column">
+			            <label for="pageSize">
+			                <i class="bi bi-list-ol me-2"></i> Per Page
+			            </label>
+			            <select id="pageSize" class="form-select">
+			                <option value="5">5 / page</option>
+			                <option value="10" selected>10 / page</option>
+			                <option value="20">20 / page</option>
+			                <option value="50">50 / page</option>
+			            </select>
+			        </div>
+			
+			        <div class="col-md-1 d-flex align-items-end">
+			            <button class="btn btn-action btn-view w-100" onclick="loadOrders(1)">
+			                <i class="bi bi-arrow-clockwise"></i>
+			            </button>
+			        </div>
+			    </div>
+			</div>
+
+			<!-- Orders Table -->
+			<div class="table-card animate-fade-in">
+				<div class="table-responsive">
+					<table class="table table-modern">
+						<thead>
+							<tr>
+								<th><i class="bi bi-hash me-2"></i> Order ID</th>
+								<th><i class="bi bi-person me-2"></i> Customer</th>
+								<th><i class="bi bi-calendar me-2"></i> Date</th>
+								<th><i class="bi bi-credit-card me-2"></i> Payment</th>
+								<th><i class="bi bi-cash me-2"></i> Total</th>
+								<th><i class="bi bi-flag me-2"></i> Status</th>
+								<th class="text-center"><i class="bi bi-gear me-2"></i> Actions</th>
+							</tr>
+						</thead>
+						<tbody id="ordersContainer">
+							<!-- JS will render rows here -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Empty State -->
+			<div id="noData" class="no-data animate-fade-in" style="display: none;">
+				<i class="bi bi-inbox"></i>
+				<h5>No Orders Found</h5>
+				<p>There are no orders matching your filters</p>
+			</div>
+
+			<!-- Pagination -->
+			<nav aria-label="Page navigation">
+				<ul class="pagination pagination-modern" id="pagination"></ul>
+			</nav>
+
+		</div>
+
+		<!-- Detail Modal -->
+		<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">
+							<i class="bi bi-receipt me-2"></i>Order Details <span id="detailOrderCode"></span>
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" id="detailBody">
+						<div class="text-center py-5">
+							<div class="loading-spinner mx-auto"></div>
+							<p class="mt-3 text-muted">Loading...</p>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-action btn-cancel" data-dismiss="modal">
+							<i class="bi bi-x-circle me-1"></i>Close
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Update Status Modal -->
+		<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<form id="updateForm" class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">
+							<i class="bi bi-pencil-square me-2"></i>Update Order Status <span id="updateOrderCode"></span>
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+
+					<div class="modal-body">
+						<input type="hidden" id="updateOrderId" name="orderId" />
+
+						<div class="form-group mb-3">
+							<label for="newStatus">
+								<i class="bi bi-flag me-2"></i>New Status
+							</label>
+							<select id="newStatus" name="status" class="form-select">
+								<option value="PROCESSING">Processing</option>
+								<option value="SHIPPED">Shipped</option>
+								<option value="CANCELLED">Cancelled</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label for="updateNote">
+								<i class="bi bi-chat-text me-2"></i>Note
+							</label>
+							<textarea id="updateNote" name="note" class="form-control" rows="3"
+								placeholder="Add a note about this status change..."></textarea>
+						</div>
+					</div>
+
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-action btn-update">
+							<i class="bi bi-check-circle me-1"></i>Save Changes
+						</button>
+						<button type="button" class="btn btn-action btn-cancel" data-dismiss="modal">
+							<i class="bi bi-x-circle me-1"></i>Cancel
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+	</div>
+
+	<div layout:fragment="scripts">
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:inline="javascript">
+		let currentStatus = 'ALL';
+		let pageSize = parseInt($('#pageSize').val()) || 10;
+		let currentPage = 1;
+
+		function loadOrders(page = 1) {
+			// Show loading
+			$('#ordersContainer').html(`
+				<tr>
+					<td colspan="7" class="text-center py-5">
+						<div class="loading-spinner mx-auto"></div>
+						<p class="mt-3 text-muted">Loading orders...</p>
+					</td>
+				</tr>
+			`);
+
+			$.ajax({
+				url: '/seller/loadData',
+				method: 'GET',
+				data: {
+					page: page,
+					size: pageSize,
+					keyword: $('#searchBox').val(),
+					date: $('#dateFilter').val(),
+					status: currentStatus,
+					payment: $('#paymentFilter').val()
+				},
+				success: function(res) {
+					renderData(res.orders);
+					renderPagination(res.totalPages, res.page, pageSize);
+					updateStats(res.stats); // Update header stats
+				},
+				error: function(err) {
+					console.error('Load data failed:', err);
+					Swal.fire({
+						icon: 'error',
+						title: 'Error!',
+						text: 'Failed to load orders'
+					});
+				}
+			});
+		}
+
+		function renderData(orders) {
+			const $container = $('#ordersContainer');
+			$container.empty();
+
+			if (!orders || orders.length === 0) {
+				$('#noData').show();
+				$('.table-card').hide();
+				return;
+			}
+
+			$('#noData').hide();
+			$('.table-card').show();
+
+			orders.forEach(o => {
+				const statusInfo = getStatusInfo(o.status);
+				const updateButton = canUpdate(o.status)
+					? `<button class="btn btn-action btn-update action-update" data-id="${o.orderId}">
+						   <i class="bi bi-pencil"></i>Update
+					   </button>`
+					: `<button class="btn btn-action btn-update action-update" data-id="${o.orderId}" disabled>
+						   <i class="bi bi-pencil"></i>Update
+					   </button>`;
+
+				if (o.status !== 0) {
+					const tr = `
+						<tr data-id="${o.orderId}"
+							data-status="${statusInfo.text}"
+							data-code="${o.orderId}"
+							data-customer="${o.buyerName}"
+							data-payment="${o.paymentMethod}"
+							data-date="${o.orderDate}">
+							<td><strong>${o.orderId}</strong></td>
+							<td>
+								<div class="d-flex align-items-center">
+									<i class="bi bi-person-circle me-2" style="font-size: 1.5rem; color: #667eea;"></i>
+									<span>${o.buyerName}</span>
+								</div>
+							</td>
+							<td>${formatDate(o.orderDate)}</td>
+							<td>
+								<span class="badge bg-light text-dark">
+									<i class="bi bi-${o.paymentMethod === 'COD' ? 'cash' : 'credit-card'} me-1"></i>
+									${o.paymentMethod}
+								</span>
+							</td>
+							<td><strong class="text-success">${formatCurrency(o.totalAmount)}</strong></td>
+							<td class="order-status-badge">
+								<span class="status-badge ${statusInfo.class}">
+									<i class="bi bi-${statusInfo.icon}"></i>
+									${statusInfo.text}
+								</span>
+							</td>
+							<td class="text-center">
+								<div class="d-flex gap-2 justify-content-center">
+									<button class="btn btn-action btn-view action-view" data-id="${o.orderId}">
+										<i class="bi bi-eye"></i>View
+									</button>
+									${updateButton}
+								</div>
+							</td>
+						</tr>
+					`;
+					$container.append(tr);
+				}
+			});
+		}
+
+		function getStatusInfo(status) {
+			const statusMap = {
+				0: { text: 'UNPAID', class: 'badge-unpaid', icon: 'credit-card' },
+				1: { text: 'PENDING', class: 'badge-pending', icon: 'clock-history' },
+				2: { text: 'PROCESSING', class: 'badge-processing', icon: 'gear' },
+				3: { text: 'SHIPPED', class: 'badge-shipped', icon: 'truck' },
+				4: { text: 'CANCELLED', class: 'badge-cancelled', icon: 'x-circle' },
+				5: { text: 'DELIVERED', class: 'badge-delivered', icon: 'check-circle' }
+			};
+			return statusMap[status] || { text: 'UNKNOWN', class: 'badge-secondary', icon: 'question-circle' };
+		}
+
+		function canUpdate(status) {
+			return status === 1 || status === 2; // PENDING or PROCESSING
+		}
+
+		function formatDate(dateStr) {
+			const d = new Date(dateStr);
+			return d.toLocaleDateString('vi-VN', {
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+		}
+
+		function formatCurrency(amount) {
+			return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+		}
+
+		function renderPagination(totalPages, page, size) {
+			const $pagination = $('#pagination');
+			$pagination.empty();
+
+			if (totalPages <= 1) return;
+
+			// Prev
+			if (page > 1) {
+				$pagination.append(`
+					<li class="page-item">
+						<a class="page-link" href="#" data-page="${page - 1}">
+							<i class="bi bi-chevron-left"></i>
+						</a>
+					</li>
+				`);
+			}
+
+			// Pages
+			const maxButtons = 7;
+			let start = Math.max(1, page - Math.floor(maxButtons / 2));
+			let end = Math.min(totalPages, start + maxButtons - 1);
+			if (end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
+
+			for (let p = start; p <= end; p++) {
+				$pagination.append(`
+					<li class="page-item ${p === page ? 'active' : ''}">
+						<a class="page-link" href="#" data-page="${p}">${p}</a>
+					</li>
+				`);
+			}
+
+			// Next
+			if (page < totalPages) {
+				$pagination.append(`
+					<li class="page-item">
+						<a class="page-link" href="#" data-page="${page + 1}">
+							<i class="bi bi-chevron-right"></i>
+						</a>
+					</li>
+				`);
+			}
+		}
+
+		function updateStats(stats) {
+			if (!stats) return;
+			$('#stat-pending').text(stats.pending || 0);
+			$('#stat-shipping').text(stats.shipping || 0);
+			$('#stat-completed').text(stats.completed || 0);
+			
+			// Update tab badges
+			$('#count-all').text(stats.all || 0);
+			$('#count-pending').text(stats.pending || 0);
+			$('#count-processing').text(stats.processing || 0);
+			$('#count-shipping').text(stats.shipping || 0);
+			$('#count-delivered').text(stats.delivered || 0);
+			$('#count-cancelled').text(stats.cancelled || 0);
+			$('#count-refund').text(stats.refund || 0);
+		}
+
+		$(document).ready(function () {
+			loadOrders(1);
+
+			// Tab change
+			$('#orderTabs .nav-link').on('click', function (e) {
+				e.preventDefault();
+				$('#orderTabs .nav-link').removeClass('active');
+				$(this).addClass('active');
+				currentStatus = $(this).data('status');
+				loadOrders(1);
+			});
+
+			// Filter change
+			$('#searchBox, #paymentFilter, #dateFilter, #pageSize').on('input change', function () {
+				pageSize = parseInt($('#pageSize').val()) || 10;
+				loadOrders(1);
+			});
+
+			// Pagination click
+			$(document).on('click', '#pagination a.page-link', function (e) {
+				e.preventDefault();
+				const p = parseInt($(this).data('page'));
+				if (!isNaN(p) && p >= 1) loadOrders(p);
+			});
+
+			// View detail
+			$(document).on('click', '.action-view', function () {
+				const id = $(this).data('id');
+				$('#detailOrderCode').text('');
+				$('#detailBody').html(`
+					<div class="text-center py-5">
+						<div class="loading-spinner mx-auto"></div>
+						<p class="mt-3 text-muted">Loading order details...</p>
+					</div>
+				`);
+				$('#detailModal').modal('show');
+
+				const url = '/seller/orders/' + id;
+				$.get(url, function (html) {
+					$('#detailBody').html(html);
+					const code = $(`#ordersContainer tr[data-id="${id}"]`).attr('data-code');
+					$('#detailOrderCode').text(code ? (' - ' + code) : '');
+				}).fail(function () {
+					$('#detailBody').html(`
+						<div class="alert alert-danger">
+							<i class="bi bi-exclamation-triangle me-2"></i>
+							Failed to load order details. Please try again.
+						</div>
+					`);
+				});
+			});
+
+			// Open update modal
+			$(document).on('click', '.action-update', function () {
+				const id = $(this).data('id');
+				const $row = $(`#ordersContainer tr[data-id="${id}"]`);
+				const code = $row.attr('data-code');
+				const status = $row.attr('data-status');
+
+				$('#updateOrderId').val(id);
+				$('#updateOrderCode').text(code ? (' - ' + code) : '');
+				$('#updateNote').val('');
+
+				const $statusSelect = $('#newStatus');
+				$statusSelect.prop('disabled', false);
+				$statusSelect.find('option').show();
+
+				switch (status) {
+					case "PENDING":
+						$statusSelect.find('option[value="PROCESSING"]').show();
+						$statusSelect.find('option[value="CANCELLED"]').show();
+						$statusSelect.find('option[value="SHIPPED"]').hide();
+						$statusSelect.val('PROCESSING');
+						break;
+					case "PROCESSING":
+						$statusSelect.find('option').hide();
+						$statusSelect.find('option[value="SHIPPED"]').show();
+						$statusSelect.val('SHIPPED');
+						break;
+					default:
+						$statusSelect.find('option').hide();
+						$statusSelect.prop('disabled', true);
+						break;
+				}
+
+				$('#updateModal').modal('show');
+			});
+
+			// Submit update
+			$('#updateForm').on('submit', function (e) {
+				e.preventDefault();
+				const id = $('#updateOrderId').val();
+				const newStatus = $('#newStatus').val();
+				const note = $('#updateNote').val();
+
+				// Show loading
+				Swal.fire({
+					title: 'Processing...',
+					text: 'Updating order status',
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
+
+				$.ajax({
+					url: '/seller/order/' + id + '/status',
+					method: 'PUT',
+					contentType: 'application/json',
+					data: JSON.stringify({ status: newStatus, note: note }),
+					success: function (res) {
+						$('#updateModal').modal('hide');
+						console.log(res.success)
+						if(res.success){
+							Swal.fire({
+								icon: 'success',
+								title: 'Success!',
+								text: res.message || 'Order status updated successfully',
+								timer: 2000,
+								showConfirmButton: false
+							}).then(() => {
+								loadOrders(currentPage);
+							});
+							
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: res.message || 'Order status updated successfully',
+								timer: 2000,
+								showConfirmButton: false
+							})
+						}
+						
+					},
+					error: function (xhr) {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error!',
+							text: 'Failed to update order status. Please try again.'
+						});
+					}
+				});
+			});
+
+			// Cancel order
+			$(document).on('click', '.action-cancel', function () {
+				const id = $(this).data('id');
+				const code = $(`#ordersContainer tr[data-id="${id}"]`).attr('data-code') || id;
+
+				Swal.fire({
+					title: 'Cancel Order?',
+					text: `Are you sure you want to cancel order ${code}?`,
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#d33',
+					cancelButtonColor: '#3085d6',
+					confirmButtonText: 'Yes, cancel it!',
+					cancelButtonText: 'No, keep it'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						Swal.fire({
+							title: 'Processing...',
+							text: 'Cancelling order',
+							allowOutsideClick: false,
+							didOpen: () => {
+								Swal.showLoading();
+							}
+						});
+
+						$.post('/seller/orders/' + id + '/cancel', function (res) {
+							Swal.fire({
+								icon: 'success',
+								title: 'Cancelled!',
+								text: res.message || 'Order has been cancelled',
+								timer: 2000,
+								showConfirmButton: false
+							}).then(() => {
+								loadOrders(currentPage);
+							});
+						}).fail(function () {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: 'Failed to cancel order'
+							});
+						});
+					}
+				});
+			});
+
+			// Keyboard shortcuts
+			$(document).on('keydown', function(e) {
+				// ESC to close modals
+				if (e.key === 'Escape') {
+					$('.modal').modal('hide');
+				}
+			});
+
+			// Auto refresh every 30 seconds (optional)
+			// setInterval(() => {
+			// 	loadOrders(currentPage);
+			// }, 30000);
+		});
+		</script>
+	</div>
+</body>
+</html>

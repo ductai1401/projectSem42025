@@ -1,0 +1,273 @@
+/*-- Google Font --*/
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+body {
+  color: $body-color;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: 400;
+  line-height: $line-height-base;
+}
+
+a,
+button {
+  transition: $transition-base;
+}
+
+a {
+  text-decoration: none;
+}
+p {
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+ul {
+  margin: 0;
+  padding: 0;
+}
+ul,
+li {
+  list-style: none;
+}
+img {
+  max-width: 100%;
+}
+.container {
+  @include min-screen(1440) {
+    max-width: 1440px;
+  }
+  @include max-screen(767) {
+    max-width: 100%;
+  }
+}
+
+.custom-px {
+  @include min-screen(1200) {
+    padding-left: 2%;
+    padding-right: 2%;
+  }
+
+  @include min-screen(1500) {
+    padding-left: 5.4%;
+    padding-right: 5.4%;
+  }
+}
+
+.bg-dark {
+  background-color: $dark !important;
+}
+
+.bg-light {
+  background-color: #f6f6f6 !important;
+}
+.mb-n4 {
+  margin-bottom: -1.5rem;
+}
+
+.mb-n5 {
+  margin-bottom: -40px !important;
+}
+
+.mb-5 {
+  margin-bottom: 40px !important;
+}
+.border-top {
+  border-color: #666 !important;
+}
+.border-bottom {
+  border-color: #666 !important;
+}
+
+.map iframe {
+  width: 100%;
+  height: 450px;
+  border: 0;
+}
+
+/* Section TItle */
+.section-title {
+  & .title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-transform: capitalize;
+    color: $dark;
+    position: relative;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    &::before {
+      content: "";
+      width: 50px;
+      height: 2px;
+      margin-left: -25px;
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      background: $danger;
+    }
+  }
+
+  &.bestseller {
+    & .title {
+      &::before {
+        margin-left: 0px;
+        left: 0%;
+      }
+    }
+  }
+}
+
+// section padding
+
+.section-padding-top {
+  @include min-screen(1200) {
+    padding-top: 120px;
+  }
+  padding-top: 80px;
+}
+.section-padding-bottom {
+  @include min-screen(1200) {
+    padding-bottom: 120px;
+  }
+  padding-bottom: 80px;
+}
+
+// swiper arrow style
+
+.swiper-arrow {
+  position: relative;
+  .swiper-button-next,
+  .swiper-button-prev {
+    background: $white;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    color: #9a9a9a;
+    font-size: 30px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: ease-in-out 0.3s;
+    border-radius: 50%;
+    box-shadow: 0px 0px 9.3px 0.7px rgba(0, 0, 0, 0.06);
+
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
+  }
+
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 25px;
+  }
+}
+
+.arrow-position-center {
+  .swiper-button-next {
+    right: 0px;
+    @include min-screen(1200) {
+      right: -30px;
+    }
+  }
+  .swiper-button-prev {
+    left: 0px;
+    @include min-screen(1200) {
+      left: -30px;
+    }
+  }
+  &:hover {
+    .swiper-button-next,
+    .swiper-button-prev {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.arrow-position-center-fixed {
+  .swiper-button-next {
+    right: 0px;
+    @include min-screen(1200) {
+      right: 22%;
+    }
+  }
+  .swiper-button-prev {
+    left: 0px;
+    @include min-screen(1200) {
+      left: 22%;
+    }
+  }
+
+  &:hover {
+    .swiper-button-next,
+    .swiper-button-prev {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.swiper-arrow {
+  &.bestseller-arrow {
+    .swiper-button-next,
+    .swiper-button-prev {
+      position: static;
+      margin-top: 40px;
+      opacity: 1;
+      visibility: visible;
+      display: inline-block;
+    }
+
+    .swiper-button-next {
+      margin-left: 15px;
+    }
+  }
+}
+
+.modal {
+  &.fade {
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+
+    &.show {
+      display: block !important;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+#scrollUp {
+  background: $dark;
+  border: 2px solid #e7e7e7;
+  border-radius: 100%;
+  bottom: -38px;
+  cursor: pointer;
+  height: 50px;
+  opacity: 0;
+  position: fixed;
+  right: 15px;
+  transition: all 0.6s ease;
+  visibility: hidden;
+  width: 50px;
+  display: flex;
+  color: #fff;
+  font-size: 25px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  &:hover {
+    background: $danger;
+    border-color: $danger;
+  }
+}
+
+#scrollUp.show {
+  bottom: 5%;
+  opacity: 1;
+  visibility: visible;
+}

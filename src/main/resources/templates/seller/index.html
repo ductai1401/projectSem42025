@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<title layout:fragment="title">Seller Center</title>
+</head>
+<body>
+	<div layout:fragment="content" style="padding:0px 200px 0px 200px;">
+		<div
+			style=" font-family: Arial, sans-serif; padding: 20px;">
+			<div
+				style="display: flex; align-items: center; padding: 30px;">
+				<!-- Shop Info -->`
+				<div style="display: flex; align-items: center; margin-right: 250px;">
+					<!-- Logo -->
+					<div style="position: relative; margin-right: 15px;">
+						<img src="https://via.placeholder.com/72" alt="Shop Logo"
+							style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;">
+						<div
+							style="position: absolute; bottom: -5px; left: 0; background-color: #d0011b; color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px;">
+							Moller Mall</div>
+					</div>
+
+					<!-- Name and Status -->
+					<div>
+						<div
+							style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">Unilever
+							Beauty Care</div>
+						<div style="font-size: 12px; color: gray; margin-bottom: 8px;">Online
+							52 minutes ago</div>
+						<div>
+							<button
+								style="padding: 5px 12px; border: 1px solid #ccc; background-color: white; cursor: pointer; margin-right: 5px;">+
+								Follow</button>
+							<button
+								style="padding: 5px 12px; border: 1px solid #ccc; background-color: white; cursor: pointer;">💬
+								Chat</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Shop Stats -->
+				<div
+					style="display: grid; grid-template-columns: auto auto; gap: 10px 40px; font-size: 14px;">
+					<div>
+						🛒 Products: <span style="color: #d0011b;">198</span>
+					</div>
+					<div>
+						👤 Following: <span style="color: #d0011b;">3</span>
+					</div>
+					<div>
+						👥 Followers: <span style="color: #d0011b;">767.8k</span>
+					</div>
+					<div>
+						⭐ Rating: <span style="color: #d0011b;">4.8</span> (272.4k
+						reviews)
+					</div>
+					<div>
+						💬 Response Rate: <span style="color: #d0011b;">100%</span>
+						(Within minutes)
+					</div>
+					<div>
+						📅 Joined: <span style="color: #d0011b;">8 months ago</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

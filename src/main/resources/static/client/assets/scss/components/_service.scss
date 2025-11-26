@@ -1,0 +1,45 @@
+.service-section {
+}
+
+.service {
+  text-align: center;
+}
+.service-item {
+  @include min-screen(768) {
+    padding: 10px 20px;
+  }
+  text-align: center;
+}
+
+.service-icon {
+  margin-bottom: 20px;
+}
+.service-title {
+  font-weight: 700;
+  color: $dark;
+  font-size: 18px;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.single-thumb {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.single-service {
+  position: relative;
+  .sub-title {
+    font-weight: 400;
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+}
+
+.service {
+  &:hover {
+    .about-social {
+      opacity: 1;
+    }
+  }
+}

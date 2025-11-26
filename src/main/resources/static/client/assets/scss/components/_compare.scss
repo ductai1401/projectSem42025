@@ -1,0 +1,56 @@
+/*------------------*
+# Compare Page
+*------------------*/
+
+@media (max-width: 991px) {
+  .compare-section .table {
+    min-width: 800px;
+  }
+}
+
+.compare-section img {
+  max-width: 150px;
+}
+
+.compare-section .title {
+  font-weight: 500;
+  font-size: 24px;
+  color: $dark;
+  border-bottom: 1px solid $borderColor;
+}
+
+.compare-section .sub-title {
+  font-size: 15px;
+  padding: 20px 0;
+}
+
+.compare-section .table .thead-light th {
+  background-color: $white;
+  border-color: $borderColor;
+}
+
+.compare-section .table td,
+.compare-section .table th {
+  vertical-align: middle;
+  border: 1px solid $borderColor;
+  padding: 15px;
+  font-size: 15px;
+  color: $dark;
+  font-weight: 600;
+}
+
+.compare-section .table th {
+  text-transform: capitalize;
+}
+
+.compare-section .table td {
+  text-transform: capitalize;
+}
+
+.compare-section .table td p {
+  text-transform: initial;
+}
+
+/* ***************
+   compare End
+  ******************/

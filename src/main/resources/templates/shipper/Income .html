@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <title>Income - Shipper</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <h2 class="mb-4">
+            <i class="bi bi-cash-stack me-2"></i>Income & Statistics
+        </h2>
+
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6>Today's Earnings</h6>
+                        <h3 th:text="${#numbers.formatDecimal(todayEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                            250,000đ
+                        </h3>
+                        <small th:text="${todayDeliveries} + ' orders'">8 orders</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h6>This Week's Earnings</h6>
+                        <h3 th:text="${#numbers.formatDecimal(weekEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                            1,500,000đ
+                        </h3>
+                        <small th:text="${weekDeliveries} + ' orders'">45 orders</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6>This Month's Earnings</h6>
+                        <h3 th:text="${#numbers.formatDecimal(monthEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                            6,000,000đ
+                        </h3>
+                        <small th:text="${monthDeliveries} + ' orders'">180 orders</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h6>Total Earnings</h6>
+                        <h3 th:text="${#numbers.formatDecimal(totalEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                            20,000,000đ
+                        </h3>
+                        <small th:text="${totalDeliveries} + ' orders'">650 orders</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Delivery Performance
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-success" th:text="${successRate} + '%'">95%</h4>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-primary" th:text="${avgDeliveryTime}">28</h4>
+                                <small class="text-muted">Avg. Minutes/Order</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <span th:text="${rating}">4.8</span>
+                                </h4>
+                                <small class="text-muted">Rating</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-speedometer2 me-2"></i>This Month's Stats
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-success" th:text="${monthSuccessful}">170</h4>
+                                <small class="text-muted">Delivered Successfully</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-danger" th:text="${monthFailed}">5</h4>
+                                <small class="text-muted">Failed Deliveries</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-info" th:text="${monthCancelled}">5</h4>
+                                <small class="text-muted">Cancelled Orders</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings History -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Earnings History
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportEarnings()">
+                        <i class="bi bi-download"></i> Export Excel
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="fromDate" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="toDate" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Shipment ID</th>
+                            <th>Delivery Address</th>
+                            <th>Status</th>
+                            <th class="text-end">Earnings</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="earning : ${earningsHistory}">
+                            <td th:text="${#temporals.format(earning.deliveredAt, 'dd/MM/yyyy HH:mm')}">
+                                24/10/2025 10:30
+                            </td>
+                            <td>
+                                <a th:href="'#'" th:text="${earning.shipmentID}">SHIP001</a>
+                            </td>
+                            <td th:text="${#strings.abbreviate(earning.deliveryAddress, 40)}">
+                                456 Le Loi, District 3...
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${earning.status == 6} ? 'bg-success' : 'bg-danger'"
+                                      th:text="${earning.status == 6} ? 'Successful' : 'Failed'">
+                                    Successful
+                                </span>
+                            </td>
+                            <td class="text-end text-success fw-bold"
+                                th:text="${#numbers.formatDecimal(earning.shippingFee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                30,000đ
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                        <tr>
+                            <th colspan="4" class="text-end">Total:</th>
+                            <th class="text-end text-success"
+                                th:text="${#numbers.formatDecimal(totalFilteredEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                1,500,000đ
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportEarnings() {
+            window.location.href = '/shipper/earnings/export';
+        }
+    </script>
+</div>
+</body>
+</html>

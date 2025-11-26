@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title layout:fragment="title">Search Results</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Sidebar bộ lọc -->
+            <div class="col-md-3">
+                <form method="get" th:action="@{/search}">
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+
+                    <div class="border rounded p-3 mb-4">
+                        <h5 class="fw-bold mb-3">Bộ lọc tìm kiếm</h5>
+
+                        <!-- Nơi bán -->
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Nơi bán</h6>
+                            <div th:each="shop : ${shops}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="shopFilter"
+                                           th:value="${shop.shopId}">
+                                    <label class="form-check-label" th:text="${shop.shopName}">Shop Name</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Danh mục</h6>
+                            <div th:each="cat : ${categories}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="categoryFilter"
+                                           th:value="${cat.categoryId}">
+                                    <label class="form-check-label" th:text="${cat.categoryName}">Category</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thuộc tính động -->
+                        <div class="mb-3" th:each="entry : ${filterMap}">
+                            <h6 class="fw-semibold" th:text="${entry.key}">Option</h6>
+                            <div th:each="val : ${entry.value}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:name="${'opt_' + entry.key}"
+                                           th:value="${val}"
+                                           th:checked="${param['opt_' + entry.key]} == val">
+                                    <label class="form-check-label" th:text="${val}">Value</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khoảng giá -->
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Khoảng giá</h6>
+                            <div class="d-flex gap-2">
+                                <input type="number" class="form-control" placeholder="₫ Tối thiểu" name="minPrice"
+                                       th:value="${param.minPrice}">
+                                <input type="number" class="form-control" placeholder="₫ Tối đa" name="maxPrice"
+                                       th:value="${param.maxPrice}">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-dark w-100 mt-2">Áp dụng</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Kết quả -->
+            <div class="col-md-9">
+                <!-- Thanh tiêu đề và sắp xếp -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold">
+                        Search results for: "<span th:text="${keyword}"></span>"
+                    </h5>
+                    <form method="get" th:action="@{/search}" class="d-flex">
+                        <input type="hidden" name="keyword" th:value="${keyword}"/>
+                        <select class="form-select" name="sortBy" onchange="this.form.submit()">
+                            <option value="relevance" th:selected="${param.sortBy == 'relevance'}">Liên quan</option>
+                            <option value="newest" th:selected="${param.sortBy == 'newest'}">Mới nhất</option>
+                            <option value="bestseller" th:selected="${param.sortBy == 'bestseller'}">Bán chạy</option>
+                            <option value="priceAsc" th:selected="${param.sortBy == 'priceAsc'}">Giá: Thấp đến Cao</option>
+                            <option value="priceDesc" th:selected="${param.sortBy == 'priceDesc'}">Giá: Cao đến Thấp</option>
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Nếu không có kết quả -->
+                <div class="row" th:if="${#lists.isEmpty(results)}">
+                    <div class="col-12 text-center">
+                        <p class="fs-5">Không tìm thấy sản phẩm nào.</p>
+                    </div>
+                </div>
+
+                <!-- Grid kết quả -->
+                <div class="row g-4" th:if="${!#lists.isEmpty(results)}">
+                    <div class="col-6 col-md-4 col-lg-3" th:each="p : ${results}">
+                        <div class="product-card border rounded shadow-sm h-100 d-flex flex-column">
+                            <a th:href="@{/productdetails/{id}(id=${p.productId})}" class="product-thumb">
+                                <img th:src="${#strings.isEmpty(p.image) ? '/images/no-image.png' : '/uploads/' + p.image}"
+                                     class="w-100" style="height:200px;object-fit:contain;">
+                            </a>
+                            <div class="p-2 flex-grow-1">
+                                <h6 class="text-truncate">
+                                    <a th:href="@{/productdetails/{id}(id=${p.productId})}"
+                                       th:text="${p.productName}">Product</a>
+                                </h6>
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="text-danger mb-0"
+                                        th:text="${priceMap[p.productId] != null ? '₫' + #numbers.formatDecimal(priceMap[p.productId],0,'COMMA',0,'POINT') : '—'}">—</h6>
+                                    <a th:href="@{/productdetails/{id}(id=${p.productId})}" class="btn btn-sm btn-dark">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="row mt-5" th:if="${!#lists.isEmpty(results)}">
+                    <div class="col-12">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <!-- Prev -->
+                                <li class="page-item" th:classappend="${page <= 1}? 'disabled'">
+                                    <a class="page-link"
+                                       th:href="@{/search(keyword=${keyword}, page=${page > 1 ? page-1 : 1}, sortBy=${param.sortBy})}">
+                                        <span class="ion-android-arrow-dropleft"></span>
+                                    </a>
+                                </li>
+                                <!-- Pages -->
+                                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                                    th:classappend="${i == page}? 'active'">
+                                    <a class="page-link"
+                                       th:href="@{/search(keyword=${keyword}, page=${i}, sortBy=${param.sortBy})}"
+                                       th:text="${i}">1</a>
+                                </li>
+                                <!-- Next -->
+                                <li class="page-item" th:classappend="${page >= totalPages}? 'disabled'">
+                                    <a class="page-link"
+                                       th:href="@{/search(keyword=${keyword}, page=${page < totalPages ? page+1 : totalPages}, sortBy=${param.sortBy})}">
+                                        <span class="ion-android-arrow-dropright"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

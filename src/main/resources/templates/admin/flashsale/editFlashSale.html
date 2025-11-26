@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Edit Flash Sale</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" th:href="@{/admin/style/productStyle.css}" />
+<style>
+.card-like {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 18px;
+	box-shadow: 0 8px 20px rgba(15, 23, 42, .06)
+}
+
+.table thead th {
+	background: #fbfbff;
+	color: #64748b;
+	border-bottom-color: #e5e7eb;
+	font-weight: 600
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Header -->
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<h3 class="mb-0">Edit Flash Sale</h3>
+						<small class="text-muted">Marketing / Flash Sale / Edit</small>
+					</div>
+					<div class="d-flex gap-2">
+						<a class="btn btn-light border" th:href="@{/seller/flashsale/}">←
+							Back to list</a> <a class="btn btn-outline-primary"
+							th:href="@{/seller/flashsale/detail/{id}(id=${flashSale?.flashSaleId})}">👁
+							View detail</a>
+					</div>
+				</div>
+
+				<!-- Hidden IDs & CSRF -->
+				<input type="hidden" id="flashSaleId"
+					th:value="${flashSale?.flashSaleId}"> <input type="hidden"
+					th:if="${_csrf != null}" id="_csrf_param"
+					th:value="${_csrf.parameterName}"> <input type="hidden"
+					th:if="${_csrf != null}" id="_csrf_token" th:value="${_csrf.token}">
+
+				<!-- Form: Basic info -->
+				<form id="editForm" class="card-like" novalidate>
+					<div class="row g-3">
+						<div class="col-12">
+							<div class="card shadow-sm border-0">
+								<div class="card-header bg-white border-0 pb-0">
+									<div class="fw-semibold">Basic Information</div>
+									<div class="text-muted small">Sửa tên và thời gian Flash
+										Sale</div>
+								</div>
+
+								<div class="card-body pt-3">
+									<!-- Shop readonly (optional) -->
+									<div class="mb-3">
+										<label class="form-label">Shop hiện tại</label>
+										<div class="form-control bg-light">
+											<span class="me-2">ID:</span> <strong
+												th:text="${sessionShopId} ?: 'N/A'">N/A</strong> <span
+												class="mx-2">|</span> <span class="me-2">Name:</span> <strong
+												th:text="${sessionShopName} ?: (${shopName} ?: 'Current Shop')">Current
+												Shop</strong>
+										</div>
+									</div>
+
+									<!-- Name -->
+									<div class="mb-3">
+										<div class="form-floating">
+											<input type="text" class="form-control" id="flashSaleName"
+												placeholder="Flash sale name" th:value="${flashSale?.name}">
+											<label for="flashSaleName">Flash sale name *</label>
+										</div>
+										<div class="text-danger small d-none" id="errName">Vui
+											lòng nhập tên Flash Sale.</div>
+									</div>
+
+									<!-- Time range -->
+									<div class="row g-3">
+										<div class="col-md-6">
+											<label class="form-label">Start date *</label> <input
+												type="datetime-local" class="form-control" id="startDate"
+												th:value="${flashSale?.startDate != null ? #temporals.format(flashSale.startDate, 'yyyy-MM-dd''T''HH:mm') : ''}">
+											<div class="text-danger small d-none" id="errStart">Vui
+												lòng chọn thời gian bắt đầu.</div>
+										</div>
+										<div class="col-md-6">
+											<label class="form-label">End date *</label> <input
+												type="datetime-local" class="form-control" id="endDate"
+												th:value="${flashSale?.endDate != null ? #temporals.format(flashSale.endDate, 'yyyy-MM-dd''T''HH:mm') : ''}">
+											<div class="text-danger small d-none" id="errEnd">Vui
+												lòng chọn thời gian kết thúc.</div>
+										</div>
+										<div class="col-12">
+											<div class="text-danger small d-none" id="errRange">Thời
+												gian kết thúc phải sau thời gian bắt đầu.</div>
+											<div class="form-text">Thời gian theo múi giờ trình
+												duyệt. Backend nhận ISO-8601 (controller parse
+												LocalDateTime).</div>
+										</div>
+									</div>
+
+									<div class="alert alert-info mt-3">
+										Trang sửa chỉ cập nhật <strong>tên</strong> và <strong>thời
+											gian</strong>. Muốn quản lý sản phẩm trong Flash Sale, vào trang <em>View
+											detail</em> hoặc form thêm item riêng.
+									</div>
+
+									<div class="d-flex gap-2 justify-content-end mt-3">
+										<a class="btn btn-light border"
+											th:href="@{/seller/flashsale/}">Back</a>
+										<button class="btn btn-primary" type="button"
+											id="btnSubmitEdit">Save changes</button>
+									</div>
+
+									<div class="alert alert-danger mt-3 d-none" id="serverErrorBox"></div>
+									<div class="alert alert-success mt-3 d-none" id="serverOkBox"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+
+				<!-- Current Items in Flash Sale (read-only list) -->
+				<div class="card shadow-sm border-0 mt-3">
+					<div class="card-header bg-white border-0 pb-0">
+						<div class="fw-semibold">Products in this Flash Sale</div>
+						<div class="text-muted small">Các sản phẩm đã được gắn</div>
+					</div>
+					<div class="card-body pt-3">
+						<div th:if="${items == null or #lists.isEmpty(items)}"
+							class="text-muted">Chưa có sản phẩm nào trong Flash Sale
+							này.</div>
+
+						<div class="table-responsive"
+							th:if="${items != null and !#lists.isEmpty(items)}">
+							<table class="table align-middle">
+								<thead>
+									<tr>
+										<th style="width: 60px">#</th>
+										<th>Sản phẩm</th>
+										<th style="width: 120px">Số lượng</th>
+										<th style="width: 120px">% giảm</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="it, st : ${items}">
+										<td th:text="${st.count}">1</td>
+										<td><a
+											th:href="@{/admin/product/detail/{id}(id=${it.productId})}"
+											th:text="${it.productName != null ? it.productName : ('#' + it.productId)}">Product</a>
+											<div class="text-muted small">
+												ID: <span th:text="${it.productId}">0</span>
+											</div></td>
+										<td th:text="${it.quantity}">0</td>
+										<td th:text="${it.percern}">0</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<!-- /.container-fluid -->
+		</div>
+		<!-- /.content-wrapper -->
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const idEl      = document.getElementById('flashSaleId');
+  const nameEl    = document.getElementById('flashSaleName');
+  const startEl   = document.getElementById('startDate');
+  const endEl     = document.getElementById('endDate');
+
+  const errName   = document.getElementById('errName');
+  const errStart  = document.getElementById('errStart');
+  const errEnd    = document.getElementById('errEnd');
+  const errRange  = document.getElementById('errRange');
+
+  const serverErr = document.getElementById('serverErrorBox');
+  const serverOk  = document.getElementById('serverOkBox');
+  const csrfToken = document.getElementById('_csrf_token')?.value;
+
+  function show(el){ el && el.classList.remove('d-none'); }
+  function hide(el){ el && el.classList.add('d-none'); }
+  function setInvalid(i,e){ i?.classList.add('is-invalid'); show(e); }
+  function clearInvalid(i,e){ i?.classList.remove('is-invalid'); hide(e); }
+  function isoFromLocal(el){ const v = el?.value?.trim(); return v || null; }
+
+  document.getElementById('btnSubmitEdit')?.addEventListener('click', async function(){
+    hide(serverErr); hide(serverOk);
+
+    const name = (nameEl?.value || '').trim();
+    if(!name){ setInvalid(nameEl, errName); return; } else { clearInvalid(nameEl, errName); }
+
+    const sVal = startEl?.value?.trim();
+    const eVal = endEl?.value?.trim();
+    let hasError = false;
+
+    if(!sVal){ setInvalid(startEl, errStart); hasError = true; } else { clearInvalid(startEl, errStart); }
+    if(!eVal){ setInvalid(endEl,   errEnd);   hasError = true; } else { clearInvalid(endEl,   errEnd); }
+
+    if(!hasError && sVal && eVal){
+      const s = new Date(sVal.replace(' ','T'));
+      const e = new Date(eVal.replace(' ','T'));
+      if(!(e > s)){ show(errRange); hasError = true; } else { hide(errRange); }
+    } else {
+      hide(errRange);
+    }
+    if(hasError) return;
+
+    const id = idEl?.value;
+    if(!id){ show(serverErr); serverErr.textContent = 'Thiếu FlashSaleId.'; return; }
+
+    const payload = {
+      name: name,
+      startDate: isoFromLocal(startEl),
+      endDate:   isoFromLocal(endEl)
+    };
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
+
+    try{
+      const res = await fetch(`/seller/flashsale/${id}/update`, {
+        method: 'POST', // đúng với controller hiện tại
+        headers,
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if(!data?.ok){
+        show(serverErr);
+        serverErr.textContent = data?.message || 'Cập nhật Flash Sale thất bại.';
+      }else{
+        show(serverOk);
+        serverOk.innerHTML = 'Cập nhật thành công! ID: <strong>'+(id)+'</strong>';
+        setTimeout(()=>{ window.location.href = '/seller/flashsale/'; }, 800);
+      }
+    }catch(e){
+      show(serverErr);
+      serverErr.textContent = 'Lỗi kết nối server: ' + e.message;
+    }
+  });
+});
+</script>
+	</div>
+</body>
+</html>

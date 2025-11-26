@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <title>Current Shipment - Shipper</title>
+    <style>
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 30px 0;
+        }
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #dee2e6;
+            z-index: 0;
+        }
+        .status-step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            flex: 1;
+        }
+        .status-step .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #dee2e6;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .status-step.active .circle {
+            border-color: #0d6efd;
+            background: #0d6efd;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .status-step.completed .circle {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info-card.pickup {
+            border-left-color: #28a745;
+        }
+        .info-card.delivery {
+            border-left-color: #0d6efd;
+        }
+        .action-btn {
+            min-height: 60px;
+            font-size: 1.1rem;
+        }
+        .map-container {
+            height: 300px;
+            background: #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .no-shipment {
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid py-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="bi bi-truck me-2"></i>Current Shipment
+                    </h2>
+                    <p class="text-muted mb-0">Manage your active delivery</p>
+                </div>
+                <div>
+                    <span class="badge fs-6 px-3 py-2" 
+                          th:classappend="${shipper.isAvailable} ? 'bg-success' : 'bg-secondary'">
+                        <i class="bi" th:classappend="${shipper.isAvailable} ? 'bi-check-circle' : 'bi-pause-circle'"></i>
+                        <span th:text="${shipper.isAvailable} ? 'Available' : 'Busy'">Available</span>
+                    </span>
+                    
+                </div>
+            </div>
+
+
+            <!-- Current Shipment Section -->
+            <div th:if="${currentShipment != null}">
+                <!-- Shipment Header Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h3 class="mb-1" th:text="${currentShipment.shipmentID}">SHIP001</h3>
+                                <p class="text-muted mb-0" th:if="${order != null}">
+                                    Order: <span th:text="${order.orderId}">ORDER001</span>
+                                </p>
+                                <p class="text-muted mb-0" th:if="${rfund != null}">
+                                    Refund: <span th:text="${rfund.refundId}">ORDER001</span>
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Delivery Fee</small>
+                                <h3 class="text-success mb-0" 
+                                    th:text="${#numbers.formatDecimal(currentShipment.shippingFee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                    35,000đ
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Status Timeline -->
+                        <div class="status-timeline">
+                            <div class="status-step" 
+                                 th:classappend="${currentShipment.status >= 2} ? 'completed' : ''">
+                                <div class="circle">
+                                    <i class="bi bi-check"></i>
+                                </div>
+                                <small>Accepted</small>
+                            </div>
+                            <div class="status-step" 
+                                 th:classappend="${currentShipment.status >= 3} ?  'completed' : ''">
+                                <div class="circle">
+                                    <i class="bi bi-box"></i>
+                                </div>
+                                <small>Picked</small>
+                            </div>
+                            <div class="status-step" 
+                                 th:classappend="${currentShipment.status >= 4 } ? 'completed' : ''">
+                                <div class="circle">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <small>Delivered</small>
+                            </div>
+                            <div class="status-step" 
+                                 th:classappend="${currentShipment.status == 4 || currentShipment.status == 6} ? 'completed' : ''">
+                                <div class="circle">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <small>Completed</small>
+                            </div>
+                        </div>
+
+                        <!-- Current Status Badge -->
+                        <div class="text-center mb-3">
+                            <span class="badge fs-6 px-4 py-2" 
+                                  th:classappend="${statusClass}"
+                                  th:text="${statusText}">
+                                Picking Up
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Left Column - Address Information -->
+                    <div class="col-lg-6">
+                        <!-- Pickup Address -->
+                        <div class="info-card pickup" th:if="${currentShipment.status <= 4}">
+                            <h5 class="text-success mb-3">
+                                <i class="bi bi-shop"></i> Pickup Address
+                            </h5>
+                            <p class="mb-2" th:text="${currentShipment.pickupAddress}">
+                                123 Nguyen Hue, District 1, HCMC
+                            </p>
+                            <p class="mb-3">
+                                <i class="bi bi-telephone-fill text-success"></i>
+                                <strong>Shop:</strong> <span >0901234567</span>
+<!--                                 <strong>Shop:</strong> <span th:text="${shop.shopPhone}">0901234567</span> -->
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a 
+                                   class="btn btn-success">
+                                    <i class="bi bi-telephone-fill"></i> Call Shop
+                                </a>
+<!--                                 <a th:href="'tel:' + ${currentShipment.shopPhone}" 
+                                   class="btn btn-success">
+                                    <i class="bi bi-telephone-fill"></i> Call Shop
+                                </a> -->
+                                <a th:href="'https://maps.google.com/?q=' + ${currentShipment.pickupAddress}" 
+                                   target="_blank" class="btn btn-outline-success">
+                                    <i class="bi bi-map"></i> Open in Maps
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="info-card delivery">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-geo-alt-fill"></i> Delivery Address
+                            </h5>
+                            <p class="mb-1">
+                                <strong th:text="${currentShipment.recipientName}">Nguyen Van A</strong>
+                            </p>
+                            <p class="mb-2" th:text="${currentShipment.deliveryAddress}">
+                                456 Le Loi, District 3, HCMC
+                            </p>
+                            <p class="mb-3">
+                                <i class="bi bi-telephone-fill text-primary"></i>
+                                <span th:text="${currentShipment.recipientPhone}">0912345678</span>
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a th:href="'tel:' + ${currentShipment.recipientPhone}" 
+                                   class="btn btn-primary">
+                                    <i class="bi bi-telephone-fill"></i> Call Customer
+                                </a>
+                                <a th:href="'https://maps.google.com/?q=' + ${currentShipment.deliveryAddress}" 
+                                   target="_blank" class="btn btn-outline-primary">
+                                    <i class="bi bi-map"></i> Open in Maps
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="alert alert-info" th:if="${currentShipment.notes != null}">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-info-circle"></i> Notes
+                            </h6>
+                            <p class="mb-0" th:text="${currentShipment.notes}">
+                                Handle with care - fragile items
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Items & Actions -->
+                    <div class="col-lg-6">
+                        <!-- Items -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-box-seam"></i> Items to Deliver
+                                </h5>
+                            </div>
+                            <div class="card-body" th:if="${order != null}">
+                                <div class="product-item" th:each="item : ${order.items}">
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="${item.productVariantImage}" 
+                                             class="rounded me-3" 
+                                             width="60" height="60" 
+                                             style="object-fit: cover;" 
+                                             alt="Product">
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-bold" >
+                                                Product Name
+                                            </p>
+<!--                                             <p class="mb-1 fw-bold" th:text="${item.productName}">
+                                                Product Name
+                                            </p> -->
+                                            <small class="text-muted" th:text="${item.productVariantName}">
+                                                Red, Size M
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary fs-6" 
+                                                  th:text="'x' + ${item.quantity}">
+                                                x2
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body" th:if="${refund != null}">
+                                <div class="product-item" th:each="item : ${rItems}">
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="${item.productVariantImage}" 
+                                        	th:if="${item.productVariantImage != null}"	
+                                        		
+                                             class="rounded me-3" 
+                                             width="60" height="60" 
+                                             style="object-fit: cover;" 
+                                             alt="Product">
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-bold" >
+                                                Product Name
+                                            </p>
+	                                       <p class="mb-1 fw-bold" th:text="${item.productName}">
+                                                Product Name
+                                            </p> 
+                                            <small class="text-muted" th:text="${item.productVariantName}">
+                                                Red, Size M
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary fs-6" 
+                                                  th:text="'x' + ${item.quantity}">
+                                                x2
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons Based on Status
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-list-check"></i> Actions
+                                </h5>
+
+                                <!-- Status 3: Going to Pickup -->
+                                <div th:if="${currentShipment.status == 2}">
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-info-circle"></i>
+                                        Go to the shop and collect the items
+                                    </p>
+                                    <button class="btn btn-success action-btn w-100 mb-2 status-btn" 
+                                            th:attr="data-shipment-id=${currentShipment.shipmentID}, data-status=3">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Confirm Picked UpS
+                                    </button>
+                                </div>
+
+
+                                <!-- Status 4: Delivering -->
+                                <div th:if="${currentShipment.status == 3}">
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-info-circle"></i>
+                                        Confirm delivery when customer receives items
+                                    </p>
+                                    <button class="btn btn-success action-btn w-100 mb-2 status-btn" 
+                                            th:attr="data-shipment-id=${currentShipment.shipmentID}, data-status=4">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Confirm Delivered
+                                    </button>
+                                    <button class="btn btn-danger action-btn w-100 status-btn" 
+                                            th:attr="data-shipment-id=${currentShipment.shipmentID}, data-status=5">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                        Report Failed Delivery
+                                    </button>
+                                </div>
+
+                                <!-- Status 5: Completed -->
+                                <div th:if="${currentShipment.status == 4}">
+                                    <div class="alert alert-success text-center mb-0 status-btn">
+                                        <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                                        <h5 class="mt-3">Delivery Completed!</h5>
+                                        <p class="mb-0">Great job! Earnings: 
+                                            <strong th:text="${#numbers.formatDecimal(currentShipment.shippingFee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                                35,000đ
+                                            </strong>
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Status 6: Going to Pickup -->
+                                <div th:if="${currentShipment.status == 5}">
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-info-circle"></i>
+                                       Go to the store and pay for the items
+                                    </p>
+                                    <button class="btn btn-success action-btn w-100 mb-2 status-btn" 
+                                            th:attr="data-shipment-id=${currentShipment.shipmentID}, data-status=6">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Confirm Returned
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipment History Timeline -->
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> Shipment History
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline" th:if="${shipmentHistory != null}">
+                            <div class="d-flex mb-3" th:each="history : ${shipmentHistory}">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-clock"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <strong th:text="${history.status}">Status Updated</strong>
+                                        <small class="text-muted" 
+                                               th:text="${#temporals.format(history.createdAt, 'HH:mm dd/MM/yyyy')}">
+                                            10:30 24/10/2025
+                                        </small>
+                                    </div>
+                                    <p class="text-muted mb-0" th:if="${history.description != null}" 
+                                       th:text="${history.description}">
+                                        Description of status change
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Active Shipment -->
+            <div class="no-shipment" th:unless="${currentShipment != null}">
+                <i class="bi bi-inbox text-muted" style="font-size: 6rem;"></i>
+                <h3 class="text-muted mt-4">No Active Shipment</h3>
+                <p class="text-muted">You don't have any active delivery at the moment</p>
+                <a th:href="@{/shipper/shipments/available}" class="btn btn-primary btn-lg mt-3">
+                    <i class="bi bi-search"></i> Find Available Shipments
+                </a>
+            </div>
+        </div>
+
+
+        
+
+        <div layout:fragment="scripts">
+            <script th:inline="javascript">
+            	
+            
+            document.addEventListener('click', function(e) {
+            	  const btn = e.target.closest('.status-btn');
+            	  if (!btn) return;
+            	  const shipmentID = btn.getAttribute('data-shipment-id');
+            	  const status = btn.getAttribute('data-status');
+				
+            	  if(shipmentID.trim() == null || status == 0){
+            		  return;
+            	  }
+            	  if (!confirm('Confirm this shipment has been picked up?')) return;
+
+            	  fetch('/shipper/shipments/'+ shipmentID +'/status', {
+            	    method: 'POST',
+            	    headers: {
+            	      'Content-Type': 'application/json'
+            	    },
+            	    body: JSON.stringify({ status: status })
+            	  })
+            	  .then(r => {
+            	    return r.json(); 
+            	  })
+            	  .then(data => {
+            	    alert(data.message || 'Updated');
+            	    location.reload();
+            	  })
+            	  .catch(err => {
+            	    console.error(err);
+            	    alert('Failed to update status: ' + err.message);
+            	  });
+            })
+                
+            </script>
+        </div>
+    </div>
+</body>
+</html>

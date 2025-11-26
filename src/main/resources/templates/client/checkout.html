@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<title layout:fragment="title">Home</title>
+
+<style>
+.link-like {
+	background: none;
+	border: none;
+	padding: 0;
+	margin: 0;
+	color: #0d6efd;
+	text-decoration: none;
+	cursor: pointer;
+	font-size: 0.95rem;
+	outline: none;
+	-webkit-appearance: none;
+}
+
+.link-like:hover, .link-like:focus {
+	text-decoration: none;
+	color: #0b5ed7;
+}
+
+.shop-voucher-amount, .shop-platform-amount, .shop-freeship-amount {
+	min-width: 70px;
+	text-align: right;
+	color: #198754;
+	font-weight: 600;
+}
+
+/* small responsive tweak */
+@media ( max-width : 576px) {
+	.shop-voucher-amount, .shop-platform-amount, .shop-freeship-amount {
+		min-width: 55px;
+		font-size: .9rem;
+	}
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<!-- Breadcrumb -->
+		<nav class="breadcrumb-section breadcrumb-bg1">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="bread-crumb-title">Checkout</h2>
+						<ol
+							class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+							<li class="breadcrumb-item"><a href="/home">Home</a></li>
+							<li class="breadcrumb-item active" aria-current="page">Checkout</li>
+						</ol>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container my-4">
+
+			<!-- Delivery Address -->
+			<div class="card mb-3">
+				<div class="card-header fw-bold d-flex justify-content-between">
+					Delivery Address <a href="#" data-bs-toggle="modal"
+						data-bs-target="#addressModal">Change</a>
+				</div>
+				<div class="card-body" th:if="${addresses != null}">
+					<div th:each="item : ${addresses}" th:if="${item.isDefault}"
+						id="selectedAddress" th:data-id="${item.id}">
+						<span class="fw-bold" th:text="${user.fullName}"></span> (<span
+							th:text="${user.phoneNumber}"></span>) <br> <span
+							th:text="|${item.street}, ${item.wardName}, ${item.districtName}, ${item.provinceName}|"></span>
+					</div>
+				</div>
+				<div class="card-body" th:if="${addresses == null}">
+					<span class="fw-bold">Please add Address!</span>
+				</div>
+			</div>
+
+			<!-- Shop Blocks -->
+			<div th:each="entry : ${groupedCart}" class="card mb-3 shop-block"
+				th:attr="
+  data-shop=${entry.key}, 
+  data-shop-coupon-id=${selectedShopCoupons[entry.key]}, 
+  data-platform-coupon-id=${selectedPlatformCoupons[entry.key]}, 
+  data-freeship-coupon-id=${selectedFreeshipCoupons[entry.key]}">
+				<div class="card-header fw-bold"
+					th:text="${entry.value[0].shopName}"></div>
+				<div class="card-body p-0">
+
+					<!-- Product items -->
+					<div
+						class="checkout-item d-flex align-items-center border-bottom p-3"
+						th:each="item : ${entry.value}"
+						th:attr="data-id=${item.cartItemId}, data-price=${item.flashSalePrice != null ? item.flashSalePrice : item.price}, data-qty=${item.quantity}">
+						<div class="flex-grow-1">
+							<div class="item-name fw-bold" th:text="${item.productName}"></div>
+							<div class="text-muted small"
+								th:text="'Variation: ' + ${item.variantName}"></div>
+						</div>
+						<div style="width: 120px;" class="text-end"
+							th:text="|${#numbers.formatDecimal(item.flashSalePrice != null ? item.flashSalePrice : item.price,1,'COMMA',0,'POINT')} ₫|"></div>
+						<div style="width: 80px;" class="text-center"
+							th:text="|x${item.quantity}|"></div>
+						<div style="width: 120px;" class="text-end fw-bold"
+							th:text="|${#numbers.formatDecimal((item.flashSalePrice != null ? item.flashSalePrice : item.price) * item.quantity,1,'COMMA',0,'POINT')} ₫|"></div>
+					</div>
+
+					<!-- Shipping + Voucher (mỗi shop, hàng dọc) -->
+					<div class="border-top p-3">
+						<input type="text" class="form-control mb-3"
+							placeholder="Message for seller...">
+
+						<div class="mb-2 d-flex align-items-center" >
+							<strong>Shipping:</strong> 
+							
+							<span class="ms-auto shipping-fee"
+							      th:text="${shippingFees != null 
+				          ? #numbers.formatDecimal(shippingFees[entry.key],1,'COMMA',0,'POINT') 
+				          : '0'} + ' ₫'"
+							      th:data-fee="${shippingFees != null ? shippingFees[entry.key] : 0}">
+							</span>
+						</div>
+
+
+						<!-- Shop Voucher (row) -->
+						<!-- Shop Voucher (row) -->
+						<div class="mb-2 d-flex align-items-center">
+							<strong>Shop Voucher:</strong>
+
+							<div class="ms-auto d-flex align-items-center">
+								<span class="shop-voucher-amount">--</span>
+
+
+								<!-- Remove button (ẩn khi chưa có coupon) -->
+								<button type="button"
+									class="clear-voucher link-like text-danger me-2"
+									th:attr="data-shop-id=${entry.key}" data-type="shop"
+									style="display: none">Remove</button>
+
+								<button type="button" class="select-shop-voucher link-like"
+									th:attr="data-shop-id=${entry.key}" data-type="shop">
+									Select Voucher</button>
+							</div>
+						</div>
+
+						<!-- Platform Discount (row) -->
+						<div class="mb-2 d-flex align-items-center">
+							<strong>Platform Discount:</strong>
+
+							<div class="ms-auto d-flex align-items-center">
+								<span class="shop-platform-amount">--</span>
+
+								<button type="button"
+									class="clear-voucher link-like text-danger me-2"
+									th:attr="data-shop-id=${entry.key}" data-type="platform"
+									style="display: none">Remove</button>
+
+								<button type="button" class="select-shop-voucher link-like"
+									th:attr="data-shop-id=${entry.key}" data-type="platform">
+									Select Voucher</button>
+							</div>
+						</div>
+
+						<!-- FreeShip (row) -->
+						<div class="mb-2 d-flex align-items-center">
+							<strong>FreeShip:</strong>
+
+							<div class="ms-auto d-flex align-items-center">
+								<span class="shop-freeship-amount">--</span>
+								<button type="button"
+									class="clear-voucher link-like text-danger me-2"
+									th:attr="data-shop-id=${entry.key}" data-type="freeship"
+									style="display: none">Remove</button>
+
+								<button type="button" class="select-shop-voucher link-like"
+									th:attr="data-shop-id=${entry.key}" data-type="freeship">
+									Select Voucher</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Shop total -->
+					<div class="border-top p-3 text-end fw-bold text-danger shop-total">
+						Order Total: <span class="shop-order-total">0 ₫</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Payment Method -->
+			<div class="card mb-3">
+				<div class="card-header fw-bold">Payment Method</div>
+				<div class="card-body">
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="payment"
+							id="paymentCOD" value="COD" checked> <label
+							class="form-check-label" for="paymentCOD">Cash on
+							Delivery (COD)</label>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="payment"
+							id="paymentVNPAY" value="VNPAY"> <label
+							class="form-check-label" for="paymentVNPAY">VNPAY</label>
+					</div>
+					<div class="mt-2">
+						Selected: <span id="selectedPayment">Cash on Delivery</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Summary -->
+			<div class="card">
+				<div class="card-body text-end">
+					<div>
+						Subtotal: <span id="subtotal">$0.00</span>
+					</div>
+					<div>
+						Shipping Total: <span id="shipping-total">$0.00</span>
+					</div>
+					<div>
+						Shipping Discount: <span id="shipping-discount">$0.00</span>
+					</div>
+					<div>
+						Voucher Discount: <span id="voucher-discount">$0.00</span>
+					</div>
+					<div class="fw-bold fs-5">
+						Total: <span id="total">$0.00</span>
+					</div>
+				</div>
+				<div class="card-footer text-end">
+					<button id="btnPlaceOrder" class="btn btn-danger px-4 fw-bold">Place
+						Order</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Voucher Modal (shared) -->
+		<div class="modal fade" id="voucherModal" tabindex="-1"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="voucherModalTitle">Select Voucher</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div id="voucherModalContent"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="voucherModalCancel"
+							class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<button type="button" id="applyVoucher" class="btn btn-danger">Apply</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Address Modal -->
+		<div class="modal fade" id="addressModal" tabindex="-1">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">My Address</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<div class="form-check mb-2" th:each="item : ${addresses}">
+							<input class="form-check-input address-option" type="radio"
+								name="address" th:id="${item.id}"
+								th:data-name="${user.fullName}"
+								th:data-phone="${user.phoneNumber}"
+								th:data-full="|${item.street}, ${item.wardName}, ${item.districtName}, ${item.provinceName}|"
+								th:checked="${item.isDefault}"> <label
+								class="form-check-label" th:for="${item.id}"> <b
+								th:text="${user.fullName}"></b> (<b
+								th:text="${user.phoneNumber}"></b>)<br> <span
+								th:text="|${item.street}, ${item.wardName}, ${item.districtName}, ${item.provinceName}|"></span>
+								<span class="badge bg-danger" th:if="${item.isDefault}">Default</span>
+							</label>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Cancel</button>
+						<button type="button" id="confirmAddress" class="btn btn-danger">Confirm</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- scripts -->
+	<div layout:fragment="scripts" th:inline="javascript">
+
+		<!-- inject server JSON (controller should add these strings) -->
+		<script th:inline="javascript">
+/*<![CDATA[*/
+    // ====== RAW DATA từ server ======
+    var shopCouponsRaw = /*[[${shopCoupons != null ? shopCoupons : 'null'}]]*/ null;
+    var platformCouponsRaw = /*[[${platformCoupons != null ? platformCoupons : 'null'}]]*/ null;
+    var freeshipCouponsRaw = /*[[${freeshipCoupons != null ? freeshipCoupons : 'null'}]]*/ null;
+    let token = /*[[${checkoutToken}]]*/ null;
+
+    var shopCouponsData = {};
+    var platformCouponsData = {};
+    var freeshipCouponsData = {};
+
+    try {
+        if (shopCouponsRaw && typeof shopCouponsRaw === 'string') {
+            shopCouponsData = JSON.parse(shopCouponsRaw);
+        } else if (shopCouponsRaw) {
+            shopCouponsData = shopCouponsRaw;
+        } else {
+            shopCouponsData = /*[[${shopCoupons}]]*/ {};
+        }
+    } catch(e){
+        console.error("Failed to parse shopCouponsRaw:", e, shopCouponsRaw);
+        shopCouponsData = /*[[${shopCoupons}]]*/ {};
+    }
+
+    try {
+        if (platformCouponsRaw && typeof platformCouponsRaw === 'string') {
+            platformCouponsData = JSON.parse(platformCouponsRaw);
+        } else if (platformCouponsRaw) {
+            platformCouponsData = platformCouponsRaw;
+        } else {
+            platformCouponsData = /*[[${counponSans}]]*/ {};
+        }
+    } catch(e){
+        console.error("Failed to parse platformCouponsRaw:", e, platformCouponsRaw);
+        platformCouponsData = /*[[${counponSans}]]*/ {};
+    }
+
+    try {
+        if (freeshipCouponsRaw && typeof freeshipCouponsRaw === 'string') {
+            freeshipCouponsData = JSON.parse(freeshipCouponsRaw);
+        } else if (freeshipCouponsRaw) {
+            freeshipCouponsData = freeshipCouponsRaw;
+        } else {
+            freeshipCouponsData = /*[[${freeship}]]*/ {};
+        }
+    } catch(e){
+        console.error("Failed to parse freeshipCouponsRaw:", e, freeshipCouponsRaw);
+        freeshipCouponsData = /*[[${freeship}]]*/ {};
+    }
+
+    console.log("shopCouponsData:", shopCouponsData);
+    console.log("platformCoupons:", platformCouponsData);
+    console.log("freeshipCoupons:", freeshipCouponsData);
+    
+   /*  function formatMoney(val) {
+    	  return Number(val || 0).toLocaleString("vi-VN") + " ₫";
+    	} */
+  
+    	function formatCurrencyVND(amount) {
+    	    return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+    	}
+    // ===== Khai báo tập coupon sàn đã dùng (fix lỗi) =====
+    const usedPlatformCoupons = new Set();
+/*]]>*/
+</script>
+
+		<script th:inline="javascript">
+$(function() {
+    let selectedAddressId = $("#selectedAddress").data("id") || null;
+
+    // ===== Helper =====
+    function findCoupon(list, id) {
+        if (!list || !id) return null;
+        return list.find(c => String(c.couponId) === String(id)) || null;
+    }
+
+    function calculateDiscount(shopId, couponId, type) {
+        let discount = 0;
+        let $block = $(".shop-block[data-shop='" + shopId + "']");
+        let subtotal = 0;
+        let shipping = parseFloat($block.find(".shipping-fee").data("fee")) || 0;
+
+        $block.find(".checkout-item").each(function() {
+            let price = parseFloat($(this).data("price")) || 0;
+            let qty = parseInt($(this).data("qty")) || 1;
+            subtotal += price * qty;
+        });
+
+        let c = null;
+        if (type === "SHOP") {
+            let shopList = shopCouponsData[shopId] || [];
+            c = findCoupon(shopList, couponId);
+        } else if (type === "PLATFORM") {
+            let list = platformCouponsData[shopId] || [];
+            c = findCoupon(list, couponId);
+        } else if (type === "FREESHIP") {
+            let list = freeshipCouponsData[shopId] || [];
+            c = findCoupon(list, couponId);
+        }
+
+        if (!c) return 0;
+
+        if (type === "FREESHIP") {
+            discount = c.discountType === "PERCENT" ? shipping * c.discountValue / 100 : c.discountValue;
+            if (discount > shipping) discount = shipping;
+        } else if (type === "SHOP") {
+            let minOrder = parseFloat(c.minOrder) || 0;
+            if (subtotal >= minOrder) {
+                discount = c.discountType === "PERCENT" ? subtotal * c.discountValue / 100 : Math.min(c.discountValue, subtotal);
+            } else {
+                discount = 0;
+                $block.removeAttr("data-shop-coupon-id");
+                $(`#voucher-text-${shopId}`).text("Chưa chọn voucher shop")
+                    .removeClass("text-success").addClass("text-muted")
+                    .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+            }
+        } else if (type === "PLATFORM") {
+            let shopCouponId = $block.attr("data-shop-coupon-id") || null;
+            let shopDiscount = 0;
+            if (shopCouponId) {
+                let shopList = shopCouponsData[shopId] || [];
+                let shopC = findCoupon(shopList, shopCouponId);
+                if (shopC) {
+                    let minOrder = parseFloat(shopC.minOrder) || 0;
+                    if (subtotal >= minOrder) {
+                        shopDiscount = shopC.discountType === "PERCENT" ? subtotal * shopC.discountValue/100 : Math.min(shopC.discountValue, subtotal);
+                    }
+                }
+            }
+
+            let afterShop = Math.max(0, subtotal - shopDiscount);
+            let minOrder = parseFloat(c.minOrder) || 0;
+            if (afterShop >= minOrder) {
+                discount = c.discountType === "PERCENT" ? afterShop * c.discountValue / 100 : Math.min(c.discountValue, afterShop);
+            } else {
+                discount = 0;
+                $block.removeAttr("data-platform-coupon-id");
+                $(`#voucher-text-platform-${shopId}`).text("Chưa chọn voucher sàn")
+                    .removeClass("text-success").addClass("text-muted")
+                    .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+            }
+        }
+
+        return discount;
+    }
+
+    // ===== Init voucher hiển thị =====
+    $(document).ready(function() {
+        $(".shop-block").each(function() {
+            const $block = $(this);
+            const shopId = $block.data("shop");
+
+            const shopCouponId = $block.attr("data-shop-coupon-id");
+            if(shopCouponId) {
+                const v = calculateDiscount(shopId, shopCouponId, "SHOP");
+                $block.find(".shop-voucher-amount").text(formatCurrencyVND(v));
+                $block.find(".select-shop-voucher[data-type='shop']").text("Change").show();
+            }
+
+            const platformCouponId = $block.attr("data-platform-coupon-id");
+            if(platformCouponId) {
+                const v = calculateDiscount(shopId, platformCouponId, "PLATFORM");
+                $block.find(".shop-platform-amount").text(formatCurrencyVND(v));
+
+                $block.find(".select-shop-voucher[data-type='platform']").text("Change").show();
+                usedPlatformCoupons.add(String(platformCouponId));
+            }
+
+            const freeshipCouponId = $block.attr("data-freeship-coupon-id");
+            if(freeshipCouponId) {
+                const v = calculateDiscount(shopId, freeshipCouponId, "FREESHIP");
+                $block.find(".shop-freeship-amount").text(formatCurrencyVND(v));
+
+                $block.find(".select-shop-voucher[data-type='freeship']").text("Change").show();
+            }
+        });
+
+        updateTotal();
+    });
+
+    // Khi mở modal voucher sàn, disable các voucher đã dùng
+    $(document).on("click", ".select-shop-voucher[data-type='platform']", function() {
+        const $content = $("#voucherModalContent");
+        $content.find("input.modal-v-radio").each(function() {
+            const cid = $(this).data("coupon-id");
+            if (usedPlatformCoupons.has(String(cid))) {
+                $(this).prop("disabled", true);
+            }
+        });
+    });
+
+
+
+
+    // ===== Update shop total =====
+   function updateShopTotal($shopBlock) {
+    let subtotal = 0;
+    let shipping = parseFloat($shopBlock.find(".shipping-fee").data("fee")) || 0;
+
+    // 1) Tính subtotal shop
+    $shopBlock.find(".checkout-item").each(function() {
+        let price = parseFloat($(this).data("price")) || 0;
+        let qty = parseInt($(this).data("qty")) || 1;
+        subtotal += price * qty;
+    });
+
+    let shopCouponId = $shopBlock.attr("data-shop-coupon-id") || null;
+    let platformCouponId = $shopBlock.attr("data-platform-coupon-id") || null;
+    let freeshipCouponId = $shopBlock.attr("data-freeship-coupon-id") || null;
+
+    let shopDiscount = 0, platformDiscount = 0, freeshipDiscount = 0;
+    let shopId = $shopBlock.data("shop");
+
+    // --- Voucher shop ---
+    if (shopCouponId) {
+        let list = (shopCouponsData && shopCouponsData[shopId]) ? shopCouponsData[shopId] : [];
+        let c = findCoupon(list, shopCouponId);
+        if (c) {
+            let minOrder = parseFloat(c.minOrder) || 0;
+            if (subtotal >= minOrder) {
+                shopDiscount = c.discountType === "PERCENT" ? subtotal * Number(c.discountValue)/100 : Math.min(Number(c.discountValue), subtotal);
+            } else {
+                shopDiscount = 0;
+                $shopBlock.removeAttr("data-shop-coupon-id");
+                $(`#voucher-text-${shopId}`).text("Chưa chọn voucher shop")
+                    .removeClass("text-success").addClass("text-muted")
+                    .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+            }
+        }
+    }
+
+    // --- Voucher platform ---
+    if (platformCouponId) {
+    let listPlatform = (platformCouponsData && platformCouponsData[shopId]) ? platformCouponsData[shopId] : [];
+    let c = findCoupon(listPlatform, platformCouponId);
+        if (c) {
+            let afterShop = Math.max(0, subtotal - shopDiscount);
+            let minOrder = parseFloat(c.minOrder) || 0;
+            if (afterShop >= minOrder) {
+                platformDiscount = c.discountType === "PERCENT" ? afterShop * Number(c.discountValue)/100 : Math.min(Number(c.discountValue), afterShop);
+            } else {
+                platformDiscount = 0;
+                $shopBlock.removeAttr("data-platform-coupon-id");
+                $(`#voucher-text-platform-${shopId}`).text("Chưa chọn voucher sàn")
+                    .removeClass("text-success").addClass("text-muted")
+                    .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+            }
+        }
+    }
+
+    // --- Voucher freeship ---
+    if (freeshipCouponId) {
+    let listFree = (freeshipCouponsData && freeshipCouponsData[shopId]) ? freeshipCouponsData[shopId] : [];
+    let c = findCoupon(listFree, freeshipCouponId);
+        if (c) {
+            freeshipDiscount = c.discountType === "PERCENT" ? shipping * Number(c.discountValue)/100 : Number(c.discountValue);
+            if (freeshipDiscount > shipping) freeshipDiscount = shipping;
+        }
+    }
+
+    let shopTotal = subtotal + shipping - shopDiscount - platformDiscount - freeshipDiscount;
+    if (shopTotal < 0) shopTotal = 0;
+
+
+    $shopBlock.find(".shop-order-total").text(formatCurrencyVND(shopTotal));
+
+    return {subtotal, shipping, shopDiscount, platformDiscount, freeshipDiscount, shopTotal};
+}
+
+    // ===== Update all totals =====
+    function updateTotal() {
+        let subtotalAll=0, shippingTotal=0, totalShopDiscount=0, totalPlatformDiscount=0, totalFreeshipDiscount=0;
+
+        $(".shop-block").each(function() {
+            let shop = updateShopTotal($(this));
+            subtotalAll += shop.subtotal;
+            shippingTotal += shop.shipping;
+            totalShopDiscount += shop.shopDiscount;
+            totalPlatformDiscount += shop.platformDiscount;
+            totalFreeshipDiscount += shop.freeshipDiscount;
+        });
+        console.log(totalShopDiscount);
+        console.log(totalPlatformDiscount);
+
+        let shippingDiscountTotal = totalFreeshipDiscount;
+        let voucherDiscountTotal = totalShopDiscount + totalPlatformDiscount;
+        console.log("all dícount : " +voucherDiscountTotal)
+        let totalShipping = shippingTotal - shippingDiscountTotal;
+        if (totalShipping < 0) totalShipping = 0;
+
+        let grandTotal = subtotalAll + totalShipping - voucherDiscountTotal;
+        if (grandTotal < 0) grandTotal = 0;
+
+     
+        $("#subtotal").text(formatCurrencyVND(subtotalAll));
+        $("#shipping-total").text(formatCurrencyVND(shippingTotal));
+        $("#shipping-discount").text("-" + formatCurrencyVND(shippingDiscountTotal));
+        $("#voucher-discount").text("-" + formatCurrencyVND(voucherDiscountTotal));
+        $("#total").text(formatCurrencyVND(grandTotal));
+    }
+
+    // ===== Set button / remove state =====
+    function setVoucherButtonState($block, type, hasCoupon) {
+        var $btn = $block.find(".select-shop-voucher[data-type='" + type + "']");
+        var $clear = $block.find(".clear-voucher[data-type='" + type + "']");
+        if (hasCoupon) { $btn.text("Change").show(); $clear.show(); }
+        else { $btn.text("Select Voucher").show(); $clear.hide(); }
+    }
+    
+    function updateShippingFee(shopId, addressId) {
+        fetch('/checkout/shipping-fee', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ shopId: shopId, addressId: addressId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const feeElem = document.querySelector(`.shipping-fee[data-shop="${shopId}"]`);
+            if(feeElem) {
+                
+                feeElem.textContent = formatCurrencyVND(data.fee);
+                feeElem.dataset.fee = data.fee;
+            }
+        });
+    }
+
+    // ===== Collect order data =====
+    function collectOrderData() {
+        let cartItemIds = [];
+        let shopCoupons = [];
+
+        $(".shop-block").each(function () {
+            let $shop = $(this);
+            let shopId = $shop.data("shop");
+            let shopCouponId = $shop.attr("data-shop-coupon-id") ? parseInt($shop.attr("data-shop-coupon-id")) : null;
+            let platformCouponId = $shop.attr("data-platform-coupon-id") ? parseInt($shop.attr("data-platform-coupon-id")) : null;
+            let freeshipCouponId = $shop.attr("data-freeship-coupon-id") ? parseInt($shop.attr("data-freeship-coupon-id")) : null;
+
+            shopCoupons.push({shopId, shopCouponId, platformCouponId, freeshipCouponId});
+
+            $shop.find(".checkout-item").each(function () {
+                let cartId = $(this).data("id");
+                if (cartId) cartItemIds.push(parseInt(cartId));
+            });
+        });
+
+        let methodPayment = $("input[name='payment']:checked").val();
+        
+        let selectedAddressId = $("input[name='address']:checked").attr("id");
+
+        return {cartItemIds, shopCoupons, methodPayment, idAddress : selectedAddressId, token};
+    }
+
+    // ===== Render voucher list in modal =====
+     function renderVoucherList(type, shopId, preSelectedId) {
+        var $content = $("#voucherModalContent").empty();
+        var list = [];
+
+        if (type === "shop") { 
+            list = (shopCouponsData && shopCouponsData[shopId]) ? shopCouponsData[shopId] : []; 
+            $content.append("<h6>Shop Vouchers</h6>"); 
+        } else if (type === "platform") { 
+            list = (platformCouponsData && platformCouponsData[shopId]) ? platformCouponsData[shopId] : []; 
+            $content.append("<h6>Platform Discounts</h6>"); 
+        } else { 
+            list = (freeshipCouponsData && freeshipCouponsData[shopId]) ? freeshipCouponsData[shopId] : []; 
+            $content.append("<h6>FreeShip Vouchers</h6>"); 
+        }
+
+        if (!list || list.length === 0) { $content.append('<div class="text-muted">No vouchers available.</div>'); return; }
+
+        // lấy danh sách coupon đã được dùng
+        let usedCoupons = [];
+        if (type === "platform") {
+            $(".shop-block").each(function() {
+                let pid = $(this).attr("data-platform-coupon-id");
+                if(pid) usedCoupons.push(String(pid));
+            });
+        }
+
+        list.forEach(function(it, idx){
+            var cid = it.couponId != null ? it.couponId : ("idx_" + idx);
+            // nếu platform đã dùng -> disable
+            var disabled = (type==="platform" && usedCoupons.includes(String(cid))) ? "disabled" : "";
+            var id = "modal_v_" + type + "_" + cid;
+           
+            var label = it.discountType==="PERCENT"
+                ? it.discountValue + "%"
+                : formatCurrencyVND(Number(it.discountValue));
+            var title = it.code ? (" — "+it.code) : (it.title ? (" — "+it.title) : "");
+            var checked = preSelectedId && String(preSelectedId)===String(cid)?"checked":"";
+
+            var radio = `<div class="form-check mb-2">
+                <input class="form-check-input modal-v-radio" type="radio" name="modal-voucher" id="${id}" ${checked} ${disabled}
+                    data-coupon-id="${cid}" data-discount-type="${it.discountType}" data-discount-value="${it.discountValue}">
+                <label class="form-check-label" for="${id}">${label}${title}${disabled?" (used)":""}</label>
+            </div>`;
+            $content.append(radio);
+        });
+    }
+  
+
+    // --- Open Voucher Modal ---
+    $(document).on("click", ".select-shop-voucher", function() {
+        const shopId = $(this).data("shop-id");
+        const type = $(this).data("type");
+
+        $("#voucherModal").data("shop-id", shopId).data("type", type);
+
+        const $block = $(".shop-block[data-shop='" + shopId + "']");
+        let preSelected = null;
+        if (type === "shop") preSelected = $block.attr("data-shop-coupon-id");
+        else if (type === "platform") preSelected = $block.attr("data-platform-coupon-id");
+        else preSelected = $block.attr("data-freeship-coupon-id");
+
+        renderVoucherList(type, shopId, preSelected);
+
+        // disable already used platform vouchers
+        /* if(type === "platform") {
+            $("#voucherModalContent input.modal-v-radio").each(function(){
+                const cid = $(this).data("coupon-id");
+                if(usedPlatformCoupons.has(String(cid))) {
+                    $(this).prop("disabled", true);
+                }
+            });
+        } */
+
+        const modalEl = document.getElementById('voucherModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    });
+
+    // --- Apply Voucher ---
+  $("#applyVoucher").off("click").on("click", function() {
+        const shopId = $("#voucherModal").data("shop-id");
+        const type = $("#voucherModal").data("type");
+        const $sel = $("#voucherModalContent input[name='modal-voucher']:checked");
+
+        if(!$sel.length) { alert("Please select a voucher!"); return; }
+
+        const couponId = $sel.data("coupon-id");
+        const dType = $sel.data("discount-type");
+        const dValue = Number($sel.data("discount-value")) || 0;
+
+        const $block = $(".shop-block[data-shop='" + shopId + "']");
+
+        // --- Shop ---
+        if(type === "shop") {
+
+            $block.find(".shop-voucher-amount").text(formatCurrencyVND(calculateDiscount(shopId, couponId, "SHOP")));
+            $block.attr("data-shop-coupon-id", couponId);
+            $block.find(".select-shop-voucher[data-type='shop']").text("Change").show();
+        }
+
+        // --- Platform ---
+        if(type === "platform") {
+            // remove old from usedPlatformCoupons if any
+            const old = $block.attr("data-platform-coupon-id");
+            if(old) usedPlatformCoupons.delete(String(old));
+            $block.find(".shop-platform-amount").text(formatCurrencyVND(calculateDiscount(shopId, couponId, "PLATFORM")));
+            $block.attr("data-platform-coupon-id", couponId);
+            $block.find(".select-shop-voucher[data-type='platform']").text("Change").show();
+            usedPlatformCoupons.add(String(couponId));
+        }
+
+        // --- FreeShip ---
+        if(type === "freeship") {
+            $block.find(".shop-freeship-amount").text(formatCurrencyVND(calculateDiscount(shopId, couponId, "FREESHIP")));
+            $block.attr("data-freeship-coupon-id", couponId);
+            $block.find(".select-shop-voucher[data-type='freeship']").text("Change").show();
+        }
+
+        // Close modal & update totals
+        const modalEl = document.getElementById('voucherModal');
+        const inst = bootstrap.Modal.getInstance(modalEl);
+        if(inst) inst.hide();
+
+        updateTotal();
+    });
+    
+    // --- Clear Voucher ---
+    $(document).on("click", ".clear-voucher", function() {
+        const $btn = $(this);
+        const $block = $(".shop-block[data-shop='" + $btn.data("shop-id") + "']");
+        const type = $btn.data("type");
+
+        if(type === "shop") {
+            $block.removeAttr("data-shop-coupon-id");
+            $block.find(".shop-voucher-amount").text("--");
+            $btn.hide();
+            $block.find(".select-shop-voucher[data-type='shop']").text("Select Voucher").show();
+        } else if(type === "platform") {
+            const old = $block.attr("data-platform-coupon-id");
+            if(old) usedPlatformCoupons.delete(String(old));
+            $block.removeAttr("data-platform-coupon-id");
+            $block.find(".shop-platform-amount").text("--");
+            $btn.hide();
+            $block.find(".select-shop-voucher[data-type='platform']").text("Select Voucher").show();
+        } else if(type === "freeship") {
+            $block.removeAttr("data-freeship-coupon-id");
+            $block.find(".shop-freeship-amount").text("--");
+            $btn.hide();
+            $block.find(".select-shop-voucher[data-type='freeship']").text("Select Voucher").show();
+        }
+
+        updateTotal();
+    });
+
+    // ===== Payment label =====
+    $("input[name='payment']").on("change",function(){$("#selectedPayment").text($(this).next("label").text());});
+
+    // ===== Confirm address =====
+    $("#confirmAddress").on("click",function(){
+        let selected=$("input[name='address']:checked");
+        if(!selected || !selected.length) return;
+        selectedAddressId = selected.val();
+        let name=selected.data("name"), phone=selected.data("phone"), full=selected.data("full");
+        $("#selectedAddress").html(`<span class="fw-bold">${name}</span> (+84) ${phone} <br>${full}`);
+        $("#addressModal").modal("hide");
+    });
+
+    // ===== Place order =====
+    $("#btnPlaceOrder").on("click", function () {
+    let orderData = collectOrderData();
+    console.log("Order Data:", orderData);
+
+    let methodPayment = orderData.methodPayment;
+    if (!methodPayment) {
+        alert("Please select a payment method!");
+        return;
+    }
+
+    $.ajax({
+        url: "/checkout/place-order",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(orderData),
+        success: function (res) {
+            if (res.success) {
+                if (methodPayment === "COD") {
+                    // Thanh toán COD thì redirect tới trang thành công
+                    window.location.href = "/account/";
+                } else {
+                    if (res.payment) {
+                        // Có link VNPAY thì redirect sang đó
+                        window.location.href = res.url;
+                    } else {
+                        // Đơn đã tạo nhưng chưa thanh toán
+                        alert(res.message || "Đơn hàng đã được tạo nhưng chưa thanh toán.");
+                        // Gợi ý: đưa khách về trang My Orders để retry
+                        window.location.href = "/account/" ;
+                    }
+                }
+            } else {
+                alert(res.errors || res.message || "Đặt hàng thất bại!");
+                if (res.redirectUrl) {
+                    window.location.href = res.redirectUrl;
+                }
+            }
+        },
+        error: function (err) {
+            console.error(err);
+            alert("Error placing order!");
+        }
+    });
+});
+
+    // ===== Init =====
+    updateTotal();
+});
+
+</script>
+	</div>
+</body>
+</html>

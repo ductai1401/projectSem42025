@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Create Product</title>
+<link rel="stylesheet" th:href="@{/admin/style/productStyle.css}" />
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+
+<style>
+/* Chiều cao & viền đẹp hơn */
+/* Gói lại vùng editor cho gọn (tuỳ chọn) */
+.quill-wrap {
+	max-width: 840px; /* giới hạn bề ngang nếu cần */
+}
+
+/* Giảm chiều cao vùng soạn thảo */
+#quillEditor .ql-editor {
+	min-height: 120px; /* ↓ từ 240px */
+	max-height: 200px; /* thêm trần để không quá cao */
+	overflow-y: auto; /* cuộn khi vượt quá */
+	padding: 10px; /* padding gọn hơn */
+	font-size: 0.95rem; /* chữ gọn hơn một chút */
+	line-height: 1.4;
+}
+
+/* Bo góc + viền gọn */
+#quillEditor .ql-container.ql-snow {
+	border-radius: 8px;
+}
+
+#quillEditor .ql-toolbar.ql-snow {
+	border-radius: 8px 8px 0 0;
+	position: relative;
+	z-index: 2;
+	padding: 6px; /* toolbar gọn hơn (mặc định 8–12px) */
+}
+
+/* Nén khoảng cách nhóm nút ở toolbar */
+.ql-toolbar.ql-snow .ql-formats {
+	margin-right: 6px; /* mặc định ~12px */
+}
+
+.ql-toolbar.ql-snow .ql-picker-label, .ql-toolbar.ql-snow .ql-picker-options
+	{
+	font-size: 12px; /* nhãn picker nhỏ lại */
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<h3 class="mb-0">Create Product</h3>
+						<small class="text-muted">Catalog / Products / Create</small>
+					</div>
+					<div class="d-flex gap-2">
+						<a class="btn btn-light border" th:href="@{/admin/product/}">←
+							Back to list</a>
+					</div>
+				</div>
+
+				<form id="createProductForm" class="card-like"
+					th:action="@{/admin/product/create}" method="post"
+					enctype="multipart/form-data" th:object="${product}" novalidate>
+
+					<input type="hidden" th:if="${_csrf != null}"
+						th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> <input
+						type="hidden" th:field="*{categoryId}" id="categoryId" />
+
+					<div class="row g-3">
+						<div class="col-12 col-lg-12">
+							<div class="card shadow-sm border-0">
+								<div class="card-header bg-white border-0 pb-0">
+									<div class="d-flex align-items-center justify-content-between">
+										<div>
+											<div class="fw-semibold">Parent Category (Optional)</div>
+											<div class="text-muted small">Chọn theo cấp (Level 1 →
+												2 → 3 → 4 → ...)</div>
+										</div>
+										<button type="button" id="btnClearParent"
+											class="btn btn-sm btn-outline-secondary">Clear</button>
+									</div>
+								</div>
+								<div class="card-body pt-3">
+									<div id="catBreadcrumb" class="mb-3 d-flex flex-wrap gap-2">
+										<span class="badge bg-light text-muted border">No
+											parent (top-level)</span>
+									</div>
+									<div class="input-group mb-3">
+										<span class="input-group-text bg-white border-end-0">🔍</span>
+										<input type="text" id="searchInput"
+											class="form-control border-start-0"
+											placeholder="Search category name...">
+										<button class="btn btn-primary" type="button" id="btnSearch">Search</button>
+									</div>
+
+									<div id="levelsStrip" class="levels-strip">
+										<div class="level-col" id="col-L1">
+											<div class="picker-panel">
+												<div class="picker-title">Level 1</div>
+												<ul class="picker-list" id="list-L1"></ul>
+											</div>
+										</div>
+									</div>
+
+									<input type="hidden" name="parentID" id="parentID" value="">
+									<div class="mt-3">
+										<button type="button" id="btnConfirm" class="btn btn-success"
+											style="display: none;">Confirm</button>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-lg-12">
+							<div class="section-title">Product Image</div>
+							<label class="btn btn-outline-secondary btn-sm mb-2">
+								Choose image <input type="file" name="imageFile" id="imageFile"
+								class="d-none" accept="image/*">
+							</label>
+							<div id="thumbsPreview"></div>
+
+							<!-- Hiển thị tên shop -->
+							<div class="mt-3">
+								<div class="form-floating">
+									<input type="text" class="form-control" id="shopNameDisplay"
+										th:value="${shopName != null && !#strings.isEmpty(shopName) ? shopName : 'sàn'}"
+										readonly> <label for="shopNameDisplay">Shop</label>
+								</div>
+
+								<!-- KHÔNG thêm th:value ở đây -->
+								<input type="hidden" th:field="*{shopId}" />
+
+								<div class="text-danger small"
+									th:if="${#fields.hasErrors('shopId')}" th:errors="*{shopId}"></div>
+							</div>
+
+
+
+
+							<div class="section-title">Basic Information</div>
+							<div class="row g-3">
+								<div class="col-12">
+									<div class="form-floating">
+										<label for="productName">Product name *</label> <input
+											type="text" class="form-control" th:field="*{productName}"
+											placeholder="Product name" id="productName">
+									</div>
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('productName')}"
+										th:errors="*{productName}"></div>
+								</div>
+
+								<div class="col-12">
+									<label class="form-label mb-2" for="quillEditor">Description</label>
+
+									<textarea class="d-none" th:field="*{description}"
+										id="descriptionInput"></textarea>
+
+									<div class="quill-wrap">
+										<div id="quillEditor"></div>
+									</div>
+
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('description')}"
+										th:errors="*{description}"></div>
+								</div>
+
+								<div class="col-12" id="productOptionSection">
+									<label for="productOption">Product option (JSON/Text)</label>
+									<!-- Textarea gốc: mặc định hiển thị, sẽ bị ẩn khi bấm Confirm -->
+									<div class="form-floating" id="productOptionFloating">
+										<textarea class="form-control" th:field="*{productOption}"
+											style="height: 100px" placeholder="Options JSON or text"
+											id="productOption"></textarea>
+									</div>
+
+									<!-- Cụm 4 input: mặc định ẩn, sẽ hiện khi bấm Confirm -->
+									<div id="optionQuad" class="row g-3" style="display: none;">
+										<div class="col-md-6">
+											<div class="form-floating">
+												<input type="text" class="form-control opt-field" id="opt1"
+													placeholder="Option 1"> <label for="opt1">Option
+													1</label>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-floating">
+												<input type="text" class="form-control opt-field" id="opt2"
+													placeholder="Option 2"> <label for="opt2">Option
+													2</label>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-floating">
+												<input type="text" class="form-control opt-field" id="opt3"
+													placeholder="Option 3"> <label for="opt3">Option
+													3</label>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-floating">
+												<input type="text" class="form-control opt-field" id="opt4"
+													placeholder="Option 4"> <label for="opt4">Option
+													4</label>
+											</div>
+										</div>
+									</div>
+
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('productOption')}"
+										th:errors="*{productOption}"></div>
+								</div>
+
+								<!-- Config biến thể (ghi JSON bởi JS khi generate) -->
+								<input type="hidden" id="variantConfig" name="variantConfig" />
+
+								<!-- Vùng chứa các variant (JS sẽ sinh từng “box” có: variantName, sku, price, quantity, unitCost, image) -->
+								<div class="col-12" id="additionalFields">
+									<label>ProductVariant</label>
+								</div>
+
+								<label class="btn btn-outline-secondary btn-sm mb-2"
+									id="addInputBtn" style="cursor: pointer;"> <i
+									class="fa fa-plus"></i> Add more
+								</label>
+
+								<div class="col-md-6">
+									<div class="form-floating">
+										<select class="form-select" th:field="*{status}" id="status">
+											<option th:value="1">Active (Visible)</option>
+											<option th:value="0">Inactive (Hidden)</option>
+										</select> <label for="status">Status *</label>
+									</div>
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+								</div>
+							</div>
+
+							<div class="d-flex gap-2 justify-content-end mt-3">
+								<a class="btn btn-light border" th:href="@{/admin/product/}">Back</a>
+								<button class="btn btn-primary" type="submit" id="bottomSubmit">Save
+									& Publish</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="alert alert-danger mt-3" th:if="${errorMessage}"
+						th:text="${errorMessage}"></div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Progress Toast -->
+	<div id="progressBox">
+		<header>Đang xử lý…</header>
+		<div class="body">
+			<div class="bar">
+				<div id="progressBar"></div>
+			</div>
+			<div class="muted" id="progressText">Bước 1/3</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script
+			src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+		<script th:src="@{/admin/script/productScript.js}"></script>
+	</div>
+</body>
+</html>

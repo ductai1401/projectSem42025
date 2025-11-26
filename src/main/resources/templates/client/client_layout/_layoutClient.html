@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title layout:fragment="title">Client Layout</title>
+
+<!-- Favicon -->
+<link rel="shortcut icon" th:href="@{/client/assets/images/favicon.ico}"
+	type="image/x-icon" />
+
+<!-- CSS -->
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/vendor/bootstrap.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/vendor/ionicons.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/animate.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/swiper-bundle.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/jquery-ui.min.css}" />
+<link rel="stylesheet" th:href="@{/client/assets/css/style.css}" />
+<style>
+/* --- Shopee Header Theme --- */
+.header-middle-default {
+	background-color: #ee4d2d !important;
+	padding: 10px 0;
+}
+
+.header-topbar {
+	background-color: #f53d2d !important;
+	color: #fff !important;
+	font-size: 14px;
+}
+
+.header-topbar a {
+	color: #fff !important;
+	text-decoration: none;
+}
+
+.header-topbar a:hover {
+	text-decoration: underline;
+}
+
+/* --- Shopee Search Bar --- */
+.shopee-search-wrapper {
+	background: transparent;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.shopee-search-bar {
+	width: 100%;
+	background: #fff;
+	border-radius: 4px;
+	overflow: hidden;
+	border: 2px solid #ee4d2d;
+}
+
+.shopee-input {
+	border: none;
+	outline: none;
+	padding: 10px 15px;
+	font-size: 15px;
+	width: 100%;
+}
+
+.shopee-btn {
+	background: #ee4d2d;
+	border: none;
+	color: #fff;
+	padding: 0 18px;
+	font-size: 18px;
+	transition: all 0.2s;
+}
+
+.shopee-btn:hover {
+	background: #d63d1c;
+}
+
+.shopee-search-suggestions a {
+	font-size: 13px;
+	text-decoration: none;
+	opacity: 0.9;
+	color: #fff;
+}
+
+.shopee-search-suggestions a:hover {
+	text-decoration: underline;
+	opacity: 1;
+}
+
+/* --- Icons màu trắng --- */
+.quick-links .quick-link-link {
+	color: #fff !important;
+}
+
+.quick-links .wishlist-count {
+	background: #fff;
+	color: #ee4d2d;
+	font-weight: bold;
+}
+
+/* --- Sticky effect --- */
+.active-sticky.sticky {
+	background-color: #ee4d2d !important;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+/* --- Dropdown My Account text color fix --- */
+.topbar-dropdown-menu {
+	background: #fff; /* nền trắng */
+	border: 1px solid #ddd;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.topbar-dropdown-menu .topbar-dropdown-nav-link {
+	color: #000 !important; /* chữ đen */
+	display: block;
+	padding: 8px 16px;
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.topbar-dropdown-menu .topbar-dropdown-nav-link:hover {
+	background-color: #f5f5f5;
+	color: #ee4d2d !important; /* hover cam Shopee */
+}
+</style>
+
+
+</head>
+
+<body>
+	<!-- offcanvas menu start -->
+	<div class="offcanvas offcanvas-start" id="offcanvasExample">
+		<div class="offcanvas-header">
+			<button type="button" class="btn-close text-reset"
+				data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+
+			<ul class="topbar-nav-info nav">
+				<li class="topbar-nav-info-item"><span
+					class="ion-ios-location-outline"></span> Store Location</li>
+				<li class="topbar-nav-info-item"><span
+					class="ion-ios-email-outline"></span><a
+					href="mailto:support@demothemes.com">support@demothemes.com</a></li>
+			</ul>
+
+			<!-- offcanvas-form -->
+			<div class="header-serch-form header-serch-form-right">
+				<form th:action="@{/search}" method="get">
+					<input class="form-control" type="search" name="keyword"
+						placeholder="Search product...">
+					<button class="form-search-btn" type="submit">
+						<span class="ion-ios-search-strong"></span>
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- offcanvas menu end -->
+
+	<!-- header section start -->
+	<header>
+		<div
+			class="header-topbar topbar-default topbar-border-bottom d-none d-lg-block">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-sm-6">
+						<ul class="topbar-nav-info nav">
+							<li class="topbar-nav-info-item"><span
+								class="ion-ios-location-outline"></span> Store Location</li>
+							<li class="topbar-nav-info-item"><span
+								class="ion-ios-email-outline"></span><a
+								href="mailto:support@demothemes.com">support@demothemes.com</a></li>
+						</ul>
+					</div>
+					<div class="col-sm-6">
+						<nav class="simple-menu">
+							<ul class="topbar-nav nav justify-content-end">
+								<li class="topbar-nav-item"><a class="topbar-nav-link"
+									th:href="@{/seller/}">Seller</a>
+								<li class="topbar-nav-item"><a class="topbar-nav-link"
+									th:href="@{/login/}">Login & Register</a>
+								<li class="topbar-nav-item"><a class="topbar-nav-link"
+									href="#">My Account</a> <!-- dropdown menu start -->
+									<ul class="topbar-dropdown-menu menu-position-right">
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" th:href="@{/account}">My
+												account</a></li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" th:href="@{/cart/}">Cart</a></li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" href="wishlist.html">Wishlist</a>
+										</li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" href="checkout.html">Checkout</a>
+										</li>
+									</ul> <!-- dropdown menu end --></li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- desktop menu start -->
+
+		<div class="header-middle-default d-none d-lg-block active-sticky">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-6 col-lg-3">
+						<div class="logo">
+							<a href="/home"> <img
+								th:src="@{/client/assets/images/logo/logo-dark.svg}"
+								alt="image_not_found">
+							</a>
+						</div>
+					</div>
+					<div class="col-6 col-lg-6">
+						<div class="shopee-search-wrapper">
+							<form th:action="@{/search}" method="get"
+								class="shopee-search-bar d-flex">
+								<input class="shopee-input flex-fill" type="search"
+									name="keyword"
+									placeholder="Tìm sản phẩm, thương hiệu và nhiều hơn nữa..."
+									th:value="${param.keyword}">
+								<button class="shopee-btn" type="submit">
+									<span class="ion-ios-search-strong"></span>
+								</button>
+							</form>
+							<div class="shopee-search-suggestions text-white small mt-1">
+								<a href="#" class="text-white me-2">Áo khoác nam</a> <a href="#"
+									class="text-white me-2">Dép nữ</a> <a href="#"
+									class="text-white me-2">Tai nghe Bluetooth</a> <a href="#"
+									class="text-white me-2">Balo laptop</a> <a href="#"
+									class="text-white">Ốp điện thoại</a>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="col-6 col-lg-3">
+						<ul class="nav align-items-center justify-content-end quick-links">
+							<li class="quick-link-item"><a
+								class="quick-link-link wishlist-link" href="wishlist.html">
+									<span class="wishlist-count">3</span>
+							</a></li>
+							<li class="quick-link-item"><a
+								class="quick-link-link shopping-cart" th:href="@{/cart/}"> <span
+									class="wishlist-count">4</span>
+							</a>
+							<li class="quick-link-item dropdown"><a
+								class="quick-link-link position-relative" href="#"
+								id="notifDropdown" data-bs-toggle="dropdown"
+								aria-expanded="false"> <span class="ion-ios-bell"></span> <span
+									th:if="${myUnreadCount > 0}" class="wishlist-count"
+									th:text="${myUnreadCount}">0</span>
+							</a>
+
+								<ul class="dropdown-menu dropdown-menu-end p-0"
+									aria-labelledby="notifDropdown" style="min-width: 340px;">
+									<li class="p-3 border-bottom">
+										<div class="d-flex align-items-center justify-content-between">
+											<strong>Thông báo</strong> <small
+												th:text="'Chưa đọc: ' + ${myUnreadCount}">Chưa đọc:
+												0</small>
+										</div>
+									</li>
+
+									<li>
+										<div style="max-height: 380px; overflow: auto;">
+											<!-- Duyệt qua danh sách đã lọc sẵn -->
+											<a th:each="n : ${myNotifications}"
+												class="d-block p-3 border-bottom text-decoration-none fw-bold"
+												th:href="@{/client/notifications/open/{id}(id=${n.notificationId})}">
+												<div class="small" th:utext="${n.content}">Nội dung...</div>
+												<div class="text-muted mt-1" style="font-size: 12px"
+													th:text="${#temporals.format(n.createdAt,'dd/MM/yyyy HH:mm')}">time</div>
+											</a>
+
+
+											<!-- Nếu không có thông báo -->
+											<div th:if="${#lists.isEmpty(myNotifications)}"
+												class="p-3 text-center text-muted">Chưa có thông báo
+												chưa đọc</div>
+										</div>
+									</li>
+
+									<li class="p-2">
+										<form th:action="@{/client/notifications/mark-all-read}"
+											method="post" class="px-2 py-1">
+											<button class="btn btn-sm btn-outline-secondary w-100">
+												Đánh dấu tất cả đã đọc</button>
+										</form>
+									</li>
+								</ul></li>
+							<div class="mini-carts">
+								<ul class="mini-cart">
+									<li class="mini-cart-item">
+										<div class="mini-cart-image">
+											<a href="#"><img
+												th:src="@{/client/assets/images/mini-cart/1.jpg}"
+												alt="image_not_found"></a>
+										</div>
+										<div class="mini-cart-content">
+											<a href="#" class="mini-cart-title">Gold Metal Fox Design
+												Trinket Tray</a>
+											<button class="remove-mini-cart">×</button>
+											<span class="mini-cart-quantity">9 × <span
+												class="mini-cart-total">$60.00</span>
+											</span>
+										</div>
+									</li>
+									<!-- mini cart item end -->
+									<li class="mini-cart-item">
+										<div class="mini-cart-image">
+											<a href="#"><img
+												th:src="@{/client/assets/images/mini-cart/2.jpg}"
+												alt="image_not_found"></a>
+										</div>
+										<div class="mini-cart-content">
+											<a href="#" class="mini-cart-title">Gold Metal Fox Design
+												Trinket Tray</a>
+											<button class="remove-mini-cart">×</button>
+											<span class="mini-cart-quantity">9 × <span
+												class="mini-cart-total">$60.00</span>
+											</span>
+										</div>
+									</li>
+
+									<!-- mini cart item end -->
+									<li class="mini-cart-item">
+										<div class="mini-cart-image">
+											<a href="#"><img
+												th:src="@{/client/assets/images/mini-cart/3.jpg}"
+												alt="image_not_found"></a>
+										</div>
+										<div class="mini-cart-content">
+											<a href="#" class="mini-cart-title">Gold Metal Fox Design
+												Trinket Tray</a>
+											<button class="remove-mini-cart">×</button>
+											<span class="mini-cart-quantity">9 × <span
+												class="mini-cart-total">$60.00</span>
+											</span>
+										</div>
+									</li>
+									<!-- mini cart item end -->
+								</ul>
+
+								<!-- mini cart sub total start -->
+								<ul class="mini-cart-sub-total">
+									<li class="mini-cart-sub-total-item"><span>Subtotal:</span>
+										<span>$2,580.00</span></li>
+								</ul>
+								<a th:href="@{/cart/}" class="btn btn-dark d-block w-100 mb-3">View
+									cart</a> <a href="#" class="btn btn-dark d-block w-100 mb-4">Checkout</a>
+							</div>
+							</li>
+
+
+
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- desktop menu end -->
+
+	</header>
+	<!-- header section end -->
+
+	<main>
+		<div layout:fragment="content"></div>
+	</main>
+
+	<!-- footer section start -->
+	<section class="news-letter-sectoin bg-dark">
+		<div class="container">
+			<div class="row g-0">
+				<div class="col-12">
+					<div class="border-bottom">
+						<div class="row align-items-center mb-n4">
+							<div class="col-lg-10 col-xl-9 mb-4">
+								<div class="news-letter-wrap">
+									<div class="news-letter-title">
+										<h3 class="title">Subscribe to Our Newsletter</h3>
+										<p>Sign up for our e-mail to get latest news.</p>
+									</div>
+
+									<form id="mc-form" class="news-letter-form" action="#">
+										<input id="mc-email" class="form-control" name="email"
+											type="email" placeholder="Your email address">
+										<button class="sign-up-btn" type="submit">Sign up</button>
+									</form>
+								</div>
+							</div>
+							<div class="col-lg-2 col-xl-3 mb-4">
+								<h3 class="social-title">Follow us on</h3>
+								<div class="social-links social-links-dark">
+									<a class="social-link facebook" href="#"><i
+										class="ion-social-facebook"></i></a> <a
+										class="social-link twitter" href="#"><i
+										class="ion-social-twitter"></i></a> <a class="social-link youtube"
+										href="#"><i class="ion-social-youtube"></i></a> <a
+										class="social-link instagram" href="#"><i
+										class="ion-social-instagram"></i></a> <a
+										class="social-link instagram" href="#"><i
+										class="ion-social-rss"></i></a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- footer start -->
+	<footer class="footer bg-dark">
+		<div class="container">
+			<div class="row mb-n4">
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<a class="footer-brand" href="/home"> <img
+							th:src="@{/client/assets/images/logo/logo-white.svg}"
+							alt="images_not_found">
+						</a> <span class="need-help">Need Help?</span>
+						<p>
+							<a href="mailto:support@demothemes.com">Support@demothemes.com</a>
+							<br> <a href="tel:0123456789">0123456789</a>
+
+						</p>
+					</div>
+				</div>
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">Information</h4>
+						<ul class="footer-menu">
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="wishlist.html">Wishlist</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="contact-us.html">Contact us</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="about-us.html">About Us</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="privacy-policy.html">Privacy Policy</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="frequently.html">Frequently Questions</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">Categories</h4>
+						<ul class="footer-menu">
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Limes</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Mangoes</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Chickpea</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Avocados</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Cauliflower</a></li>
+						</ul>
+					</div>
+
+				</div>
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">About Us</h4>
+						<p>We are a team of designers and developers that create high
+							quality Magento, Prestashop, Opencart.</p>
+						<p class="mb-0">Address: 4710-4890 Breckinridge St,
+							Fayettevill</p>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="copy-right bg-dark">
+			<div class="container">
+				<div class="row g-0">
+					<div class="col-12">
+						<div class="border-top">
+							<div class="row mb-n4">
+								<div class="col-12 col-md-6 mb-4 order-last order-md-first">
+									<p class="text-center text-md-start">
+										&copy; <span id="currentYear"></span> Made With <i
+											class="ion-heart"></i> By <a href="https://hasthemes.com">HasThemes</a>
+										All Rights Reserved
+									</p>
+								</div>
+								<div class="col-12 col-md-6 mb-4">
+									<div class="payment text-center text-md-end">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/logo/payment.png}"
+											alt="images_not_found">
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</footer>
+
+	<!-- footer end -->
+	<!-- footer section end -->
+	<!-- modals -->
+	<!-- Modal -->
+	<div class="modal fade" id="product-modal">
+		<div class="modal-dialog modal-dialog-centered product-modal-dialog">
+			<div class="modal-content">
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				<div class="modal-body">
+					<div class="row mb-n7">
+						<div class="col-md-5 mb-7">
+							<div class="modal-gallery-slider">
+								<div class="product-modal-gallery">
+									<div class="swiper-container">
+										<div class="swiper-wrapper">
+											<div class="swiper-slide product-modal-gallery-item">
+												<img th:src="@{/client/assets/images/products/large/1.jpg}"
+													alt="image_not_found">
+											</div>
+											<div class="swiper-slide product-modal-gallery-item">
+												<img th:src="@{/client/assets/images/products/large/2.jpg}"
+													alt="image_not_found">
+											</div>
+											<div class="swiper-slide product-modal-gallery-item">
+												<img th:src="@{/client/assets/images/products/large/3.jpg}"
+													alt="image_not_found">
+											</div>
+											<div class="swiper-slide product-modal-gallery-item">
+												<img th:src="@{/client/assets/images/products/large/4.jpg}"
+													alt="image_not_found">
+											</div>
+											<div class="swiper-slide product-modal-gallery-item">
+												<img th:src="@{/client/assets/images/products/large/5.jpg}"
+													alt="image_not_found">
+											</div>
+										</div>
+									</div>
+
+								</div>
+
+								<div class="product-modal-gallery-thumbs">
+									<div class="swiper-container">
+										<div class="swiper-wrapper">
+											<div class="swiper-slide product-modal-gallery-thumbs-item">
+												<a href="javascript:void(0)"> <img
+													th:src="@{/client/assets/images/products/small/1.jpg}"
+													alt="image_not_found">
+												</a>
+											</div>
+											<div class="swiper-slide product-modal-gallery-thumbs-item">
+												<a href="javascript:void(0)"> <img
+													th:src="@{/client/assets/images/products/small/2.jpg}"
+													alt="image_not_found"></a>
+											</div>
+											<div class="swiper-slide product-modal-gallery-thumbs-item">
+												<a href="javascript:void(0)"> <img
+													th:src="@{/client/assets/images/products/small/3.jpg}"
+													alt="image_not_found"></a>
+											</div>
+											<div class="swiper-slide product-modal-gallery-thumbs-item">
+												<a href="javascript:void(0)"> <img
+													th:src="@{/client/assets/images/products/small/4.jpg}"
+													alt="image_not_found"></a>
+											</div>
+											<div class="swiper-slide product-modal-gallery-thumbs-item">
+												<a href="javascript:void(0)"> <img
+													th:src="@{/client/assets/images/products/small/5.jpg}"
+													alt="image_not_found"></a>
+											</div>
+										</div>
+									</div>
+									<!-- If we need pagination -->
+									<div class="swiper-pagination"></div>
+								</div>
+
+							</div>
+						</div>
+						<div class="col-md-7 mb-7">
+							<div class="modal-product-des">
+								<h3 class="modal-product-title">
+									<a href="#">Tropical Juice Drink</a>
+								</h3>
+								<div class="reviews">
+									<span class="ion-star"></span> <span class="ion-star"></span> <span
+										class="ion-star"></span> <span class="ion-star"></span> <span
+										class="ion-star"></span>
+								</div>
+
+								<div class="product-price-wrapp-lg">
+									<span class="product-regular-price-lg">€43.80</span> <span
+										class="product-price-on-sale-lg">€39.42</span> <span
+										class="badge badge-lg bg-dark">Save 8%</span>
+								</div>
+
+								<div class="product-description-short">
+									<p>Lorem ipsum dolor sit amet, consectetur adipisicing
+										elit, sed do eiusmod tempor incididunt ut labore et dolore
+										magna aliqua. Ut enim ad minim veniam, quis nostrud
+										exercitation ullamco,Proin lectus ipsum, gravida et mattis
+										vulputate, tristique ut lectus</p>
+								</div>
+
+								<div class="product-variants">
+									<div class="product-variants-item">
+										<span class="control-label">Size</span> <select
+											class="form-control form-control-select">
+											<option value="1" title="S" selected="selected">S</option>
+											<option value="2" title="M">M</option>
+											<option value="3" title="L">L</option>
+											<option value="4" title="XL">XL</option>
+										</select>
+									</div>
+									<div class="product-variants-item">
+										<span class="control-label">color</span>
+										<ul>
+											<li class="input-container"><label> <input
+													class="input-color" type="checkbox"> <span
+													class="color"></span>
+											</label></li>
+											<li class="input-container"><label> <input
+													class="input-color" type="checkbox" checked="checked">
+													<span class="color"></span>
+											</label></li>
+										</ul>
+									</div>
+								</div>
+
+								<div class="product-add-to-cart">
+									<span class="control-label">Quantity</span>
+
+									<div class="product-count style d-flex my-4">
+										<div class="count d-flex">
+											<input type="number" min="1" max="100" step="1" value="1">
+											<div class="button-group">
+												<button class="count-btn increment">
+													<span class="ion-chevron-up"></span>
+												</button>
+												<button class="count-btn decrement">
+													<span class="ion-chevron-down"></span>
+												</button>
+											</div>
+										</div>
+										<div>
+											<button data-bs-toggle="modal" data-bs-target="#add-to-cart"
+												class="btn btn-dark">Add to cart</button>
+										</div>
+									</div>
+									<div class="product-add-to-card">
+										<a class="product-add-to-card-item" href="#"><i
+											class="ion-ios-heart-outline"></i> Add to wishlist</a> <a
+											class="product-add-to-card-item" href="#"><i
+											class="ion-android-sync"></i> My wishlist</a>
+									</div>
+
+									<div class="product-social-sharing">
+										<span>Share</span>
+										<ul>
+											<li class="facebook"><a href="#" target="_blank"><i
+													class="ion-social-facebook"></i></a></li>
+											<li class="twitter"><a href="#" target="_blank"><i
+													class="ion-social-twitter"></i></a></li>
+											<li class="pinterest"><a href="#" target="_blank"><i
+													class="ion-social-pinterest"></i></a></li>
+											<li class="google"><a href="#" target="_blank"><i
+													class="ion-social-google"></i></a></li>
+										</ul>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div class="modal fade" id="product-modal-compare">
+		<div class="modal-dialog modal-dialog-centered compare-modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>
+						<i class="ion-checkmark"></i> Product added to compare.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div class="modal fade" id="product-modal-wishlist">
+		<div class="modal-dialog modal-dialog-centered wishlist-modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>You must be logged in to manage your wishlist.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="addto-cart-modal">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div
+					class="modal-header bg-dark border-bottom-0 justify-content-center">
+					<span class="ion-android-done me-5"></span>
+					<h4 class="modal-title text-center">Product successfully added
+						to your shopping cart</h4>
+					<button type="button" class="btn-close position-absolute"
+						data-bs-dismiss="modal" aria-label="Close">×</button>
+				</div>
+				<div class="modal-body p-5">
+					<div class="row align-items-center align-items-lg-start">
+						<div class="col-lg-5">
+							<div class="row align-items-center align-items-lg-start">
+								<div class="col-md-6">
+									<img class="product-image"
+										th:src="@{/client/assets/images/products/product1.jpg}"
+										alt="images_not_found">
+								</div>
+								<div class="col-md-6">
+									<h6 class="product-name">Snacking Essentials Walnuts</h6>
+									<ul class="quntity-list">
+										<li>€23.06</li>
+										<li>Color: White</li>
+										<li>Quantity:1</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-7">
+							<div class="cart-content">
+								<p class="title">There are 3 items in your cart.</p>
+								<p>
+									<span>Total products:</span>€23.06
+								</p>
+								<p>
+									<span>Total shipping:</span>Free
+								</p>
+								<p>
+									<span>Taxes:</span> €0.00
+								</p>
+								<p>
+									<span>Total:</span> €23.06 (tax excl.)
+								</p>
+								<div class="cart-content-btn">
+									<button class="btn btn-sm btn-dark me-1 mt-3 mt-sm-0"
+										data-bs-dismiss="modal">Continue shopping</button>
+									<button class="btn btn-sm btn-dark mt-3 mt-sm-0">Proceed
+										to checkout</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<!-- Global Vendor, plugins JS -->
+
+	<!-- Vendor JS -->
+	<script th:src="@{/client/assets/js/vendor/jquery-3.6.0.min.js}"></script>
+	<script
+		th:src="@{/client/assets/js/vendor/jquery-migrate-3.3.2.min.js}"></script>
+	<script th:src="@{/client/assets/js/vendor/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/client/assets/js/vendor/modernizr-3.11.2.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/ajax-contact.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/jquery.waypoints.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/ajax-mailchimp.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/swiper-bundle.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/jquery-ui.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/scroll-up.js}"></script>
+	<script th:src="@{/client/assets/js/main.js}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<div layout:fragment="scripts"></div>
+</body>
+</html>

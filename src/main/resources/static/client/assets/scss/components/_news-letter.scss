@@ -1,0 +1,90 @@
+.news-letter-sectoin {
+  .border-bottom {
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
+}
+
+.news-letter-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  @include max-screen(767) {
+    flex-direction: column;
+  }
+}
+.news-letter-title {
+  @include min-screen(768) {
+    margin-right: 40px;
+  }
+  @include max-screen(767) {
+    text-align: center;
+  }
+  .title {
+    font-weight: 500;
+    font-size: 22px;
+    color: $white;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+}
+
+.social-title {
+  font-weight: 500;
+  font-size: 18px;
+  color: $white;
+  line-height: 1;
+  margin-bottom: 10px;
+  @include max-screen(768,991) {
+    margin-top: 30px;
+  }
+  @include max-screen(992,1199) {
+    text-align: right;
+  }
+  @include max-screen(991) {
+    text-align: center;
+  }
+}
+.news-letter-form {
+  position: relative;
+  @include min-screen(1200) {
+    margin-right: 50px;
+  }
+
+  @include max-screen(767) {
+    margin-top: 30px;
+  }
+  flex: 1;
+  .form-control {
+    height: 45px;
+    background: $white;
+    color: #b1b1b1;
+    padding: 10px 120px 10px 20px;
+    display: inline-block;
+    width: 100%;
+    font-size: 14px;
+    border: none;
+    border-radius: 25px;
+    &:focus {
+      box-shadow: none;
+      &::placeholder {
+        color: transparent;
+      }
+    }
+  }
+}
+.sign-up-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  text-transform: capitalize;
+  font-weight: 400;
+  font-size: 14px;
+  color: $white;
+  border: 0;
+  padding: 0 20px;
+  line-height: 45px;
+  height: 45px;
+  border-radius: 0 25px 25px 0;
+  background: $danger;
+  transition: all 0.3s linear;
+}

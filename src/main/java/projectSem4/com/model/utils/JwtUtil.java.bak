@@ -1,0 +1,86 @@
+package projectSem4.com.model.utils;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+
+public class JwtUtil {
+	// Khóa bí mật (>= 32 ký tự để an toàn)
+    private static final String SECRET = "your-very-strong-secret-key-at-least-32-chars";
+    private static final long EXP = 15 * 60 * 1000; // 15 phút
+
+    private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
+    // Tạo token cho user
+    public static String generateToken(String userId, String username, List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            throw new IllegalArgumentException("User phải có ít nhất 1 role");
+        }
+
+        return Jwts.builder()
+                .setSubject(userId)
+                .claim("email", username)
+                .claim("roles", roles) // Lưu roles dạng array JSON
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXP))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    // Kiểm tra token hợp lệ
+    public static boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    // Lấy userId từ token
+    public static String getUserId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    // Lấy role từ token
+    @SuppressWarnings("unchecked")
+    public static List<String> getRoles(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", List.class); // ép sang List
+    }
+
+    // Lấy username từ token (optional)
+    public static String getUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("username", String.class);
+    }
+    public static Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+}

@@ -1,0 +1,123 @@
+package projectSem4.com.service.client;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import projectSem4.com.dto.CartItemDto;
+import projectSem4.com.model.entities.Cart;
+import projectSem4.com.model.entities.CartItem;
+import projectSem4.com.model.repositories.CartItemRepository;
+import projectSem4.com.model.repositories.CartRepository;
+import projectSem4.com.model.repositories.ProductVariantRepository;
+
+
+@Service
+public class CartService {
+	@Autowired
+	private CartRepository cartRepo;
+	
+	@Autowired 
+	private ProductVariantRepository pVRepo; 
+	
+	@Autowired 
+	private CartItemRepository cartIRepo;
+	
+	@Autowired 
+	private InventoryService inventoryService;
+	
+	public Map<String, Object> loadData(){
+		Map<String, Object> dataCart = new HashMap<>();
+		
+		
+		return dataCart; 
+	}
+	
+//	public List<CartItemDTO> getCart(String username) {
+//        User user = userRepo.findByUsername(username).orElseThrow();
+//        Cart cart = cartRepo.findByUserId(user.getId())
+//                .orElseGet(() -> cartRepo.save(new Cart(user.getId())));
+//
+//        return cartItemRepo.findByCartId(cart.getId())
+//                .stream()
+//                .map(item -> new CartItemDTO(item.getProductId(), item.getQuantity()))
+//                .toList();
+//    }
+
+    public  Map<String, Object> addToCart(int quantity, int idVar ,int userId) {
+    	Map<String, Object> response = new HashMap<>();
+    	
+    	// 1. Kiểm tra tồn kho trước
+        Map<String, Object> stockCheck = inventoryService.checkStock(idVar, quantity);
+
+        if (!(boolean) stockCheck.get("success")) {
+            return stockCheck; // trả về luôn lỗi tồn kho
+        }
+       
+        
+        int inQtt = (Integer) stockCheck.get("availableQty");
+        var cartItem = new CartItem();
+        
+        var cart = cartRepo.findByUserId(userId);
+        if(cart != null) {
+        	var item = cartIRepo.findByCartAndVariant(cart.getCartId(), idVar);
+        	if(item != null) {
+        		int currentQuantity = item.getQuantity();
+        		int totalRequested = currentQuantity + quantity;
+        		if(totalRequested > inQtt) {
+        			item.setQuantity(inQtt);
+        			cartIRepo.updateCartItem(item);
+        			
+        			 response.put("success", true);
+        		     response.put("message", "The product is only left " + inQtt + " piece . The cart has been updated to the maximum quantity.");
+        		     response.put("finalQuantity", inQtt);
+        		     return response;
+        		}
+        		
+        	}
+        	
+        }
+        
+      //add vao cart
+        var a = cartRepo.AddCart(userId, idVar, quantity);
+        
+        if(a <= 0) {
+        	 response.put("success", false);
+             response.put("message", "There are no changes.");
+             response.put("productVariantId", idVar);
+        } else { 
+            response.put("success", true);
+            response.put("message", "Product has been added to the cart");
+            response.put("productVariantId", idVar);
+        }
+        return response;
+    }
+	
+    public List<CartItem> mergeCart(int userId, List<CartItemDto> localCart) {
+    	Cart cart = null;
+        for (CartItemDto item : localCart) {
+        	cart = cartRepo.findByUserId(userId);
+        	CartItem existing = null;
+            if(cart != null) {
+            	
+            	existing = cartIRepo.findByCartAndVariant(cart.getCartId(), item.getVariantId());
+            
+            }
+            int stock = inventoryService.getStock(item.getVariantId());
+
+            if (existing != null) {
+                int newQty = Math.min(existing.getQuantity() + item.getQuantity(), stock);
+                existing.setQuantity(newQty);
+                cartIRepo.updateCartItem(existing);
+            } else {
+                int newQty = Math.min(item.getQuantity(), stock);
+                cartRepo.AddCart(userId, item.getVariantId(), newQty);
+            }
+        }
+//        return cartIRepo.(userId);
+        return cartIRepo.findByCartId(cart.getCartId());
+    }
+}

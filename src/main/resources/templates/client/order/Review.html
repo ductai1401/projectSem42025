@@ -1,0 +1,391 @@
+<div th:fragment="riviewFragment">
+ 
+
+    <!-- Font Awesome cho icon sao -->
+    
+
+    <style>
+        .star-rating .fa-star { font-size: 24px; cursor: pointer; color: #ccc; }
+        .star-rating .fa-star.checked { color: #ffc107; }
+
+        .rv-star .fa-star { font-size: 16px; color: #ccc; margin-right: 2px; }
+        .rv-star .fa-star.filled { color: #ffc107; }
+
+        .rv-item + .rv-item { border-top: 1px solid rgba(0,0,0,.08); }
+        .rv-author { font-weight: 600; }
+        .rv-date { color: #6c757d; font-size: .875rem; }
+
+        /* Media bar (preview) */
+        .media-bar { display: flex; gap: .5rem; flex-wrap: nowrap; overflow-x: auto; padding-top: .25rem; }
+        .media-tile, .media-add-tile {
+            position: relative;
+            width: 80px; height: 80px;
+            border-radius: .5rem;
+            flex: 0 0 auto;
+            background: #f8f9fa;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .media-tile img, .media-tile video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .media-add-tile {
+            border: 2px dashed #cbd5e1; /* slate-300 */
+            color: #64748b;             /* slate-500 */
+            cursor: pointer;
+            user-select: none;
+        }
+        .media-add-tile:hover { background: #f1f5f9; } /* slate-100 */
+        .media-add-tile .plus {
+            font-size: 28px; line-height: 1;
+        }
+        .media-remove {
+            position: absolute; top: 2px; right: 2px;
+            background: rgba(0,0,0,.7);
+            color: #fff; border: 0; border-radius: 999px;
+            width: 20px; height: 20px; line-height: 18px;
+            text-align: center; font-size: 12px; cursor: pointer;
+        }
+        .media-counter { font-size: .85rem; color: #6c757d; }
+    </style>
+    <section class="section-padding-top section-padding-bottom">
+        <div class="container">
+            <div class="row mb-n4">
+                <!-- LEFT: Product summary + form -->
+                <div class="col-md-5 mb-4">
+                    <div class="card">
+                        <div class="card-body d-flex align-items-center">
+                            <img th:src="${productImage != null} ? ${productImage} : @{/images/no-image.png}"
+                                 alt="Product"
+                                 style="width: 90px; height: 90px; object-fit: cover;" class="me-3"/>
+                            <div>
+                                <h5 class="card-title mb-1" th:text="${productName}">Product name</h5>
+                                <div class="small text-muted">
+                                    Order: <span class="fw-semibold" th:text="${orderId}">ORDER-XXXX</span>
+                                </div>
+                                <div class="small text-muted">
+                                    Product ID: <span class="fw-semibold" th:text="${productId}">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Review form -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <strong>Viết đánh giá của bạn</strong>
+                        </div>
+                        <div class="card-body">
+                            <form id="reviewForm" enctype="multipart/form-data">
+                                <input type="hidden" name="orderId" th:value="${orderId}">
+                                <input type="hidden" name="productId" th:value="${productId}">
+
+                                <!-- Rating -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chấm điểm</label>
+                                    <div class="star-rating" id="ratingStars">
+                                        <i class="fa fa-star" data-value="1"></i>
+                                        <i class="fa fa-star" data-value="2"></i>
+                                        <i class="fa fa-star" data-value="3"></i>
+                                        <i class="fa fa-star" data-value="4"></i>
+                                        <i class="fa fa-star" data-value="5"></i>
+                                    </div>
+                                    <input type="hidden" name="rating" id="ratingInput" value="0">
+                                </div>
+
+                                <!-- Type -->
+                                <div class="mb-3">
+                                    <label class="form-label">Loại review</label>
+                                    <select class="form-select" name="typeRv">
+                                        <option value="0">Normal</option>
+                                        <option value="1">Feedback</option>
+                                    </select>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nội dung</label>
+                                    <textarea class="form-control" name="reviewText" rows="4"
+                                              placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+                                </div>
+
+                                <!-- Media (tối đa 4) -->
+                                <div class="mb-2 d-flex justify-content-between align-items-center">
+                                    <label class="form-label m-0">Ảnh/Video (tối đa 4)</label>
+                                    <div class="media-counter"><span id="mediaCount">0</span>/4</div>
+                                </div>
+
+                                <!-- Input file ẩn, chỉ mở khi click ô dấu + -->
+                                <input type="file" id="mediaInput" name="files" multiple class="form-control"
+                                       accept="image/*,video/*" style="display:none;">
+
+                                <!-- Hàng preview ngang -->
+                                <div id="mediaBar" class="media-bar">
+                                    <!-- các tile sẽ render ở đây -->
+                                    <div id="addTile" class="media-add-tile" title="Thêm ảnh/video">
+                                        <span class="plus">＋</span>
+                                    </div>
+                                </div>
+
+                                <div id="uploadHelp" class="form-text mt-1">
+                                    Ảnh tối đa 5MB, video tối đa 20MB. Bạn có thể chọn tối đa <b>4</b> mục.
+                                </div>
+
+                                <div class="text-end mt-3">
+                                    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                                </div>
+                            </form>
+                            <div id="rvError" class="text-danger mt-2" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Reviews list -->
+                <div class="col-md-7 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>Reviews</strong>
+                            <small class="text-muted">
+                                Trung bình: <span id="avgRating">—</span> ★
+                                · Tổng: <span id="totalReviews">0</span>
+                            </small>
+                        </div>
+                        <div class="card-body" id="reviewsContainer">
+                            <div class="text-center text-muted py-3" id="rvEmpty">Chưa có đánh giá nào.</div>
+                            <div id="rvList"></div>
+
+                            <!-- Pagination -->
+                            <div class="d-flex justify-content-between align-items-center mt-3" id="rvPaging" style="display:none;">
+                                <button class="btn btn-outline-secondary btn-sm" id="rvPrev">Trước</button>
+                                <div class="small">Trang <span id="rvPage">1</span></div>
+                                <button class="btn btn-outline-secondary btn-sm" id="rvNext">Sau</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /RIGHT -->
+            </div>
+        </div>
+    </section>
+</div>
+
+<div layout:fragment="scripts">
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script>
+        const PRODUCT_ID = /*[[${productId}]]*/ null;
+
+        // ====== Star rating UI ======
+        document.querySelectorAll('#ratingStars .fa-star').forEach(star => {
+            star.addEventListener('click', function () {
+                const value = parseInt(this.getAttribute('data-value'));
+                document.getElementById('ratingInput').value = value;
+                document.querySelectorAll('#ratingStars .fa-star').forEach((s, idx) => {
+                    s.classList.toggle('checked', (idx + 1) <= value);
+                });
+            });
+        });
+
+        // ====== Media limit to 4 with add-tile ======
+        const MAX_MEDIA = 4;
+        const mediaInput = document.getElementById('mediaInput');
+        const mediaBar   = document.getElementById('mediaBar');
+        const addTile    = document.getElementById('addTile');
+        const mediaCount = document.getElementById('mediaCount');
+
+        // Lưu file người dùng đã chọn (không dựa vào input.files)
+        let selectedMedia = []; // [{file, url, type: 'image'|'video'}]
+
+        function updateCounter() {
+            mediaCount.textContent = String(selectedMedia.length);
+        }
+
+        function renderMediaBar() {
+            // Xóa hết tile (trừ addTile), sau đó thêm lại
+            Array.from(mediaBar.querySelectorAll('.media-tile')).forEach(el => el.remove());
+
+            selectedMedia.forEach((m, idx) => {
+                const tile = document.createElement('div');
+                tile.className = 'media-tile';
+
+                const rm = document.createElement('button');
+                rm.type = 'button';
+                rm.className = 'media-remove';
+                rm.textContent = '×';
+                rm.addEventListener('click', () => {
+                    // thu hồi URL
+                    if (m.url && m.url.startsWith('blob:')) URL.revokeObjectURL(m.url);
+                    selectedMedia.splice(idx, 1);
+                    renderMediaBar();
+                });
+
+                if (m.type === 'video') {
+                    const v = document.createElement('video');
+                    v.src = m.url;
+                    v.muted = true; v.playsInline = true;
+                    tile.appendChild(v);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = m.url;
+                    tile.appendChild(img);
+                }
+                tile.appendChild(rm);
+
+                // chèn trước addTile
+                mediaBar.insertBefore(tile, addTile);
+            });
+
+            // Hiển thị ô + khi còn slot
+            addTile.style.display = (selectedMedia.length < MAX_MEDIA) ? '' : 'none';
+            updateCounter();
+        }
+
+        addTile.addEventListener('click', () => {
+            if (selectedMedia.length >= MAX_MEDIA) return;
+            mediaInput.value = ''; // cho phép chọn lại cùng file
+            mediaInput.click();
+        });
+
+        mediaInput.addEventListener('change', () => {
+            const files = Array.from(mediaInput.files || []);
+            for (const f of files) {
+                if (selectedMedia.length >= MAX_MEDIA) break;
+                if (!f.type || (!f.type.startsWith('image') && !f.type.startsWith('video'))) continue;
+                const url = URL.createObjectURL(f);
+                selectedMedia.push({ file: f, url, type: f.type.startsWith('video') ? 'video' : 'image' });
+            }
+            renderMediaBar();
+        });
+
+        // ====== Error helpers ======
+        function showError(msg) {
+            const el = document.getElementById('rvError');
+            el.textContent = msg || 'Có lỗi xảy ra.';
+            el.style.display = 'block';
+        }
+        function clearError() {
+            const el = document.getElementById('rvError');
+            el.textContent = '';
+            el.style.display = 'none';
+        }
+
+        // ====== Submit form (multipart) ======
+        document.getElementById('reviewForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            clearError();
+
+            const review = {
+                orderId: this.orderId.value,
+                productId: parseInt(this.productId.value || 0),
+                rating: parseInt(document.getElementById('ratingInput').value || 0),
+                typeRv: parseInt(this.typeRv.value || 0),
+                reviewText: this.reviewText.value || '',
+                status: 1
+            };
+
+            const formData = new FormData();
+            formData.append("review", JSON.stringify({ review }));
+
+            // Gửi tối đa 4 file từ selectedMedia
+            selectedMedia.forEach(m => formData.append("files", m.file));
+
+            try {
+                const res = await fetch('/review/create-multipart', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.status === 413) {
+                    showError('File quá lớn. Vui lòng chọn file nhỏ hơn giới hạn cấu hình.');
+                    return;
+                }
+
+                let json = null;
+                try { json = await res.json(); } catch (_) {}
+
+                if (res.ok && json && json.success) {
+                    alert('Gửi đánh giá thành công!');
+                    setTimeout(() => { window.location.href = '/home'; }, 1000);
+                    return;
+                }
+
+                const msg = (json && (json.message || json.error)) || 'Gửi đánh giá thất bại';
+                showError(msg);
+
+            } catch (err) {
+                console.error(err);
+                showError('Có lỗi khi gửi đánh giá.');
+            }
+        });
+
+        // ====== Render sao cho list ======
+        function renderStarsFA(rating) {
+            const r = Math.max(0, Math.min(5, parseInt(rating || 0)));
+            return Array.from({length: 5}, (_, i) =>
+                `<i class="fa fa-star ${i < r ? 'filled' : ''}"></i>`).join('');
+        }
+
+        // ====== Load danh sách review bên phải ======
+        let currentPage = 1;
+        const pageSize = 6;
+        async function loadReviews(page = 1) {
+            if (!PRODUCT_ID) return;
+            try {
+                const url = `/review/by-product?productId=${PRODUCT_ID}&page=${page}&size=${pageSize}`;
+                const res = await fetch(url);
+                const json = await res.json();
+                const list  = json?.data || [];
+                const total = json?.total || 0;
+                const avg   = json?.averageRating != null ? Number(json.averageRating).toFixed(1) : '—';
+
+                $('#avgRating').text(avg);
+                $('#totalReviews').text(total);
+                const $list = $('#rvList');
+                $list.empty();
+
+                if (!list.length) {
+                    $('#rvEmpty').show();
+                } else {
+                    $('#rvEmpty').hide();
+                    list.forEach(rv => {
+                        const date  = rv.createdAt ? rv.createdAt.replace('T',' ').substring(0,16) : '';
+                        const medias = (rv.mediaList || [])
+                            .map(m => m.type === 1
+                                ? `<video src="${m.mediaUrl}" class="me-2 mb-2 rounded" width="96" height="96" controls></video>`
+                                : `<img src="${m.mediaUrl}" class="me-2 mb-2 rounded" style="width:96px;height:96px;object-fit:cover;border-radius:.25rem;">`
+                            ).join('');
+
+                        $list.append(`
+                          <div class="rv-item py-3">
+                            <div class="d-flex justify-content-between">
+                              <div class="rv-author">${rv.userName || 'Người dùng'}</div>
+                              <div class="rv-date">${date}</div>
+                            </div>
+                            <div class="rv-star my-1">${renderStarsFA(rv.rating)}</div>
+                            <div class="rv-text">${rv.reviewText || ''}</div>
+                            <div class="rv-medias d-flex flex-wrap mt-2">${medias}</div>
+                          </div>
+                        `);
+                    });
+                }
+
+                // Pagination
+                const totalPages = Math.max(1, Math.ceil(total / pageSize));
+                currentPage = Math.min(Math.max(1, page), totalPages);
+                $('#rvPage').text(currentPage);
+                if (totalPages > 1) {
+                    $('#rvPaging').show();
+                    $('#rvPrev').prop('disabled', currentPage <= 1);
+                    $('#rvNext').prop('disabled', currentPage >= totalPages);
+                } else {
+                    $('#rvPaging').hide();
+                }
+            } catch (e) { console.error(e); }
+        }
+        $('#rvPrev').on('click', () => loadReviews(currentPage - 1));
+        $('#rvNext').on('click', () => loadReviews(currentPage + 1));
+
+        // Khởi tạo
+        renderMediaBar();
+        loadReviews(1);
+    </script>
+</div>

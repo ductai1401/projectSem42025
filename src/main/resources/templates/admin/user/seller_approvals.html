@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Phê duyệt người bán</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="mb-4">📝 Phê duyệt người bán</h2>
+
+            <!-- Search form -->
+            <form class="row g-3 mb-4 justify-content-end" method="get" th:action="@{/admin/seller-approvals}">
+                <div class="col-md-4">
+                    <input type="text" name="keyword" class="form-control" placeholder="🔍 Tìm theo tên hoặc email" th:value="${keyword}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                </div>
+            </form>
+
+            <!-- Pending sellers table -->
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>👤 Họ tên</th>
+                        <th>📧 Email</th>
+                        <th>🏪 Cửa hàng</th>
+                        <th>📍 Địa chỉ</th>
+                        <th>📅 Ngày đăng ký</th>
+                        <th>⚙️ Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                   <tr>
+                        <td>1</td>
+                        <td>Phạm Thị C</td>
+                        <td>phamc@example.com</td>
+                        <td>Shop Cẩm Tú</td>
+                        <td>234 Nguyễn Trãi, Q1</td>
+                        <td>08/07/2025</td>
+                        <td>
+                            <button type="button" class="btn btn-info btn-sm mb-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#sellerDetailModal"
+                                    data-id="1"
+                                    data-name="Phạm Thị C"
+                                    data-email="phamc@example.com"
+                                    data-phone="0939990001"
+                                    data-store="Shop Cẩm Tú"
+                                    data-address="234 Nguyễn Trãi, Q1"
+                                    data-document="/admin/assets/images/app22.jpg"
+                                    data-joined="08/07/2025">👁 Xem</button>
+
+                            <form method="post" action="#" class="d-inline">
+                                <input type="hidden" name="id" value="1"/>
+                                <button class="btn btn-success btn-sm mb-1">✔ Phê duyệt</button>
+                            </form>
+                            <form method="post" action="#" class="d-inline">
+                                <input type="hidden" name="id" value="1"/>
+                                <button class="btn btn-danger btn-sm">✖ Từ chối</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Vũ Hồng D</td>
+                        <td>vuhongd@example.com</td>
+                        <td>Hoa Đất Việt</td>
+                        <td>55 Pasteur, Q3</td>
+                        <td>09/07/2025</td>
+                        <td>
+                            <button type="button" class="btn btn-info btn-sm mb-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#sellerDetailModal"
+                                    data-id="2"
+                                    data-name="Vũ Hồng D"
+                                    data-email="vuhongd@example.com"
+                                    data-phone="0988882222"
+                                    data-store="Hoa Đất Việt"
+                                    data-address="55 Pasteur, Q3"
+                                    data-document="cmnd_vhd_02.jpg"
+                                    data-joined="09/07/2025">👁 Xem</button>
+
+                            <form method="post" action="#" class="d-inline">
+                                <input type="hidden" name="id" value="2"/>
+                                <button class="btn btn-success btn-sm mb-1">✔ Phê duyệt</button>
+                            </form>
+                            <form method="post" action="#" class="d-inline">
+                                <input type="hidden" name="id" value="2"/>
+                                <button class="btn btn-danger btn-sm">✖ Từ chối</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <!-- <tr th:each="seller, iterStat : ${pendingSellers}">
+                        <td th:text="${iterStat.index + 1}">1</td>
+                        <td th:text="${seller.fullName}">Nguyễn Văn B</td>
+                        <td th:text="${seller.email}">b@gmail.com</td>
+                        <td th:text="${seller.storeName}">Store B</td>
+                        <td th:text="${seller.address}">123 Đường X</td>
+                        <td th:text="${#dates.format(seller.registeredAt, 'dd/MM/yyyy')}">01/07/2025</td>
+                        <td>
+                            <button class="btn btn-info btn-sm mb-1" 
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#sellerDetailModal"
+                                    th:data-id="${seller.id}"
+                                    th:data-name="${seller.fullName}"
+                                    th:data-email="${seller.email}"
+                                    th:data-phone="${seller.phone}"
+                                    th:data-store="${seller.storeName}"
+                                    th:data-address="${seller.address}"
+                                    th:data-document="${seller.identityDocument}"
+                                    th:data-joined="${#dates.format(seller.registeredAt, 'dd/MM/yyyy')}">👁 Xem</button>
+
+                            <form method="post" th:action="@{/admin/seller-approvals/approve}" class="d-inline">
+                                <input type="hidden" name="id" th:value="${seller.id}"/>
+                                <button class="btn btn-success btn-sm mb-1">✔ Phê duyệt</button>
+                            </form>
+                            <form method="post" th:action="@{/admin/seller-approvals/reject}" class="d-inline">
+                                <input type="hidden" name="id" th:value="${seller.id}"/>
+                                <button class="btn btn-danger btn-sm">✖ Từ chối</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pendingSellers)}">
+                        <td colspan="7" class="text-center text-muted">Không có yêu cầu nào đang chờ.</td>
+                    </tr> -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+<!-- Modal chi tiết người bán -->
+<div class="modal fade" id="sellerDetailModal" tabindex="-1" aria-labelledby="sellerDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-4 overflow-hidden border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="sellerDetailModalLabel">📋 Thông tin người bán</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <p><strong>👤 Họ tên:</strong> <span id="modalName"></span></p>
+                        <p><strong>📧 Email:</strong> <span id="modalEmail"></span></p>
+                        <p><strong>📱 Điện thoại:</strong> <span id="modalPhone"></span></p>
+                        <p><strong>📅 Ngày đăng ký:</strong> <span id="modalJoined"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>🏪 Tên cửa hàng:</strong> <span id="modalStore"></span></p>
+                        <p><strong>📍 Địa chỉ:</strong> <span id="modalAddress"></span></p>
+                        <p><strong>📎 Giấy tờ xác minh:</strong></p>
+                        <div>
+                             <a id="modalDocumentLink" href="#" target="_blank">
+                                <img id="modalDocumentImage" src="" class="img-fluid rounded border shadow-sm" style="max-height: 200px; cursor: zoom-in;" alt="Giấy tờ xác minh">
+                            </a>
+                        </div>
+                        <span id="modalDocument" class="badge bg-secondary mt-2"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+        .modal-dialog {
+            max-width: 800px;
+            margin: 6rem auto; /* tăng margin để tránh tràn navbar */
+        }
+
+        @media (min-width: 768px) {
+            .modal-dialog-centered {
+                align-items: center;
+            }
+        }
+    </style>
+    
+</div>
+
+<div layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('sellerDetailModal');
+
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+
+            document.getElementById('modalName').textContent = button.getAttribute('data-name');
+            document.getElementById('modalEmail').textContent = button.getAttribute('data-email');
+            document.getElementById('modalPhone').textContent = button.getAttribute('data-phone');
+            document.getElementById('modalJoined').textContent = button.getAttribute('data-joined');
+            document.getElementById('modalStore').textContent = button.getAttribute('data-store');
+            document.getElementById('modalAddress').textContent = button.getAttribute('data-address');
+            document.getElementById('modalDocument').textContent = button.getAttribute('data-document');
+
+            const docPath = button.getAttribute('data-document');
+            const docImg = document.getElementById('modalDocumentImage');
+            docImg.src = docPath;
+            docImg.alt = 'Giấy tờ xác minh: ' + button.getAttribute('data-document');
+
+            const docLink = document.getElementById('modalDocumentLink');
+            docLink.href = docPath;
+        });
+    });
+</script>
+</div>
+
+</body>
+</html>

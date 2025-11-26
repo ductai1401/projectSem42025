@@ -1,0 +1,111 @@
+<!-- Tab Return/Refund -->
+<div th:fragment="refundOrderListFragment(refundOrders)">
+  <div th:if="${refundOrders != null and !refundOrders.isEmpty()}">
+    <div th:each="order : ${refundOrders}">
+      
+      <div class="order-card mb-3 refund-card">
+        <!-- Header -->
+        <div class="order-card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="order-id">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                Hoàn tiền cho đơn #<span th:text="${order.orderId}"></span>
+              </span>
+              <div class="order-date mt-1">
+                <i class="bi bi-calendar3 me-1"></i>
+                <span th:text="${#temporals.format(order.requestDate, 'dd/MM/yyyy HH:mm')}"></span>
+              </div>
+            </div>
+            <span class="order-status-badge"
+                  th:classappend="${order.refundStatus == 0 ? 'status-pending' :
+                                   order.refundStatus == 1 ? 'status-approved' :
+                                   order.refundStatus == 2 ? 'status-rejected' :
+                                   order.refundStatus == 3 ? 'status-refunded' : 'status-default'}">
+              <i class="bi"
+                 th:classappend="${order.refundStatus == 0 ? 'bi-hourglass-split' :
+                                  order.refundStatus == 1 ? 'bi-check-circle' :
+                                  order.refundStatus == 2 ? 'bi-x-circle' :
+                                  order.refundStatus == 3 ? 'bi-cash-coin' : 'bi-question-circle'}">
+              </i>
+              <span th:text="${order.refundStatusText}"></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Refund body -->
+        <div class="order-card-body">
+          <div class="d-flex flex-column gap-2">
+            <div>
+              <i class="bi bi-cash me-2"></i>
+              <span>Số tiền hoàn: </span>
+              <b class="text-success"
+                 th:text="${#numbers.formatDecimal(order.refundAmount, 0, 'POINT', 0, 'COMMA')} + '₫'">0₫</b>
+            </div>
+            <div>
+              <i class="bi bi-chat-left-dots me-2"></i>
+              <span>Lý do hoàn: </span>
+              <span th:text="${order.reason}">Không đúng mô tả</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="order-card-footer d-flex justify-content-end gap-2">
+         <!--  <button class="btn btn-outline-primary btn-sm btn-view-detail"
+                  th:attr="data-order-id=${order.orderId}">
+            <i class="bi bi-eye me-1"></i>Chi tiết đơn hàng
+          </button> -->
+          <a
+						th:href="@{'/refund/' + ${order.orderId}}"
+						class="btn btn-outline-primary btn-sm">Chi tiết</a>
+          <button class="btn btn-outline-danger btn-sm"
+                  th:if="${order.refundStatus == 0}">
+            <i class="bi bi-x-circle me-1"></i>Hủy yêu cầu
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div th:unless="${refundOrders != null and !refundOrders.isEmpty()}" class="empty-state">
+    <i class="bi bi-arrow-counterclockwise"></i>
+    <h5>Không có yêu cầu hoàn tiền</h5>
+    <p>Bạn chưa yêu cầu hoàn tiền cho đơn hàng nào</p>
+  </div>
+</div>
+<!-- scripts -->
+	<div layout:fragment="scripts" th:inline="javascript">
+
+		<!-- inject server JSON (controller should add these strings) -->
+		<script th:inline="javascript">
+			function cancelRefund(refundId) {
+				if (!confirm('Are you sure you want to cancel this refund?'))
+					return;
+				$.post('/buyer/refunds/cancel', {
+					refundId : refundId
+				}, function(res) {
+					alert('Refund cancelled successfully!');
+					location.reload();
+				}).fail(function() {
+					alert('Error cancelling refund.');
+				});
+			}
+
+			function confirmReturning(refundId) {
+				if (!confirm('Confirm that you have returned the item?'))
+					return;
+				$.post('/buyer/refunds/confirm-return', {
+					refundId : refundId
+				}, function(res) {
+					alert('Return confirmed!');
+					location.reload();
+				}).fail(function() {
+					alert('Error confirming return.');
+				});
+			}
+		</script>
+	</div>
+</body>
+</html>

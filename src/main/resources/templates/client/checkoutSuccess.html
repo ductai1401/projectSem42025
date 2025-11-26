@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title>Thanh toán thành công</title>
+</head>
+<body>
+<section layout:fragment="content" class="container py-5">
+    <div class="text-center">
+        <h2 class="text-success mb-3">🎉 Thanh toán thành công!</h2>
+        <p th:text="${message}">Đơn hàng của bạn đã được thanh toán thành công.</p>
+
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Thông tin đơn hàng</h5>
+                <ul class="list-unstyled text-start">
+                    <li><strong>Mã đơn hàng:</strong> <span th:text="${orderId}"></span></li>
+                    <li><strong>Số tiền:</strong> <span th:text="${amount}"></span> VNĐ</li>
+                    <li><strong>Trạng thái:</strong> Đã thanh toán</li>
+                </ul>
+            </div>
+        </div>
+
+        <a href="/" class="btn btn-primary mt-4">Về trang chủ</a>
+        <a href="/user/orders" class="btn btn-outline-secondary mt-4">Xem đơn hàng</a>
+    </div>
+</section>
+</body>
+</html>

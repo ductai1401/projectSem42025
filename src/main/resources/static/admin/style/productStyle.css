@@ -1,0 +1,223 @@
+.input-container {
+	border: 1px solid #ccc;
+	padding: 15px;
+	margin-top: 10px;
+	border-radius: 5px;
+	background: #f9f9f9
+}
+
+.input-container .form-floating {
+	margin-bottom: 15px
+}
+
+#productSuggestions {
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+#addInputBtn {
+	display: inline-flex;
+	align-items: center;
+	background: #007bff;
+	color: #fff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px
+}
+
+#addInputBtn:hover {
+	background: #0056b3
+}
+
+#imagePreview {
+	margin-top: 10px;
+	width: 100%;
+	max-width: 300px;
+	max-height: 200px;
+	object-fit: cover;
+	border: 1px solid #ddd;
+	padding: 5px;
+	display: none
+}
+
+.card-like {
+	background: #fff;
+	border: 1px solid #eef0f3;
+	border-radius: 14px;
+	padding: 18px
+}
+
+.section-title {
+	font-weight: 600;
+	color: #334155;
+	margin-bottom: 10px
+}
+
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px
+}
+
+.chip {
+	background: #eef6ff;
+	color: #0b5ed7;
+	border: 1px solid #cfe5ff;
+	border-radius: 999px;
+	padding: .25rem .6rem;
+	font-size: .85rem
+}
+
+.picker-panel {
+	background: #fff;
+	border: 1px solid #eef0f3;
+	border-radius: 14px;
+	padding: 10px;
+	height: 320px;
+	display: flex;
+	flex-direction: column;
+	min-width: 260px
+}
+
+.picker-title {
+	font-weight: 600;
+	font-size: .95rem;
+	color: #475569;
+	margin: 4px 6px 8px
+}
+
+.picker-list {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+	overflow: auto;
+	flex: 1
+}
+
+.picker-list .item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-radius: 10px;
+	cursor: pointer;
+	user-select: none;
+	transition: all .15s ease;
+	border: 1px solid transparent
+}
+
+.picker-list .item:hover {
+	background: #f6f8fb;
+	border-color: #edf1f7
+}
+
+.picker-list .item.active {
+	background: #eef6ff;
+	border-color: #cfe5ff
+}
+
+.picker-list .item .chev {
+	opacity: .5
+}
+
+.levels-strip {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 8px;
+	margin-bottom: -8px;
+	scroll-behavior: smooth
+}
+
+.level-col {
+	flex: 0 0 auto
+}
+
+.level-col>.picker-panel {
+	height: 320px
+}
+/* progress */
+#progressBox {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	min-width: 260px;
+	max-width: 360px;
+	background: #fff;
+	border: 1px solid #eee;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+	display: none;
+	z-index: 9999
+}
+
+#progressBox header {
+	padding: 10px 12px;
+	border-bottom: 1px solid #f1f1f1;
+	font-weight: 600
+}
+
+#progressBox .body {
+	padding: 10px 12px
+}
+
+.bar {
+	width: 100%;
+	height: 8px;
+	background: #f2f4f7;
+	border-radius: 999px;
+	overflow: hidden
+}
+
+.bar>div {
+	height: 100%;
+	width: 0%;
+	background: #0b5ed7;
+	transition: width .2s
+}
+
+.muted {
+	color: #6b7280;
+	font-size: 12px;
+	margin-top: 6px
+}
+
+.sidebar .collapse:not(.show) {
+	display: none;
+}
+
+.sidebar .collapse.show {
+	display: block;
+}
+
+.sidebar .collapsing {
+	height: 0;
+	overflow: hidden;
+	transition: height .35s ease;
+}
+
+/* Không ghi đè nền của sidebar/submenu thành trắng */
+.sidebar, .sidebar .nav, .sidebar .nav .nav-item, .sidebar .nav .nav-item .nav-link
+	{
+	background-color: inherit; /* giữ nền theo theme */
+}
+
+/* Submenu trong suốt để lộ nền sidebar hiện tại */
+.sidebar .collapse, .sidebar .sub-menu {
+	background-color: transparent;
+	box-shadow: none;
+	border: 0;
+}
+
+/* Màu chữ submenu theo theme (nếu theme đã set thì kế thừa) */
+.sidebar .sub-menu .nav-link {
+	color: inherit;
+}
+
+/* Tuỳ chọn: giữ khoảng cách submenu gọn gàng theo theme */
+.sidebar .sub-menu .nav-link {
+	padding-left: 2rem;
+	line-height: 1.25rem;
+}

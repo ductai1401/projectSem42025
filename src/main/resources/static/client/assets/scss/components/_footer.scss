@@ -1,0 +1,92 @@
+.footer {
+  padding-top: 70px;
+  .title {
+    font-weight: 600;
+    position: relative;
+    color: $white;
+    font-size: 16px;
+    line-height: 1.5;
+    text-transform: capitalize;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      width: 50px;
+      height: 2px;
+      background: $danger;
+    }
+  }
+}
+.footer-widget {
+  p {
+    margin-bottom: 25px;
+    a {
+      color: inherit;
+      &:hover {
+        color: $danger;
+      }
+    }
+  }
+}
+
+.footer-brand {
+  display: block;
+  max-width: 140px;
+  margin-bottom: 35px;
+}
+.need-help {
+  display: inline-block;
+  font-weight: 600;
+  color: $white;
+  font-size: 16px;
+  line-height: 1;
+  text-transform: capitalize;
+  margin-bottom: 10px;
+}
+
+.footer-menu-items {
+  & + .footer-menu-items {
+    margin-top: 10px;
+  }
+}
+
+.footer-menu-link {
+  font-size: 14px;
+  line-height: 1.7142;
+  text-transform: capitalize;
+  color: #666;
+  transition: all 0.3s linear;
+  &:hover {
+    padding-left: 10px;
+    color: $danger;
+  }
+}
+
+.footer-payment {
+  display: block;
+  margin-top: 40px;
+}
+
+.copy-right {
+  margin-top: 70px;
+  .border-top {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+  p {
+    font-size: 14px;
+    i {
+      color: $danger;
+    }
+    a {
+      color: inherit;
+      &:hover {
+        color: $danger;
+      }
+    }
+  }
+}

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title layout:fragment="title">Client Layout</title>
+
+<!-- Favicon -->
+<link rel="shortcut icon" th:href="@{/client/assets/images/favicon.ico}"
+	type="image/x-icon" />
+
+<!-- CSS -->
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/vendor/bootstrap.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/vendor/ionicons.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/animate.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/swiper-bundle.min.css}" />
+<link rel="stylesheet"
+	th:href="@{/client/assets/css/plugins/jquery-ui.min.css}" />
+<link rel="stylesheet" th:href="@{/client/assets/css/style.css}" />
+</head>
+
+<body>
+	<!-- offcanvas menu start -->
+	<div class="offcanvas offcanvas-start" id="offcanvasExample">
+		<div class="offcanvas-header">
+			<button type="button" class="btn-close text-reset"
+				data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+
+			<!-- Info -->
+			<ul class="topbar-nav-info nav mb-3">
+				<li class="topbar-nav-info-item"><span
+					class="ion-ios-location-outline"></span> Store Location</li>
+				<li class="topbar-nav-info-item"><span
+					class="ion-ios-email-outline"></span> <a
+					href="mailto:support@demothemes.com">support@demothemes.com</a></li>
+				<li class="topbar-nav-info-item"><span
+					class="ion-ios-email-outline"></span> <a href>Sell With Us</a></li>
+			</ul>
+
+			<!-- Offcanvas login status -->
+			<!-- Offcanvas login status (gọn, không dùng <li> trong offcanvas) -->
+			<div class="mb-3">
+				<!-- Chưa đăng nhập -->
+				<a class="btn btn-dark w-100 mb-2" th:if="${session.userId == null}"
+					th:href="@{/login}"> Login & Register </a>
+
+				<!-- Đã đăng nhập -->
+				<div th:if="${session.userId != null}">
+					<div class="mb-2">
+						Hi, <strong
+							th:text="${session.fullName != null ? session.fullName : session.email}">User</strong>
+					</div>
+					<div class="d-grid gap-2">
+						<a class="btn btn-outline-dark" th:href="@{/account}">My
+							Account</a> <a class="btn btn-outline-dark" th:href="@{/cart/}">Cart</a>
+						<a class="btn btn-outline-dark" th:href="@{/wishlist}">Wishlist</a>
+						<a class="btn btn-danger" th:href="@{/logout}">Logout</a>
+					</div>
+				</div>
+			</div>
+
+
+			<!-- offcanvas-form -->
+			<div class="header-serch-form header-serch-form-right">
+				<form th:action="@{/search}" method="get">
+					<input class="form-control" type="search" name="keyword"
+						placeholder="Search product...">
+					<button class="form-search-btn" type="submit">
+						<span class="ion-ios-search-strong"></span>
+					</button>
+				</form>
+			</div>
+			<!-- offcanvas-form end -->
+
+			<!-- offcanvas-mobile-menu start -->
+			<nav id="offcanvasNav" class="offcanvas-menu">
+				<ul class="nav-main">
+					<li><a href="/">🏠 Home</a></li>
+
+					<li><a href="javascript:void(0)">🛍️ Shop</a>
+						<ul>
+							<li><a href="/products">All Products</a></li>
+							<li><a href="/flash-sale">⚡ Flash Sale</a></li>
+							<li><a href="/categories">Categories</a></li>
+							<li><a href="/brands">Brands</a></li>
+						</ul></li>
+
+					<li><a href="javascript:void(0)">📦 Orders</a>
+						<ul>
+							<li><a href="/orders">My Orders</a></li>
+							<li><a href="/cart">Shopping Cart</a></li>
+							<li><a href="/checkout">Checkout</a></li>
+							<li><a href="/wishlist">Wishlist</a></li>
+						</ul></li>
+
+					<li><a href="javascript:void(0)">💬 Support</a>
+						<ul>
+							<li><a href="/chat">Messages</a></li>
+							<li><a href="/help-center">Help Center</a></li>
+							<li><a href="/return-policy">Return Policy</a></li>
+							<li><a href="/privacy-policy">Privacy Policy</a></li>
+						</ul></li>
+
+					<li><a href="javascript:void(0)">👤 Account</a>
+						<ul>
+							<li><a href="/login">Login / Register</a></li>
+							<li><a href="/my-account">My Profile</a></li>
+							<li><a href="/notifications">Notifications</a></li>
+						</ul></li>
+
+					<li><a href="/contact-us">📞 Contact Us</a></li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+	<!-- offcanvas menu end -->
+
+	<!-- header section start -->
+	<header>
+		<!-- Topbar: chỉ hiện thông tin & trạng thái đăng nhập -->
+		<div class="header-topbar topbar-default topbar-border-bottom">
+			<div class="container">
+				<div class="row align-items-center">
+					<div class="col-sm-6">
+						<ul class="topbar-nav-info nav">
+							<li class="topbar-nav-info-item"><span
+								class="ion-ios-location-outline"></span> Store Location</li>
+							<li class="topbar-nav-info-item"><span
+								class="ion-ios-email-outline"></span> <a
+								href="mailto:support@demothemes.com">support@demothemes.com</a>
+							</li>
+						</ul>
+					</div>
+
+					<div class="col-sm-6">
+						<nav class="simple-menu">
+							<ul class="topbar-nav nav justify-content-end">
+								<!-- Chưa đăng nhập -->
+								<li class="topbar-nav-item" th:if="${session.userId == null}">
+									<a class="topbar-nav-link" th:href="@{/login}">Login &
+										Register</a>
+								</li>
+
+								<!-- Đã đăng nhập -->
+								<li class="topbar-nav-item dropdown"
+									th:if="${session.userId != null}"><a
+									class="topbar-nav-link" href="#" data-bs-toggle="dropdown">
+										Hi, <span
+										th:text="${session.fullName != null ? session.fullName : session.email}">User</span>
+								</a>
+									<ul
+										class="topbar-dropdown-menu menu-position-right dropdown-menu show-on-hover">
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" th:href="@{/account}">My
+												Account</a></li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" th:href="@{/cart/}">Cart</a>
+										</li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link" th:href="@{/wishlist}">Wishlist</a>
+										</li>
+										<li><hr class="dropdown-divider"></li>
+										<li class="topbar-dropdown-item"><a
+											class="topbar-dropdown-nav-link text-danger"
+											th:href="@{/logout}">Logout</a></li>
+									</ul></li>
+
+								<!-- Seller theo role -->
+								<li class="topbar-nav-item"
+									th:if="${session.userId != null and (session.role == 'ADMIN' or session.role == 'MANAGER')}">
+									<a class="topbar-nav-link" th:href="@{/seller/}">Seller</a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Menu chính rút gọn -->
+		<div class="header-middle-default active-sticky">
+			<div class="container">
+				<div class="row align-items-center">
+					<!-- Logo -->
+					<div class="col-lg-3">
+						<div class="logo">
+							<a th:href="@{/}"> <img
+								th:src="@{/client/assets/images/logo/logo-dark.svg}" alt="logo">
+							</a>
+						</div>
+					</div>
+
+					<!-- Nav -->
+					<div class="col-lg-6 text-center">
+						<nav>
+							<ul class="main-menu nav align-items-center">
+								<li class="main-menu-item"><a class="main-menu-link"
+									th:href="@{/}">Home</a></li>
+								<li class="main-menu-item"><a class="main-menu-link"
+									th:href="@{/shop}">Shop</a></li>
+								<li class="main-menu-item" th:if="${session.userId != null}">
+									<a class="main-menu-link" th:href="@{/account}">My Account</a>
+								</li>
+								<li class="main-menu-item"><a class="main-menu-link"
+									th:href="@{/cart/}">Cart</a></li>
+								<li class="main-menu-item"><a class="main-menu-link"
+									th:href="@{/contact}">Contact</a></li>
+							</ul>
+						</nav>
+					</div>
+
+					<!-- Quick links -->
+					<div class="col-lg-3 d-flex justify-content-end">
+						<ul class="nav align-items-center quick-links">
+							<li class="quick-link-item"><a
+								class="quick-link-link search" href="#"> <span
+									class="ion-ios-search-strong"></span>
+							</a>
+								<div class="header-serch-form header-serch-form-right">
+									<form>
+										<input class="form-control" type="search"
+											placeholder="Search product...">
+										<button class="form-search-btn" type="submit">
+											<span class="ion-ios-search-strong"></span>
+										</button>
+									</form>
+								</div></li>
+							<li class="quick-link-item"><a
+								class="quick-link-link shopping-cart" th:href="@{/cart/}"> <span
+									class="wishlist-count">0</span>
+							</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<!-- header section end -->
+
+	<main>
+		<div layout:fragment="content"></div>
+	</main>
+
+	<!-- footer section start -->
+	<section class="news-letter-sectoin bg-dark">
+		<div class="container">
+			<div class="row g-0">
+				<div class="col-12">
+					<div class="border-bottom">
+						<div class="row align-items-center mb-n4">
+							<div class="col-lg-10 col-xl-9 mb-4">
+								<div class="news-letter-wrap">
+									<div class="news-letter-title">
+										<h3 class="title">Subscribe to Our Newsletter</h3>
+										<p>Sign up for our e-mail to get latest news.</p>
+									</div>
+
+									<form id="mc-form" class="news-letter-form" action="#">
+										<input id="mc-email" class="form-control" name="email"
+											type="email" placeholder="Your email address">
+										<button class="sign-up-btn" type="submit">Sign up</button>
+									</form>
+								</div>
+							</div>
+							<div class="col-lg-2 col-xl-3 mb-4">
+								<h3 class="social-title">Follow us on</h3>
+								<div class="social-links social-links-dark">
+									<a class="social-link facebook" href="#"><i
+										class="ion-social-facebook"></i></a> <a
+										class="social-link twitter" href="#"><i
+										class="ion-social-twitter"></i></a> <a class="social-link youtube"
+										href="#"><i class="ion-social-youtube"></i></a> <a
+										class="social-link instagram" href="#"><i
+										class="ion-social-instagram"></i></a> <a
+										class="social-link instagram" href="#"><i
+										class="ion-social-rss"></i></a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- footer start -->
+	<footer class="footer bg-dark">
+		<div class="container">
+			<div class="row mb-n4">
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<a class="footer-brand" href="index.html"> <img
+							th:src="@{/client/assets/images/logo/logo-white.svg}"
+							alt="images_not_found">
+						</a> <span class="need-help">Need Help?</span>
+						<p>
+							<a href="mailto:support@demothemes.com">Support@demothemes.com</a><br>
+							<a href="tel:0123456789">0123456789</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">Information</h4>
+						<ul class="footer-menu">
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="wishlist.html">Wishlist</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="contact-us.html">Contact us</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="about-us.html">About Us</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="privacy-policy.html">Privacy Policy</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="frequently.html">Frequently Questions</a></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">Categories</h4>
+						<ul class="footer-menu">
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Limes</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Mangoes</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Chickpea</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Avocados</a></li>
+							<li class="footer-menu-items"><a class="footer-menu-link"
+								href="#">Cauliflower</a></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="col-lg-3 col-sm-6 mb-4">
+					<div class="footer-widget">
+						<h4 class="title">About Us</h4>
+						<p>We are a team of designers and developers that create high
+							quality Magento, Prestashop, Opencart.</p>
+						<p class="mb-0">Address: 4710-4890 Breckinridge St,
+							Fayettevill</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="copy-right bg-dark">
+			<div class="container">
+				<div class="row g-0">
+					<div class="col-12">
+						<div class="border-top">
+							<div class="row mb-n4">
+								<div class="col-12 col-md-6 mb-4 order-last order-md-first">
+									<p class="text-center text-md-start">
+										&copy; <span id="currentYear"></span> Made With <i
+											class="ion-heart"></i> By <a href="https://hasthemes.com">HasThemes</a>
+										All Rights Reserved
+									</p>
+								</div>
+								<div class="col-12 col-md-6 mb-4">
+									<div class="payment text-center text-md-end">
+										<a href="#"><img
+											th:src="@{/client/assets/images/logo/payment.png}"
+											alt="images_not_found"></a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!-- footer end -->
+
+	<!-- Scripts -->
+	<script th:src="@{/client/assets/js/vendor/jquery-3.6.0.min.js}"></script>
+	<script
+		th:src="@{/client/assets/js/vendor/jquery-migrate-3.3.2.min.js}"></script>
+	<script th:src="@{/client/assets/js/vendor/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/client/assets/js/vendor/modernizr-3.11.2.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/ajax-contact.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/jquery.waypoints.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/ajax-mailchimp.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/swiper-bundle.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/jquery-ui.min.js}"></script>
+	<script th:src="@{/client/assets/js/plugins/scroll-up.js}"></script>
+	<script th:src="@{/client/assets/js/main.js}"></script>
+	<div layout:fragment="scripts"></div>
+</body>
+</html>

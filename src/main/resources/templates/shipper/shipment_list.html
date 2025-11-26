@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title>Available Shipments - Shipper</title>
+<style>
+.shipment-card {
+	transition: all 0.3s ease;
+	cursor: pointer;
+	border: 2px solid transparent;
+}
+
+.shipment-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+	border-color: #0d6efd;
+}
+
+.distance-badge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+.earnings-badge {
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.map-preview {
+	height: 150px;
+	background: #e9ecef;
+	border-radius: 8px;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="container-fluid py-4">
+			<!-- Header with Status Toggle -->
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<div>
+					<h2 class="mb-0">
+						<i class="bi bi-truck me-2"></i>Available Shipments
+					</h2>
+					<p class="text-muted mb-0">Choose a suitable shipment to
+						deliver</p>
+				</div>
+				<div class="form-check form-switch">
+					<input class="form-check-input" type="checkbox"
+						id="availableToggle" th:checked="${shipper.isAvailable}"
+						onchange="toggleAvailability()"> <label
+						class="form-check-label" for="availableToggle"> <span
+						class="badge"
+						th:classappend="${shipper.isAvailable} ? 'bg-success' : 'bg-secondary'">
+							<span th:text="${shipper.isAvailable} ? 'Available' : 'Busy'"></span>
+					</span>
+					</label>
+				</div>
+			</div>
+
+			<!-- Statistics -->
+			<div class="row g-3 mb-4">
+				<div class="col-md-3">
+					<div class="card bg-primary text-white">
+						<div class="card-body text-center">
+							<h6 class="mb-2">Today</h6>
+							<h3 class="mb-0" th:text="${todayDeliveries}">5</h3>
+							<small>deliveries completed</small>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card bg-success text-white">
+						<div class="card-body text-center">
+							<h6 class="mb-2">Today's Earnings</h6>
+							<h3 class="mb-0"
+								th:text="${#numbers.formatDecimal(todayEarnings, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+								250,000đ</h3>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card bg-warning text-white">
+						<div class="card-body text-center">
+							<h6 class="mb-2">Active Deliveries</h6>
+							<h3 class="mb-0" th:text="${activeDeliveries}">2</h3>
+							<small>shipments</small>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card bg-info text-white">
+						<div class="card-body text-center">
+							<h6 class="mb-2">Rating</h6>
+							<h3 class="mb-0">
+								<i class="bi bi-star-fill"></i> <span
+									th:text="${shipper.rating}">4.8</span>
+							</h3>
+							<small th:text="${shipper.totalDeliveries} + ' deliveries'">150
+								deliveries</small>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Filter & Sort -->
+			<div class="card mb-4">
+				<div class="card-body">
+					<form class="row g-3">
+						<div class="col-md-3">
+							<label class="form-label">Distance</label> <select
+								name="distance" class="form-select">
+								<option value="">All</option>
+								<option value="2">Within 2km</option>
+								<option value="5">Within 5km</option>
+								<option value="10">Within 10km</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">District</label> <select
+								name="district" class="form-select">
+								<option value="">All</option>
+								<option value="Q1">District 1</option>
+								<option value="Q3">District 3</option>
+								<option value="Q5">District 5</option>
+								<option value="Q10">District 10</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">Sort by</label> <select name="sort"
+								class="form-select">
+								<option value="distance">Closest</option>
+								<option value="earnings">Highest Earnings</option>
+								<option value="time">Creation Time</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">&nbsp;</label>
+							<button type="submit" class="btn btn-primary w-100">
+								<i class="bi bi-funnel"></i> Filter
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<!-- Available Shipments -->
+			<div class="row g-4"
+				th:if="${availableShipments != null and !availableShipments.isEmpty()}">
+				<div class="col-md-6 col-lg-4"
+					th:each="shipment : ${availableShipments}">
+					<div class="card shipment-card h-100">
+						<div class="card-body position-relative">
+							<!-- <span class="badge distance-badge"
+                              th:classappend="${shipment.distance < 3} ? 'bg-success' : 'bg-warning'"
+                              th:text="${shipment.distance} + ' km'">2.5 km</span> -->
+
+							<h5 class="card-title mb-3" th:text="${shipment.shipmentID}">SHIP001</h5>
+
+							<!-- Pickup Address -->
+							<div class="mb-3">
+								<small class="text-success d-flex align-items-start"> <i
+									class="bi bi-shop me-2 mt-1"></i> <span
+									th:text="${#strings.abbreviate(shipment.pickupAddress, 60)}">
+										123 Nguyen Hue, Dist 1, HCMC </span>
+								</small>
+							</div>
+
+							<!-- Delivery Address -->
+							<div class="mb-3">
+								<small class="text-primary d-flex align-items-start"> <i
+									class="bi bi-geo-alt-fill me-2 mt-1"></i> <span
+									th:text="${#strings.abbreviate(shipment.deliveryAddress, 60)}">
+										456 Le Loi, Dist 3, HCMC </span>
+								</small>
+							</div>
+
+							<!-- Recipient -->
+							<div class="mb-3">
+								<small class="text-muted"> <i class="bi bi-person me-2"></i>
+									<span th:text="${shipment.recipientName}">Nguyen Van A</span><br>
+									<i class="bi bi-telephone ms-4"></i> <span
+									th:text="${shipment.recipientPhone}">0901234567</span>
+								</small>
+							</div>
+
+							<hr>
+
+							<!-- Earnings & Items -->
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<small class="text-muted d-block">Delivery Fee</small> <span
+										class="earnings-badge text-success"
+										th:text="${#numbers.formatDecimal(shipment.shippingFee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+										30,000đ </span>
+								</div>
+								<div class="text-end">
+									<small class="text-muted d-block">Items</small> <span
+										class="badge bg-info">3 items</span>
+									<!--                                 <span class="badge bg-info" th:text="${shipment.itemCount} + ' items'">3 items</span> -->
+								</div>
+							</div>
+
+							<!-- Action Button -->
+							<button class="btn btn-primary w-100 mt-3 btn-accept-shipment"
+								th:data-shipment-id="${shipment.shipmentID}">
+								<i class="bi bi-check-circle"></i> Accept Shipment
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Empty State -->
+			<div class="text-center py-5"
+				th:if="${availableShipments == null or availableShipments.isEmpty()}">
+				<i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+				<h4 class="text-muted mt-3">No Available Shipments</h4>
+				<p class="text-muted">Please check back later or expand your
+					search radius</p>
+			</div>
+		</div>
+
+		<!-- Shipment Detail Modal -->
+		<div class="modal fade" id="shipmentDetailModal" tabindex="-1">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Shipment Details</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<h6 class="text-success mb-3">
+									<i class="bi bi-shop"></i> Pickup Address
+								</h6>
+								<p id="detailPickupAddress" class="mb-2"></p>
+								<small class="text-muted"> <i class="bi bi-clock"></i>
+									Pickup before: <span id="detailPickupTime"></span>
+								</small>
+							</div>
+							<div class="col-md-6">
+								<h6 class="text-primary mb-3">
+									<i class="bi bi-geo-alt-fill"></i> Delivery Address
+								</h6>
+								<p id="detailDeliveryAddress" class="mb-2"></p>
+								<p class="mb-0">
+									<strong>Recipient:</strong> <span id="detailRecipient"></span><br>
+									<strong>Phone:</strong> <span id="detailPhone"></span>
+								</p>
+							</div>
+						</div>
+
+						<hr>
+
+						<h6 class="mb-3">Items to Deliver</h6>
+						<div id="detailItems">
+							<!-- Items will be loaded here -->
+						</div>
+
+						<hr>
+
+						<div class="row">
+							<div class="col-6">
+								<p class="mb-1">
+									<strong>Distance:</strong> <span id="detailDistance"></span>
+								</p>
+								<p class="mb-1">
+									<strong>Estimated Time:</strong> <span id="detailEstimatedTime"></span>
+								</p>
+							</div>
+							<div class="col-6 text-end">
+								<p class="mb-1">
+									<strong>Delivery Fee:</strong>
+								</p>
+								<h4 class="text-success mb-0">
+									<span id="detailShippingFee"></span>đ
+								</h4>
+							</div>
+						</div>
+
+						<div class="alert alert-info mt-3" id="detailNotes"
+							style="display: none;">
+							<i class="bi bi-info-circle"></i> <strong>Note:</strong> <span
+								id="notesContent"></span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary"
+							id="acceptShipmentBtn">
+							<i class="bi bi-check-circle"></i> Accept Shipment
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div layout:fragment="scripts">
+			<script th:inline="javascript">
+			document.addEventListener("click", function (e) {
+			    const btn = e.target.closest(".btn-accept-shipment");
+			    if (!btn) return;
+
+			    e.stopPropagation();
+			    const shipmentId = btn.getAttribute("data-shipment-id");
+			    acceptShipment(shipmentId);
+			});
+			
+        function toggleAvailability() {
+            const isAvailable = document.getElementById('availableToggle').checked;
+            fetch('/shipper/toggle-availability', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ available: isAvailable })
+            }).then(() => location.reload());
+        }
+
+        function viewShipmentDetail(shipmentId) {
+            fetch('/shipper/shipments/' + shipmentId + '/preview')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('detailPickupAddress').textContent = data.pickupAddress;
+                    document.getElementById('detailPickupTime').textContent = data.pickupTime;
+                    document.getElementById('detailDeliveryAddress').textContent = data.deliveryAddress;
+                    document.getElementById('detailRecipient').textContent = data.recipientName;
+                    document.getElementById('detailPhone').textContent = data.recipientPhone;
+                    document.getElementById('detailDistance').textContent = data.distance + ' km';
+                    document.getElementById('detailEstimatedTime').textContent = data.estimatedTime;
+                    document.getElementById('detailShippingFee').textContent =
+                        new Intl.NumberFormat('vi-VN').format(data.shippingFee);
+
+                    // Load items
+                    let itemsHtml = '<div class="list-group">';
+                    data.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <img src="${item.image}" width="50" height="50" class="rounded me-3">
+                                    <div class="flex-grow-1">
+                                        <p class="mb-0">${item.productName}</p>
+                                        <small class="text-muted">${item.variantName}</small>
+                                    </div>
+                                    <span class="badge bg-primary">x${item.quantity}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    itemsHtml += '</div>';
+                    document.getElementById('detailItems').innerHTML = itemsHtml;
+
+                    // Notes
+                    if (data.notes) {
+                        document.getElementById('notesContent').textContent = data.notes;
+                        document.getElementById('detailNotes').style.display = 'block';
+                    } else {
+                        document.getElementById('detailNotes').style.display = 'none';
+                    }
+
+                    document.getElementById('acceptShipmentBtn').onclick = function() {
+                        acceptShipment(shipmentId);
+                    };
+
+                    new bootstrap.Modal(document.getElementById('shipmentDetailModal')).show();
+                });
+        }
+
+        function acceptShipment(shipmentId) {
+            if (confirm('Are you sure you want to accept this shipment?')) {
+                fetch('/shipper/shipments/' + shipmentId + '/accept', {
+                    method: 'POST'
+                })
+                .then(a => a.json())
+                .then(response => {
+                    if (response.status == "SUCCESS") {
+                        alert('Shipment accepted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Failed to accept shipment. ' + response.message);
+                    }
+                });
+            }
+        }
+    </script>
+		</div>
+	</div>
+</body>
+</html>

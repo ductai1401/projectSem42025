@@ -1,0 +1,19 @@
+.categries-section {
+  background-color: #f3f3f3;
+}
+.categories {
+  position: relative;
+}
+.categoris-thumb {
+}
+.categories-title {
+  font-weight: 500;
+  color: $dark;
+  position: absolute;
+  z-index: 1;
+  left: 30px;
+  bottom: 30px;
+  font-size: 17px;
+  text-transform: capitalize;
+  margin: 0;
+}

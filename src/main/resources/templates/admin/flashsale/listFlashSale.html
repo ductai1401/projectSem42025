@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Quản lý Flash Sale</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" th:href="@{/admin/style/style.css}" />
+
+<style>
+.modal-backdrop {
+	z-index: 1990 !important
+}
+
+.modal {
+	z-index: 2000 !important
+}
+
+:root {
+	--lz-primary: #1a9cb7;
+	--lz-deep: #6b4bff;
+	--lz-bg: #f7f9fb;
+	--lz-card: #fff;
+	--lz-text: #1f2937;
+	--lz-muted: #6b7280;
+	--lz-border: #e5e7eb
+}
+
+body {
+	background: var(--lz-bg)
+}
+
+.lz-hero {
+	background: linear-gradient(135deg, var(--lz-primary), var(--lz-deep));
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-shadow: 0 10px 25px rgba(27, 86, 143, .15)
+}
+
+.lz-hero h3 {
+	margin: 0;
+	font-weight: 700;
+	letter-spacing: .2px
+}
+
+.btn-lz {
+	background: #fff;
+	color: var(--lz-deep);
+	border: none;
+	border-radius: 999px;
+	padding: .55rem 1rem
+}
+
+.btn-lz:hover {
+	color: #fff;
+	background: #ff5a7d
+}
+
+.lz-card {
+	background: var(--lz-card);
+	border: 1px solid var(--lz-border);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+	overflow: hidden
+}
+
+.lz-toolbar {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--lz-border);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: flex-end;
+	background: linear-gradient(180deg, #fff, #fafbff)
+}
+
+.filter-bar {
+	background: #f9fafb;
+	border: 1px solid var(--lz-border);
+	border-radius: 12px;
+	padding: 1rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	width: 100%;
+	box-sizing: border-box
+}
+
+.filter-bar .form-control, .filter-bar .form-select {
+	border: 1px solid var(--lz-border);
+	border-radius: 10px;
+	background: #fff;
+	flex: 1 1 150px;
+	min-width: 150px;
+	font-size: 1rem;
+	max-width: 100%;
+	box-sizing: border-box
+}
+
+.filter-bar .form-control:focus, .filter-bar .form-select:focus {
+	box-shadow: none;
+	border-color: var(--lz-primary)
+}
+
+.filter-bar .btn {
+	min-width: 100px;
+	font-size: 1rem
+}
+
+.fs-table thead th {
+	background: #fbfbff;
+	color: #64748b;
+	border-bottom-color: var(--lz-border);
+	font-weight: 600
+}
+
+.fs-table tbody td {
+	vertical-align: middle
+}
+
+.action-icons i {
+	cursor: pointer;
+	margin: 0 5px
+}
+
+.action-icons .view {
+	color: #0d6efd
+}
+
+.action-icons .edit {
+	color: #ffc107
+}
+
+.action-icons .delete {
+	color: #dc3545
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Hero -->
+				<div class="lz-hero mb-3">
+					<h3 class="mb-0">⚡ Danh sách Flash Sale</h3>
+					<div class="actions">
+						<a class="btn btn-lz" th:href="@{/seller/flashsale/create}">➕
+							Tạo Flash Sale</a>
+					</div>
+				</div>
+
+				<!-- List -->
+				<div class="lz-card">
+					<div class="lz-toolbar">
+						<!-- Filter bar -->
+						<form class="filter-bar row g-3 align-items-end" method="get"
+							th:action="@{/seller/flashsale/}">
+							<div class="col-12 col-md-4">
+								<label class="form-label mb-1">Từ khóa</label> <input
+									class="form-control" type="search" name="keyword"
+									placeholder="Tìm theo tên Flash Sale" th:value="${keyword}">
+							</div>
+
+							<div class="col-12 col-md-3" th:if="${shops != null}">
+								<label class="form-label mb-1">Cửa hàng</label> <select
+									class="form-select" name="shopId" th:value="${shopId}">
+									<option value="">Tất cả</option>
+									<option th:each="s : ${shops}" th:value="${s.shopId}"
+										th:text="${s.shopName}">Shop</option>
+								</select>
+							</div>
+
+							<div class="col-12 col-md-2">
+								<label class="form-label mb-1">Sắp xếp</label> <select
+									class="form-select" name="sort" th:value="${sort}">
+									<option value="">Mới nhất</option>
+									<option value="name_az">Tên A→Z</option>
+									<option value="updated_desc">Cập nhật mới nhất</option>
+								</select>
+							</div>
+
+							<!-- Checkbox includeExpired -->
+							<div class="col-12 col-md-2">
+								<label class="form-label mb-1">Tùy chọn</label>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox"
+										id="includeExpired" name="includeExpired" value="true"
+										th:checked="${includeExpired}"> <label
+										class="form-check-label" for="includeExpired">Hiện cả
+										đã hết hạn</label>
+								</div>
+							</div>
+
+							<div class="col-6 col-md-1 d-grid">
+								<button class="btn btn-primary" type="submit">Lọc</button>
+							</div>
+							<div class="col-6 col-md-1 d-grid">
+								<a class="btn btn-outline-primary"
+									th:href="@{/seller/flashsale/}">Reset</a>
+							</div>
+						</form>
+					</div>
+
+					<!-- Table -->
+					<div class="table-responsive px-2 pb-2">
+						<table class="table fs-table">
+							<thead>
+								<tr>
+									<th style="width: 56px">#</th>
+									<th style="min-width: 260px">Tên Flash Sale</th>
+									<th style="min-width: 180px">Cửa hàng</th>
+									<th style="width: 180px">Bắt đầu</th>
+									<th style="width: 180px">Kết thúc</th>
+									<th style="width: 120px">Trạng thái</th>
+									<th style="width: 120px">Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="fs, st : ${flashSales}">
+									<td th:text="${st.count}">1</td>
+
+									<td><a class="link-primary fw-semibold"
+										th:href="@{/seller/flashsale/detail/{id}(id=${fs.flashSaleId})}"
+										th:text="${fs.name}">Tên Flash Sale</a>
+										<div class="text-muted small">
+											ID: <span th:text="${fs.flashSaleId}">0</span>
+										</div></td>
+
+									<td th:text="${fs.shopName}">Cửa hàng</td>
+
+									<td
+										th:text="${fs.startDate != null ? #temporals.format(fs.startDate, 'dd/MM/yyyy HH:mm') : '—'}">
+										01/01/2025 10:00</td>
+									<td
+										th:text="${fs.endDate != null ? #temporals.format(fs.endDate, 'dd/MM/yyyy HH:mm') : '—'}">
+										01/01/2025 22:00</td>
+
+									<!-- Trạng thái tính theo endDate so với 'bây giờ' -->
+									<td><span
+										th:if="${fs.endDate != null and fs.endDate.isBefore(T(java.time.LocalDateTime).now())}"
+										class="badge bg-secondary">Hết hạn</span> <span
+										th:if="${fs.endDate == null or !fs.endDate.isBefore(T(java.time.LocalDateTime).now())}"
+										class="badge bg-success">Đang hiển thị</span></td>
+
+									<td class="text-end action-icons"><a class="view"
+										th:href="@{/seller/flashsale/detail/{id}(id=${fs.flashSaleId})}"
+										title="Xem">👁</a> <a class="edit"
+										th:href="@{/seller/flashsale/{id}/edit(id=${fs.flashSaleId})}"
+										title="Sửa">✏️</a> <a class="delete"
+										th:href="@{/seller/flashsale/{id}(id=${fs.flashSaleId})}"
+										th:attr="data-id=${fs.flashSaleId}"
+										onclick="return confirm('Xóa Flash Sale này?')" title="Xóa">🗑</a>
+									</td>
+								</tr>
+
+								<tr th:if="${flashSales == null or #lists.isEmpty(flashSales)}">
+									<td colspan="7" class="text-center text-muted py-4">Chưa
+										có Flash Sale nào.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Pagination -->
+					<div class="pagination-wrapper mt-3 d-flex justify-content-center">
+						<nav th:if="${totalPages != null and totalPages > 1}">
+							<ul class="pagination">
+								<li class="page-item"
+									th:classappend="${currentPage == 1} ? ' disabled'"><a
+									class="page-link"
+									th:href="@{/seller/flashsale(page=${currentPage - 1},
+                                                keyword=${keyword},
+                                                shopId=${shopId},
+                                                sort=${sort},
+                                                includeExpired=${includeExpired})}">«</a>
+								</li>
+
+								<li class="page-item"
+									th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+									th:classappend="${pageNum == currentPage} ? ' active'"><a
+									class="page-link" th:text="${pageNum}"
+									th:href="@{/seller/flashsale(page=${pageNum},
+                                                keyword=${keyword},
+                                                shopId=${shopId},
+                                                sort=${sort},
+                                                includeExpired=${includeExpired})}">1</a>
+								</li>
+
+								<li class="page-item"
+									th:classappend="${currentPage == totalPages} ? ' disabled'">
+									<a class="page-link"
+									th:href="@{/seller/flashsale(page=${currentPage + 1},
+                                                keyword=${keyword},
+                                                shopId=${shopId},
+                                                sort=${sort},
+                                                includeExpired=${includeExpired})}">»</a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+				<!-- /.lz-card -->
+
+			</div>
+			<!-- /.container-fluid -->
+		</div>
+		<!-- /.content-wrapper -->
+	</div>
+	<!-- /layout:fragment content -->
+</body>
+</html>

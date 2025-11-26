@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <title>E-Wallet Management - Admin</title>
+    <style>
+        .wallet-card {
+            transition: transform 0.2s;
+        }
+        .wallet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .balance-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .owner-badge {
+            font-size: 0.875rem;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        .status-suspended {
+            background-color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="bi bi-wallet2 me-2"></i>E-Wallet Management
+            </h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createWalletModal">
+                <i class="bi bi-plus-circle me-2"></i>Create New Wallet
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Wallets</h6>
+                        <h3 class="mb-0" th:text="${totalWallets}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Balance</h6>
+                        <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h6 class="card-title">Active Wallets</h6>
+                        <h3 class="mb-0" th:text="${activeWallets}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">Suspended Wallets</h6>
+                        <h3 class="mb-0" th:text="${suspendedWallets}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/wallets}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Owner Type</label>
+                        <select name="ownerType" class="form-select">
+                            <option value="">All</option>
+                            <option value="USER" th:selected="${param.ownerType == 'USER'}">User</option>
+                            <option value="SHOP" th:selected="${param.ownerType == 'SHOP'}">Shop</option>
+                            <option value="PLATFORM" th:selected="${param.ownerType == 'PLATFORM'}">Platform</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All</option>
+                            <option value="1" th:selected="${param.status == '1'}">Active</option>
+                            <option value="0" th:selected="${param.status == '0'}">Locked</option>
+                            <option value="2" th:selected="${param.status == '2'}">Suspended</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Owner ID</label>
+                        <input type="number" name="ownerId" class="form-control"
+                               th:value="${param.ownerId}" placeholder="Enter ID">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <a th:href="@{/admin/wallets}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Wallets Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Owner ID</th>
+                            <th>Owner Name</th>
+                            <th>Balance</th>
+                            <th>Currency</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="wallet : ${wallets}">
+                            <td th:text="${wallet.walletID}">#001</td>
+                            <td>
+                                <span class="badge owner-badge"
+                                      th:classappend="${wallet.ownerType == 'USER'} ? 'bg-primary' :
+                                                      (${wallet.ownerType == 'SHOP'} ? 'bg-info' : 'bg-dark')"
+                                      th:text="${wallet.ownerType}">
+                                    USER
+                                </span>
+                            </td>
+                            <td th:text="${wallet.ownerID}">123</td>
+                            <td th:text="${wallet.ownerName}">John Doe</td>
+                            <td class="text-success fw-bold"
+                                th:text="${#numbers.formatDecimal(wallet.balance, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                1,000,000 VND
+                            </td>
+                            <td th:text="${wallet.currency}">VND</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${wallet.status == 1} ? 'status-active' :
+                                                      (${wallet.status == 0} ? 'status-inactive' : 'status-suspended')"
+                                      th:text="${wallet.status == 1} ? 'Active' :
+                                               (${wallet.status == 0} ? 'Locked' : 'Suspended')}">
+                                    Active
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(wallet.lastUpdated, 'dd/MM/yyyy HH:mm')}">
+                                24/10/2025 10:30
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-info"
+                                            th:onclick="'viewWallet(' + ${wallet.walletID} + ')'"
+                                            title="View details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-warning"
+                                            th:onclick="'editWallet(' + ${wallet.walletID} + ')'"
+                                            title="Edit wallet">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success"
+                                            th:onclick="'adjustBalance(' + ${wallet.walletID} + ')'"
+                                            title="Adjust balance">
+                                        <i class="bi bi-cash"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            th:onclick="'toggleStatus(' + ${wallet.walletID} + ')'"
+                                            th:title="${wallet.status == 1} ? 'Lock wallet' : 'Unlock wallet'">
+                                        <i class="bi" th:classappend="${wallet.status == 1} ? 'bi-lock' : 'bi-unlock'"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/wallets(page=${currentPage - 1})}">Previous</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/wallets(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/wallets(page=${currentPage + 1})}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Wallet Modal -->
+    <div class="modal fade" id="createWalletModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Wallet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/wallets/create}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Owner Type <span class="text-danger">*</span></label>
+                            <select name="ownerType" class="form-select" required>
+                                <option value="">Select...</option>
+                                <option value="USER">User</option>
+                                <option value="SHOP">Shop</option>
+                                <option value="PLATFORM">Platform</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Owner ID <span class="text-danger">*</span></label>
+                            <input type="number" name="ownerId" class="form-control"
+                                   placeholder="Enter owner ID" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Initial Balance</label>
+                            <input type="number" name="balance" class="form-control"
+                                   value="0" min="0" step="1000">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Currency</label>
+                            <select name="currency" class="form-select">
+                                <option value="VND" selected>VND</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Wallet Modal -->
+    <div class="modal fade" id="editWalletModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Wallet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editWalletForm" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="walletId" id="editWalletId">
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" id="editStatus" class="form-select">
+                                <option value="1">Active</option>
+                                <option value="0">Locked</option>
+                                <option value="2">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adjust Balance Modal -->
+    <div class="modal fade" id="adjustBalanceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adjust Balance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="adjustBalanceForm" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="walletId" id="adjustWalletId">
+                        <div class="mb-3">
+                            <label class="form-label">Current Balance</label>
+                            <input type="text" class="form-control" id="currentBalance" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Adjustment Type</label>
+                            <select name="adjustType" class="form-select" required>
+                                <option value="ADD">Add Money</option>
+                                <option value="SUBTRACT">Subtract Money</option>
+                                <option value="SET">Set New Balance</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Amount <span class="text-danger">*</span></label>
+                            <input type="number" name="amount" class="form-control"
+                                   min="0" step="1000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reason <span class="text-danger">*</span></label>
+                            <textarea name="reason" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function viewWallet(walletId) {
+            window.location.href = '/admin/wallets/' + walletId;
+        }
+
+        function editWallet(walletId) {
+            fetch('/admin/wallets/' + walletId + '/data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editWalletId').value = data.walletID;
+                    document.getElementById('editStatus').value = data.status;
+                    document.getElementById('editWalletForm').action = '/admin/wallets/' + walletId + '/update';
+                    new bootstrap.Modal(document.getElementById('editWalletModal')).show();
+                });
+        }
+
+        function adjustBalance(walletId) {
+            fetch('/admin/wallets/' + walletId + '/data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('adjustWalletId').value = data.walletID;
+                    document.getElementById('currentBalance').value =
+                        new Intl.NumberFormat('en-US').format(data.balance) + ' VND';
+                    document.getElementById('adjustBalanceForm').action = '/admin/wallets/' + walletId + '/adjust';
+                    new bootstrap.Modal(document.getElementById('adjustBalanceModal')).show();
+                });
+        }
+
+        function toggleStatus(walletId) {
+            if (confirm('Are you sure you want to change this wallet status?')) {
+                fetch('/admin/wallets/' + walletId + '/toggle-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(() => location.reload());
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

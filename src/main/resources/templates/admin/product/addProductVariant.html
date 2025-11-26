@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+  <title layout:fragment="title">Add Product Variants</title>
+  <!-- Tận dụng lại CSS của trang tạo product để có cùng UI/builder -->
+  <link rel="stylesheet" th:href="@{/admin/style/productStyle.css}" />
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="content-wrapper pt-3">
+    <div class="container-fluid">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h3 class="mb-0">
+            Thêm biến thể cho:
+            <span class="text-primary" th:text="${product != null ? product.productName : 'Sản phẩm'}">Sản phẩm</span>
+          </h3>
+          <small class="text-muted">
+            Product ID:
+            <span th:text="${product != null ? product.productId : productId}">#</span>
+          </small>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-light border"
+             th:href="@{/admin/product/detail/{id}(id=${product != null ? product.productId : productId})}">
+            ← Quay lại chi tiết
+          </a>
+          <a class="btn btn-outline-primary"
+             th:href="@{/admin/products/{id}/edit(id=${product != null ? product.productId : productId}, focus='options')}">
+            ✏️ Chỉnh sửa option
+          </a>
+        </div>
+      </div>
+
+      <!-- FORM: chỉ chứa hidden + vùng biến thể -->
+      <form id="addVariantsForm" class="card-like" novalidate>
+        <!-- CSRF (nếu có) -->
+        <input type="hidden"
+               th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}" />
+
+        <!-- productId cần để gọi API -->
+        <input type="hidden" id="pv_productId"
+               th:value="${product != null ? product.productId : productId}" />
+
+        <!-- LƯU tạm cấu hình option/values (nếu bạn muốn post kèm về server) -->
+        <input type="hidden" id="variantConfig" name="variantConfig" />
+
+        <!-- Variant Builder + danh sách biến thể -->
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-white border-0">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="fw-semibold">Variant Builder</div>
+                    <div class="text-muted small">Sinh nhanh biến thể theo 1–2 cấp tuỳ chọn</div>
+                  </div>
+                  <button type="button" id="addInputBtn" class="btn btn-sm btn-outline-primary">
+                    + Mở builder
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Option Builder sẽ được inject vào đây (phía trên additionalFields) -->
+                <div id="additionalFields" class="mt-2">
+                  <label class="d-block mb-2">Danh sách biến thể</label>
+                  <!-- Các "input-container" cho từng biến thể sẽ xuất hiện ở đây -->
+                </div>
+              </div>
+
+              <div class="card-footer bg-white border-0">
+                <div class="d-flex gap-2 justify-content-end">
+                  <a class="btn btn-light border"
+                     th:href="@{/admin/product/detail/{id}(id=${product != null ? product.productId : productId})}">
+                    Hủy
+                  </a>
+                  <button class="btn btn-primary" type="submit" id="btnSaveVariants">
+                    Lưu biến thể
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông báo lỗi chung (nếu muốn) -->
+        <div class="alert alert-danger mt-3 d-none" id="pv_errorBox"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Toast -->
+<div id="progressBox" style="display:none;">
+  <header>Đang xử lý…</header>
+  <div class="body">
+    <div class="bar"><div id="progressBar"></div></div>
+    <div class="muted" id="progressText">Bước 1/3</div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<div layout:fragment="scripts">
+		<script th:src="@{/admin/script/addVariantScript.js}"></script>
+	</div>
+</body>
+</html>

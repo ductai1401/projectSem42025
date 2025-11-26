@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Tạo Template Thông báo</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" th:href="@{/admin/style/style.css}" />
+
+<style>
+:root {
+	--lz-primary: #1a9cb7;
+	--lz-deep: #6b4bff;
+	--lz-bg: #f7f9fb;
+	--lz-card: #fff;
+	--lz-text: #1f2937;
+	--lz-muted: #6b7280;
+	--lz-border: #e5e7eb;
+}
+
+body {
+	background: var(--lz-bg);
+}
+
+.lz-hero {
+	background: linear-gradient(135deg, var(--lz-primary), var(--lz-deep));
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-shadow: 0 10px 25px rgba(27, 86, 143, .15);
+}
+
+.lz-card {
+	background: var(--lz-card);
+	border: 1px solid var(--lz-border);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+	overflow: hidden;
+}
+
+.lz-card .lz-header {
+	padding: 16px;
+	border-bottom: 1px solid var(--lz-border);
+	background: linear-gradient(180deg, #fff, #fafbff);
+}
+
+.lz-card .lz-body {
+	padding: 18px;
+}
+
+.form-control, .form-select {
+	border-radius: 10px;
+}
+
+.help {
+	color: var(--lz-muted);
+	font-size: .9rem;
+}
+
+.actions {
+	display: flex;
+	gap: .5rem;
+	flex-wrap: wrap;
+}
+
+.btn-pill {
+	border-radius: 999px;
+	padding: .55rem 1rem;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Hero -->
+				<div class="lz-hero mb-3">
+					<h3 class="mb-0">📑 Tạo Template Thông báo</h3>
+					<div class="actions">
+						<a class="btn btn-light btn-pill"
+							th:href="@{/admin/notification-templates}">← Quay lại danh
+							sách</a>
+					</div>
+				</div>
+
+				<!-- Card -->
+				<div class="lz-card">
+					<div class="lz-header">
+						<strong>Thông tin Template</strong>
+					</div>
+
+					<div class="lz-body">
+
+						<!-- ALERT hiển thị message -->
+						<div th:if="${message != null}" class="alert"
+							th:classappend="${ok} ? ' alert-success' : ' alert-danger'"
+							th:text="${message}">Message here</div>
+
+						<!-- FORM -->
+						<form th:action="@{/admin/notification-templates/create}"
+							method="post" th:object="${form}">
+							<div class="row g-3">
+
+								<!-- Code -->
+								<div class="col-12 col-md-4">
+									<label class="form-label">Mã Code <span
+										class="text-danger">*</span></label> <input type="text"
+										class="form-control" th:field="*{code}"
+										placeholder="Ví dụ: ORDER_CONFIRMED" />
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('code')}" th:errors="*{code}">Code
+										error</div>
+								</div>
+
+								<!-- Title -->
+								<div class="col-12 col-md-8">
+									<label class="form-label">Tiêu đề</label> <input type="text"
+										class="form-control" th:field="*{title}"
+										placeholder="Tiêu đề thông báo" />
+								</div>
+
+								<!-- Type -->
+								<div class="col-12 col-md-4">
+									<label class="form-label">Loại</label> <select
+										class="form-select" th:field="*{type}">
+										<option value="">-- Chọn --</option>
+										<option value="0">GENERAL</option>
+										<option value="1">PROMO</option>
+										<option value="2">ORDER</option>
+										<option value="3">SYSTEM</option>
+									</select>
+								</div>
+
+								<!-- Redirect URL -->
+								<div class="col-12 col-md-8">
+									<label class="form-label">Link điều hướng</label> <input
+										type="text" class="form-control" th:field="*{redirectUrl}"
+										placeholder="/client/orders/123" />
+								</div>
+
+								<!-- Content -->
+								<div class="col-12">
+									<label class="form-label">Nội dung <span
+										class="text-danger">*</span></label>
+									<textarea class="form-control" rows="4" th:field="*{content}"
+										placeholder="Ví dụ: Đơn hàng #{{orderCode}} đã được xác nhận."></textarea>
+									<div class="help">Có thể dùng placeholder {{orderCode}},
+										{{username}}...</div>
+									<div class="text-danger small"
+										th:if="${#fields.hasErrors('content')}" th:errors="*{content}">Content
+										error</div>
+								</div>
+
+								<!-- Active -->
+								<div class="col-12 col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox"
+											th:field="*{active}" /> <label class="form-check-label">Kích
+											hoạt</label>
+									</div>
+								</div>
+							</div>
+
+							<!-- Actions -->
+							<div class="mt-3 actions">
+								<button type="submit" class="btn btn-primary btn-pill">💾
+									Lưu</button>
+								<button type="reset" class="btn btn-outline-secondary btn-pill">↺
+									Nhập lại</button>
+								<a class="btn btn-light btn-pill"
+									th:href="@{/admin/notification-templates}">← Hủy</a>
+							</div>
+						</form>
+						<!-- /FORM -->
+					</div>
+				</div>
+				<!-- /.lz-card -->
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>

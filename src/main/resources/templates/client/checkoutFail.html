@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title>Thanh toán thất bại</title>
+</head>
+<body>
+<section layout:fragment="content" class="container py-5">
+    <div class="text-center">
+        <h2 class="text-danger mb-3">❌ Thanh toán thất bại</h2>
+        <p th:text="${message}">Có lỗi xảy ra trong quá trình thanh toán.</p>
+
+        <div class="alert alert-warning mt-4">
+            Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+        </div>
+
+        <a href="/checkout" class="btn btn-primary mt-4">Thử lại</a>
+        <a href="/" class="btn btn-outline-secondary mt-4">Về trang chủ</a>
+    </div>
+</section>
+</body>
+</html>

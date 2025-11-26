@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<meta charset="UTF-8">
+<title layout:fragment="title">Dash board</title>
+
+</head>
+<body>
+	<div layout:fragment="content">
+	 <div class="content-wrapper">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-xl-3 col-lg-6 stretch-card grid-margin">
+                  <div class="card mdc-card info-card info-card--success">
+                    <div class="card-inner">
+                      <h5 class="card-title">Borrowed</h5>
+                      <h5 class="font-weight-light pb-2 mb-1 border-bottom">$62,0076.00</h5>
+                      <p class="text-small text-muted">48% target reached</p>
+                      <div class="card-icon-wrapper">
+                        <i class="mdi mdi-file-document-box"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 stretch-card grid-margin">
+                  <div class="card mdc-card info-card info-card--danger">
+                    <div class="card-inner">
+                      <h5 class="card-title">Annual Profit</h5>
+                      <h5 class="font-weight-light pb-2 mb-1 border-bottom">$1,958,104.00</h5>
+                      <p class="text-small text-muted">55% target reached</p>
+                      <div class="card-icon-wrapper">
+                        <i class="mdi mdi-currency-eur"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 stretch-card grid-margin">
+                  <div class="card mdc-card info-card info-card--primary">
+                    <div class="card-inner">
+                      <h5 class="card-title">Lead Conversion</h5>
+                      <h5 class="font-weight-light pb-2 mb-1 border-bottom">$234,769.00</h5>
+                      <p class="text-small text-muted">87% target reached</p>
+                      <div class="card-icon-wrapper">
+                        <i class="mdi mdi-trending-up"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 stretch-card grid-margin">
+                  <div class="card mdc-card info-card info-card--info">
+                    <div class="card-inner">
+                      <h5 class="card-title">Average Income</h5>
+                      <h5 class="font-weight-light pb-2 mb-1 border-bottom">$1,200.00</h5>
+                      <p class="text-small text-muted">87% target reached</p>
+                      <div class="card-icon-wrapper">
+                        <i class="mdi mdi-credit-card"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-8 stretch-card grid-margin">
+                  <div class="card mdc-card">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-2 mb-sm-0">Revenue by location</h4>
+                        <div class="d-flex justtify-content-between align-items-center">
+                          <p class="d-none d-sm-block text-muted text-small mb-0 mr-2">Goal reached</p>
+                          <i class="mdi mdi-dots-vertical options-icon"></i>
+                        </div>
+                      </div>
+                      <div class="d-block d-sm-flex justify-content-between align-items-center">
+                        <h6 class="card-sub-title mb-0">Sales performance revenue based by country</h6>
+                        <div class="btn-group">
+                          <a href="#" class="btn btn-outline-light text-small text-muted border-0 font-weight-thin">1W</a>
+                          <a href="#" class="btn btn-outline-light text-small text-muted border-0 font-weight-thin">1M</a>
+                          <a href="#" class="btn btn-outline-light text-small text-muted border-0 font-weight-thin">3M</a>
+                          <a href="#" class="btn btn-outline-light text-small text-muted border-0 font-weight-thin">1Y</a>
+                          <a href="#" class="btn btn-outline-light text-small text-muted border-0 font-weight-thin">ALL</a>
+                        </div>
+                      </div>
+                      <div class="chart-container mt-4">
+                        <canvas id="revenue-chart" height="260"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4 stretch-card grid-margin">
+                  <div class="card mdc-card">
+                    <div class="card-body">
+                      <div class="d-flex d-lg-block d-xl-flex justify-content-between">
+                        <div>
+                          <h4 class="card-title">Order Statistics</h4>
+                          <h6 class="card-sub-title">Customers 58.39k</h6>
+                        </div>
+                        <div id="sales-legend" class="d-flex flex-wrap"></div>
+                      </div>
+                      <div class="chart-container mt-4">
+                        <canvas id="chart-sales" height="260"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6 stretch-card grid-margin">
+                  <div class="card mdc-card bg-success text-white">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <h3 class="font-weight-normal">Impressions</h3>
+                        <i class="mdi mdi-dots-vertical options-icon text-white"></i>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-4 stretch-card grid-margin">
+                          <div>
+                            <h5 class="font-weight-normal mt-2">Customers 58.39k</h5>
+                            <h2 class="font-weight-normal mt-3 mb-0">636,757K</h2>
+                          </div>
+                        </div>
+                        <div class="col-sm-8 stretch-card grid-margin">
+                          <canvas id="impressions-chart" height="80"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 stretch-card grid-margin">
+                  <div class="card mdc-card bg-info text-white">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <h3 class="font-weight-normal">Traffic</h3>
+                        <i class="mdi mdi-dots-vertical options-icon text-white"></i>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-4 stretch-card grid-margin">
+                          <div>
+                            <h5 class="font-weight-normal mt-2">Customers 58.39k</h5>
+                            <h2 class="font-weight-normal mt-3 mb-0">636,757K</h2>
+                          </div>
+                        </div>
+                        <div class="col-sm-8 stretch-card grid-margin">
+                          <canvas id="traffic-chart" height="80"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12 stretch-card grid-margin">
+                  <div class="card">
+                    <div class="row">
+                      <div class="col-sm-6 pr-xl-0">
+                        <div class="row">
+                          <div class="col-sm-12">
+                            <div class="row">
+                              <div class="col-sm-6 pr-xl-0">
+                                <div class="mdc-card border-bottom box-shadow-none rounded-0 statitics-card">
+                                  <div class="card-body">
+                                    <div class="d-flex justify-content-between statitics-card-header">
+                                      <h6 class="font-weight-light">VISITORS</h6>
+                                      <i class="mdi mdi-close-circle"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-4 statitics-card-content">
+                                      <div>
+                                        <h3>1,541</h3>
+                                        <h6 class="font-weight-light">Page views</h6>
+                                      </div>
+                                      <i class="mdi mdi-account-multiple-outline text-primary"></i>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-sm-6 pl-xl-0">
+                                <div class="mdc-card border-bottom box-shadow-none rounded-0 statitics-card">
+                                  <div class="card-body">
+                                    <div class="d-flex justify-content-between statitics-card-header">
+                                      <h6 class="font-weight-light">REVENUE</h6>
+                                      <i class="mdi mdi-close-circle"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-4 statitics-card-content">
+                                      <div>
+                                        <h3>416 M</h3>
+                                        <h6 class="font-weight-light">Primary</h6>
+                                      </div>
+                                      <i class="mdi mdi-cash text-info"></i>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-12">
+                            <div class="row">
+                              <div class="col-sm-6 pr-xl-0">
+                                <div class="mdc-card box-shadow-none rounded-0 statitics-card">
+                                  <div class="card-body">
+                                    <div class="d-flex justify-content-between statitics-card-header">
+                                      <h6 class="font-weight-light">TOTAL PRODUCTS</h6>
+                                      <i class="mdi mdi-close-circle"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-4 statitics-card-content">
+                                      <div>
+                                        <h3>3,541</h3>
+                                        <h6 class="font-weight-light">Active Listings</h6>
+                                      </div>
+                                      <i class="mdi mdi-gift text-success"></i>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-sm-6 pl-xl-0">
+                                <div class="mdc-card box-shadow-none rounded-0 statitics-card">
+                                  <div class="card-body">
+                                    <div class="d-flex justify-content-between statitics-card-header">
+                                      <h6 class="font-weight-light">MARKUP</h6>
+                                      <i class="mdi mdi-close-circle"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-4 statitics-card-content">
+                                      <div>
+                                        <h3>1,541</h3>
+                                        <h6 class="font-weight-light">Cost of Goods</h6>
+                                      </div>
+                                      <i class="mdi mdi-chart-bubble text-danger"></i>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6 pl-xl-0">
+                        <div class="card mdc-card box-shadow-none rounded-0">
+                          <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <div>
+                                <h4 class="card-title">Latest Orders</h4>
+                                <h6 class="card-sub-title mb-0">Customers 58.39k</h6>
+                              </div>
+                              <div>
+                                <a href="#" class="text-small font-weight-medium text-info mb-0">Show all</a>
+                              </div>
+                            </div>
+                            <div class="d-block d-md-flex align-items-center border-bottom pt-3 pb-3">
+                              <img th:src="@{/admin/assets/images/dashboard/image_1.jpg}" alt="">
+                              <div class="d-flex flex-column flex-grow-1 ml-md-4">
+                                <h5 class="font-weight-light mb-0">Limited Edition Collection</h5>
+                                <p class="font-weight-light">Fall 2019</p>
+                              </div>
+                            </div>
+                            <div class="d-block d-md-flex align-items-center pt-3">
+                              <img th:src="@{/admin/assets/images/dashboard/image_2.jpg}" alt="">
+                              <div class="d-flex flex-column flex-grow-1 ml-md-4">
+                                <p class="mb-0">Dark Blue Shoes - Limited Collection</p>
+                                <div class="d-flex justify-content-between">
+                                  <p class="font-weight-light mb-0">SKU: 08451345264 | $250.00</p>
+                                  <a href="#" class="text-small font-weight-medium text-info mb-0">view more</a>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="d-block d-md-flex align-items-center pt-3">
+                              <img th:src="@{/admin/assets/images/dashboard/image_3.jpg}" alt="">
+                              <div class="d-flex flex-column flex-grow-1 ml-md-4">
+                                <p class="mb-0">Dark Blue Shoes - Limited Collection</p>
+                                <div class="d-flex justify-content-between">
+                                  <p class="font-weight-light mb-0">SKU: 08451345264 | $250.00</p>
+                                  <a href="#" class="text-small font-weight-medium text-info mb-0">view more</a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 stretch-card grid-margin">
+                  <div class="card mdc-card product-card p-0">
+                    <img th:src="@{/admin/assets/images/dashboard/image_5.jpg}" class="w-100 h-100" alt="">
+                    <div class="product-box">
+                      <div class="product-name-box">
+                        <div class="product-name-box-primary">
+                          <p class="pl-4 pt-2">Long Strappy Dress</p>
+                          <h4 class="font-weight-normal pl-4 mt-2">$399.00</h4>
+                        </div>
+                        <div class="add-product-button">
+                          <button class="btn btn-secondary btn-rounded">
+                            <i class="mdi mdi-plus mdc-button__icon"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="product-description-box">
+                        <p class="font-weight-normal product-description-box-text">Qui, explicabo eius nisi fugit repudiandae, quos voluptates, beatae ullam consectetur ducimus</p>
+                        <div class="d-block d-sm-flex justify-content-between align-items-center mt-3">
+                          <div class="d-flex align-items-center">
+                            <select id="example-css" name="rating" autocomplete="off">
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                              <option value="5">5</option>
+                            </select>
+                            <p class="text-small text-muted mb-0 ml-1">4 ( 342 )</p>
+                          </div>
+                          <a href="#" class="text-black">READ MORE</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4 stretch-card grid-margin">
+                  <div class="card mdc-card product-card p-0">
+                    <img th:src="@{/admin/assets/images/dashboard/image_6.jpg}" class="w-100 h-100" alt="">
+                    <div class="product-box">
+                      <div class="product-name-box">
+                        <div class="product-name-box-info">
+                          <p class="pl-4 pt-2">Strappy Round Neck</p>
+                          <h4 class="font-weight-normal pl-4 mt-2">$249.00</h4>
+                        </div>
+                        <div class="add-product-button">
+                          <button class="btn btn-secondary btn-rounded">
+                            <i class="mdi mdi-plus mdc-button__icon"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="product-description-box">
+                        <p class="font-weight-normal product-description-box-text">Qui, explicabo eius nisi fugit repudiandae, quos voluptates, beatae ullam consectetur ducimus</p>
+                        <div class="d-block d-sm-flex justify-content-between align-items-center mt-3">
+                          <div class="d-flex">
+                            <select id="example-css-2">
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                              <option value="5">5</option>
+                            </select>
+                            <p class="tx-12 text-muted mb-0 ml-1">4 ( 342 )</p>
+                          </div>
+                          <a href="#" class="text-black">READ MORE</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4 stretch-card grid-margin">
+                  <div class="card mdc-card product-card p-0">
+                    <img th:src="@{/admin/assets/images/dashboard/image_4.jpg}" class="w-100 h-100" alt="">
+                    <div class="product-box">
+                      <div class="product-name-box">
+                        <div class="product-name-box-success">
+                          <p class="pl-4 pt-2">Chenille Cardigan</p>
+                          <h4 class="font-weight-normal pl-4 mt-2">$899.00</h4>
+                        </div>
+                        <div class="add-product-button">
+                          <button class="btn btn-secondary btn-rounded">
+                            <i class="mdi mdi-plus mdc-button__icon"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="product-description-box">
+                        <p class="font-weight-normal product-description-box-text">Qui, explicabo eius nisi fugit repudiandae, quos voluptates, beatae ullam consectetur ducimus</p>
+                        <div class="d-block d-sm-flex justify-content-between align-items-center mt-3">
+                          <div class="d-flex">
+                            <select id="example-css-3" name="rating" autocomplete="off">
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                              <option value="5">5</option>
+                            </select>
+                            <p class="tx-12 text-muted mb-0 ml-1">4 ( 342 )</p>
+                          </div>
+                          <a href="#" class="text-black">READ MORE</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12  stretch-card grid-margin">
+                  <div class="card mdc-card">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <h4 class="card-title mb-0">Revenue by location</h4>
+                        <div>
+                          <i class="mdi mdi-refresh refresh-icon"></i>
+                          <i class="mdi mdi-dots-vertical options-icon ml-2"></i>
+                        </div>
+                      </div>
+                      <div class="d-block d-sm-flex justify-content-between align-items-center">
+                        <h5 class="card-sub-title mb-2 mb-sm-0">Sales performance revenue based by country</h5>
+                        <div class="dropdown">
+                          <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton6" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Last 7 days </button>
+                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton6">
+                            <h6 class="dropdown-header">Back</h6>
+                            <h6 class="dropdown-header">Forward</h6>
+                            <a class="dropdown-item" href="#">Reload</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Save As..</a>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-6">
+                          <div class="table-responsive">
+                            <table class="table dashboard-table">
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <span class="flag-icon-container"><i class="flag-icon flag-icon-us mr-2"></i></span>United States</td>
+                                  <td>$1,671.10</td>
+                                  <td class=" font-weight-medium"> 39% </td>
+                                </tr>
+                                <tr>
+                                  <td> <span class="flag-icon-container"><i class="flag-icon flag-icon-ph mr-2"></i></span>Philippines </td>
+                                  <td>$1,064.75</td>
+                                  <td class=" font-weight-medium"> 30% </td>
+                                </tr>
+                                <tr>
+                                  <td> <span class="flag-icon-container"><i class="flag-icon flag-icon-gb mr-2"></i></span>United Kingdom</td>
+                                  <td>$1,055.98</td>
+                                  <td class=" font-weight-medium"> 45% </td>
+                                </tr>
+                                <tr>
+                                  <td> <span class="flag-icon-container"><i class="flag-icon flag-icon-ca mr-2"></i></span>Canada</td>
+                                  <td>$1,045.49</td>
+                                  <td class=" font-weight-medium"> 80% </td>
+                                </tr>
+                                <tr>
+                                  <td> <span class="flag-icon-container"><i class="flag-icon flag-icon-fr mr-2"></i></span>France</td>
+                                  <td>$2,050.93</td>
+                                  <td class=" font-weight-medium"> 10% </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <div id="revenue-map" class="revenue-world-map"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6 stretch-card grid-margin">
+                  <div class="card mdc-card">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div>
+                          <h4 class="card-title">Earning Statastics</h4>
+                          <h5 class="card-sub-title">Sales performance revenue based by country</h5>
+                        </div>
+                        <button class="btn btn-light text-small btn-sm text-dark bg-white font-weight-light"> Overview </button>
+                      </div>
+                      <div class="mt-4">
+                        <div id="earning-chart" class="earning-flot-chart"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 stretch-card grid-margin">
+                  <div class="card mdc-card">
+                    <div class="card-body">
+                      <h4 class="card-title">Sales Overview</h4>
+                      <h5 class="card-sub-title">Here’s what’s happening with your projects today</h5>
+                      <div class="table-responsive mt-3 list-checkbox-wrapper">
+                        <table class="table dashboard-table sales-table">
+                          <thead>
+                            <tr>
+                              <th> Product </th>
+                              <th>Sales</th>
+                              <th>Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <div class="form-check">
+                                    <label class="form-check-label">
+                                      <input type="checkbox" class="form-check-input"> Philippines </label>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>$1,671.10</td>
+                              <td class=" font-weight-medium"> 39% </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <div class="form-check">
+                                    <label class="form-check-label">
+                                      <input type="checkbox" class="form-check-input"> Macbook Pro </label>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>$1,064.75</td>
+                              <td class=" font-weight-medium"> 30% </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <div class="form-check">
+                                    <label class="form-check-label">
+                                      <input type="checkbox" class="form-check-input"> Product </label>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>$1,055.98</td>
+                              <td class=" font-weight-medium"> 45% </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-xl-4 col-lg-6 stretch-card grid-margin">
+                  <div class="card mdc-card p-0 product-list">
+                    <div class="card-body">
+                      <div class="product-list-header">
+                        <h4 class="card-title">Latest products</h4>
+                        <h5 class="card-sub-title">You can focus on the things that matter.</h5>
+                      </div>
+                      <div class="product-list-item">
+                        <div class="d-flex align-items-center">
+                          <img th:src="@{/admin/assets/images/dashboard/Slack.png}" alt="">
+                          <div class="ml-3">
+                            <h5 class="font-weight-medium mb-0">Slack</h5>
+                            <p class="mb-0 text-muted">Cloud-based software</p>
+                          </div>
+                        </div>
+                        <div>
+                          <i class="mdi mdi-dots-vertical options-icon"></i>
+                        </div>
+                      </div>
+                      <div class="product-list-item">
+                        <div class="d-flex align-items-center">
+                          <img th:src="@{/admin/assets/images/dashboard/skype.png}" alt="">
+                          <div class="ml-3">
+                            <h5 class="font-weight-medium mb-0">Skype</h5>
+                            <p class="mb-0 text-muted">Computer application</p>
+                          </div>
+                        </div>
+                        <div>
+                          <i class="mdi mdi-dots-vertical options-icon"></i>
+                        </div>
+                      </div>
+                      <div class="product-list-item">
+                        <div class="d-flex align-items-center">
+                          <img th:src="@{/admin/assets/images/dashboard/evernote.png}" alt="">
+                          <div class="ml-3">
+                            <h5 class="font-weight-medium mb-0">Evernote</h5>
+                            <p class="mb-0 text-muted">Downloadable software</p>
+                          </div>
+                        </div>
+                        <div>
+                          <i class="mdi mdi-dots-vertical options-icon"></i>
+                        </div>
+                      </div>
+                      <div class="product-list-item">
+                        <div class="d-flex align-items-center">
+                          <img th:src="@{/admin/assets/images/dashboard/dropbox.png}" alt="">
+                          <div class="ml-3">
+                            <h5 class="font-weight-medium mb-0">Dropbox</h5>
+                            <p class="mb-0 text-muted">Hosting service </p>
+                          </div>
+                        </div>
+                        <div>
+                          <i class="mdi mdi-dots-vertical options-icon"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-4 col-lg-6 stretch-card grid-margin">
+                  <div class="mdc-card dashboard-inline-datepicker datepicker-material p-0">
+                    <div class="datepicker-box-top">
+                      <p class="text-white">Tuesday</p>
+                      <button class="btn btn-secondary btn-rounded">
+                        <i class="mdi mdi-plus mdc-button__icon"></i>
+                      </button>
+                    </div>
+                    <div id="datepicker"></div>
+                  </div>
+                </div>
+                <div class="col-xl-4 stretch-card grid-margin">
+                  <div class="mdc-card p-0 to-do-list">
+                    <div class="mdc-tab-wrapper">
+                      <div class="d-flex align-items-center justify-content-between bg-success text-white to-do-list-header">
+                        <h4 class="card-title">Todo List</h4>
+                        <div class="d-flex">
+                          <i class="mdi mdi-menu text-white"></i>
+                          <i class="mdi mdi-calendar text-white ml-2"></i>
+                          <i class="mdi mdi-star text-white ml-2"></i>
+                          <i class="mdi mdi-dots-vertical text-white ml-2"></i>
+                        </div>
+                      </div>
+                      <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item w-50">
+                          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home-1" role="tab" aria-controls="home" aria-selected="true">Todo</a>
+                        </li>
+                        <li class="nav-item w-50">
+                          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile-1" role="tab" aria-controls="profile" aria-selected="false">Done</a>
+                        </li>
+                      </ul>
+                      <div class="tab-content">
+                        <div class="tab-pane fade show active" id="home-1" role="tabpanel" aria-labelledby="home-tab">
+                          <div class="to-do-list-content">
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0 font-weight-normal">Meet up with friends</h5>
+                                <p class="tx-12 text-muted mb-0">at McDonald’s, Monday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0  font-weight-normal">Finish the proposal design</h5>
+                                <p class="tx-12 text-muted mb-0">at office, Thursday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0  font-weight-normal">Contract for the client ASAP</h5>
+                                <p class="tx-12 text-muted mb-0">at office, Thursday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane fade" id="profile-1" role="tabpanel" aria-labelledby="profile-tab">
+                          <div class="to-do-list-content">
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0  font-weight-normal">Pick Jane from school</h5>
+                                <p class="tx-12 text-muted mb-0">at school, Thursday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0  font-weight-normal">Meet up with friends</h5>
+                                <p class="tx-12 text-muted mb-0">at McDonald’s, Monday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                            <div class="to-do-list-item">
+                              <div class="ml-3">
+                                <h5 class="mb-0  font-weight-normal">Finish the proposal design</h5>
+                                <p class="tx-12 text-muted mb-0">at office, Thursday</p>
+                              </div>
+                              <i class="mdi mdi-delete ml-auto mr-3 delete-icon"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          <!-- content-wrapper ends -->
+          <!-- partial:partials/_footer.html -->
+</body>
+</html>

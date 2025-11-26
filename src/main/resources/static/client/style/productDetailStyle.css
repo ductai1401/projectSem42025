@@ -1,0 +1,290 @@
+#sizeOptions .sizeValue {
+	display: inline-block;
+	padding: .35rem .6rem;
+	border-radius: .5rem;
+	font-size: .9rem;
+	line-height: 1;
+	margin-right: .5rem;
+	margin-bottom: .5rem;
+	border: 1px solid rgba(0, 0, 0, .15);
+	background: #f8f9fa;
+	color: #333;
+	cursor: pointer;
+	user-select: none;
+}
+
+#sizeOptions .sizeValue.active {
+	border: 2px solid #000;
+	background: #fff;
+}
+
+/* swatch màu (không chữ) */
+#colorSwatches .colorValue {
+	display: inline-block;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, .2);
+	margin-right: .5rem;
+	margin-bottom: .5rem;
+	cursor: pointer;
+	user-select: none;
+}
+
+#colorSwatches .colorValue.active {
+	outline: 2px solid #111;
+	outline-offset: 2px;
+}
+
+/* reviews */
+.rv-item+.rv-item {
+	border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.rv-medias img, .rv-medias video {
+	width: 96px;
+	height: 96px;
+	object-fit: cover;
+	border-radius: .25rem;
+	cursor: zoom-in;
+}
+
+.rv-stars {
+	color: #ffc107;
+	letter-spacing: 1px;
+}
+
+.rv-empty {
+	color: #888;
+}
+
+/* lightbox utils */
+#rvLightbox.hidden {
+	display: none;
+}
+
+body.rv-no-scroll {
+	overflow: hidden;
+}
+
+/* lightbox layout */
+#rvLightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 2147483647; /* che tất cả */
+}
+
+#rvLbOverlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .85);
+}
+
+#rvLbWrap {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+#rvLbBox {
+	position: relative;
+	background: #fff;
+	border-radius: 8px;
+	max-width: 90vw;
+	max-height: 90vh;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+#rvLbInner {
+	width: 100%;
+	height: 100%;
+	max-height: 90vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+#rvLbImg, #rvLbVid {
+	max-width: 100%;
+	max-height: 80vh;
+	border-radius: 6px;
+}
+
+#rvLbImg.hidden, #rvLbVid.hidden {
+	display: none;
+}
+
+.rvLbBtn {
+	position: absolute;
+	background: rgba(0, 0, 0, .85);
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 20px;
+	padding: .5rem .75rem;
+}
+
+#rvLbClose {
+	top: .5rem;
+	right: .5rem;
+}
+
+#rvLbPrev {
+	left: .5rem;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+#rvLbNext {
+	right: .5rem;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+#rvLbCap {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: .5rem;
+	text-align: center;
+	color: #444;
+	font-size: .9rem;
+	padding: 0 1.5rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.product-option-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.product-option-list li {
+	margin-bottom: 6px;
+	font-size: 15px;
+	line-height: 1.5;
+}
+
+.product-option-list li span.key {
+	font-weight: 600; /* in đậm */
+	color: #333; /* màu đậm hơn */
+	margin-right: 6px;
+}
+
+.product-option-list li span.value {
+	font-weight: 400; /* bình thường */
+	color: #555; /* màu nhẹ hơn */
+}
+/* Full-bleed giống Shopee */
+.shop-panel-bleed {
+	width: 100vw;
+	position: relative;
+	left: 50%;
+	right: 50%;
+	margin-left: -50vw;
+	margin-right: -50vw;
+	background: #fff;
+}
+
+/* Layout chính */
+.shop-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap; /* co giãn đẹp trên tablet */
+}
+
+/* Cụm trái: logo + tên + nút */
+.shop-identity {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	min-width: 320px;
+	flex: 1 1 420px;
+}
+
+.shop-avatar img {
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, .08);
+}
+
+.shop-main {
+	min-width: 0;
+} /* cho text-truncate hoạt động */
+.shop-title-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.shop-name {
+	font-size: 1.125rem;
+	font-weight: 600;
+	max-width: 520px;
+	display: inline-block;
+	color: inherit;
+	text-decoration: none;
+}
+
+/* Nút nằm cùng hàng với tên trên desktop, tự xuống dòng trên mobile */
+.shop-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-top: 6px;
+}
+
+/* Cụm phải: 4 metric dàn đều */
+.shop-metrics {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(120px, 1fr));
+	gap: 12px;
+	flex: 1 1 480px;
+	min-width: 420px;
+}
+
+.metric .label {
+	font-size: .8rem;
+	color: #6c757d;
+}
+
+.metric .value {
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Responsive */
+@media ( max-width : 991.98px) {
+	.shop-head {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.shop-metrics {
+		grid-template-columns: repeat(2, 1fr);
+		min-width: 0;
+	}
+	.shop-identity {
+		flex: 1 1 auto;
+	}
+	.shop-actions {
+		margin-top: 8px;
+	}
+}

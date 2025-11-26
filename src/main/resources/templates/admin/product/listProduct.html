@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Quản lý sản phẩm</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" th:href="@{/admin/style/style.css}" />
+
+<style>
+.modal-backdrop {
+	z-index: 1990 !important
+}
+
+.modal {
+	z-index: 2000 !important
+}
+
+:root {
+	--lz-primary: #1a9cb7;
+	--lz-deep: #6b4bff;
+	--lz-bg: #f7f9fb;
+	--lz-card: #fff;
+	--lz-text: #1f2937;
+	--lz-muted: #6b7280;
+	--lz-border: #e5e7eb
+}
+
+body {
+	background: var(--lz-bg)
+}
+
+.lz-hero {
+	background: linear-gradient(135deg, var(--lz-primary), var(--lz-deep));
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-shadow: 0 10px 25px rgba(27, 86, 143, .15)
+}
+
+.lz-hero h3 {
+	margin: 0;
+	font-weight: 700;
+	letter-spacing: .2px
+}
+
+.btn-lz {
+	background: #fff;
+	color: var(--lz-deep);
+	border: 0;
+	border-radius: 999px;
+	padding: .55rem 1rem
+}
+
+.btn-lz:hover {
+	color: #fff;
+	background: #ff5a7d
+}
+
+.lz-card {
+	background: var(--lz-card);
+	border: 1px solid var(--lz-border);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+	overflow: hidden
+}
+
+.lz-toolbar {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--lz-border);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: flex-end;
+	background: linear-gradient(180deg, #fff, #fafbff)
+}
+
+.filter-bar {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 1rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	width: 100%;
+	box-sizing: border-box
+}
+
+.filter-bar .form-control, .filter-bar .form-select {
+	border: 1px solid #cbd5e1;
+	border-radius: 10px;
+	background: #fff;
+	flex: 1 1 150px;
+	min-width: 150px;
+	font-size: 1rem;
+	max-width: 100%;
+	box-sizing: border-box
+}
+
+.filter-bar .form-control:focus, .filter-bar .form-select:focus {
+	box-shadow: none;
+	border-color: var(--lz-primary)
+}
+
+.filter-bar .btn {
+	min-width: 100px;
+	font-size: 1rem
+}
+
+.product-table thead th {
+	background: #fbfbff;
+	color: #64748b;
+	border-bottom-color: var(--lz-border);
+	font-weight: 600
+}
+
+.product-table tbody td {
+	vertical-align: middle
+}
+
+.action-icons .view {
+	color: #0d6efd
+}
+
+.action-icons .edit {
+	color: #ffc107
+}
+
+.action-icons .delete {
+	color: #dc3545
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Hero -->
+				<div class="lz-hero mb-3">
+					<h3 class="mb-0">📦 Danh sách sản phẩm</h3>
+					<div class="actions">
+						<a class="btn btn-lz" th:href="@{/admin/product/create}">➕
+							Thêm sản phẩm</a>
+					</div>
+				</div>
+
+				<!-- Product Section -->
+				<div class="lz-card">
+					<div class="lz-toolbar">
+						<!-- Filter bar -->
+						<form class="filter-bar row g-3 align-items-end" method="get"
+							th:action="@{/admin/products}">
+							<div class="col-12 col-md-3 input-with-icon">
+								<label class="form-label mb-1">Từ khóa</label> <input
+									class="form-control" type="search" name="keyword"
+									placeholder="Tìm theo tên, SKU, mô tả" th:value="${keyword}">
+							</div>
+
+							<div class="col-6 col-md-2">
+								<label class="form-label mb-1">Danh mục</label> <select
+									class="form-select form-control" name="categoryId"
+									th:value="${categoryId}">
+									<option value="">Tất cả</option>
+									<option th:each="c : ${categories}" th:value="${c.categoryId}"
+										th:text="${c.categoryName}"></option>
+								</select>
+							</div>
+
+							<div class="col-6 col-md-2">
+								<label class="form-label mb-1">Trạng thái</label> <select
+									class="form-select form-control" name="status"
+									th:value="${status}">
+									<option value="">Tất cả</option>
+									<option value="active">Hiển thị</option>
+									<option value="inactive">Ẩn</option>
+								</select>
+							</div>
+
+							<div class="col-6 col-md-2">
+								<label class="form-label mb-1">Giá tối thiểu</label> <input
+									class="form-control" type="number" name="minPrice"
+									placeholder="₫" th:value="${minPrice}">
+							</div>
+
+							<div class="col-6 col-md-2">
+								<label class="form-label mb-1">Giá tối đa</label> <input
+									class="form-control" type="number" name="maxPrice"
+									placeholder="₫" th:value="${maxPrice}">
+							</div>
+
+							<div class="col-12 col-md-1 d-grid">
+								<button class="btn btn-primary" type="submit">Lọc</button>
+							</div>
+							<div class="col-12 col-md-1 d-grid">
+								<a class="btn btn-outline-primary" th:href="@{/admin/products}">Reset</a>
+							</div>
+						</form>
+					</div>
+
+					<!-- Table -->
+					<div class="table-responsive px-2 pb-2">
+						<table class="table product-table">
+							<thead>
+								<tr>
+									<th style="width: 48px">#</th>
+									<th style="min-width: 260px">Sản phẩm</th>
+									<th>Danh mục</th>
+									<th>Cửa hàng</th>
+									<th style="width: 160px">Ngày đăng</th>
+									<th style="width: 120px">Trạng thái</th>
+									<th style="width: 72px">Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="p, st : ${products}">
+									<td th:text="${st.count}">1</td>
+
+									<td>
+										<div class="d-flex align-items-center gap-2">
+											<img class="thumb"
+												th:with="imgUrl=${#strings.isEmpty(p.image)} ? @{/images/no-image.png} : @{/uploads/{f}(f=${p.image})}"
+												th:src="${imgUrl}" alt="thumb" loading="lazy"
+												style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px;">
+											<div>
+												<a class="link-primary fw-semibold"
+													th:href="@{/admin/product/detail/{id}(id=${p.productId})}"
+													th:text="${p.productName}">Tên sản phẩm</a>
+												<div class="sku">
+													SKU: <span th:text="${p.productId}">SKU</span>
+												</div>
+											</div>
+										</div>
+									</td>
+
+									<td th:text="${p.categoryName}">Danh mục</td>
+									<td th:text="${p.shopName}">Cửa hàng</td>
+									<td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}">01/01/2025</td>
+
+									<td><span th:if="${p.status == 1}"
+										class="badge badge-success px-3 py-2">Hiển thị</span> <span
+										th:if="${p.status == 0}"
+										class="badge badge-secondary px-3 py-2">Ẩn</span> <span
+										th:if="${activeFs != null and activeFs.contains(p.productId)}"
+										class="badge bg-warning text-dark ms-1 px-2 py-1">Flash
+											Sale</span></td>
+
+									<td class="text-end action-icons"><a class="view"
+										th:href="@{/admin/product/detail/{id}(id=${p.productId})}"
+										title="Xem chi tiết">👁</a> <a
+										th:href="@{/admin/products/{id}/edit(id=${p.productId})}"
+										class="edit">✏️</a> <a
+										th:href="@{/admin/products/{id}/delete(id=${p.productId})}"
+										class="delete" onclick="return confirm('Xóa sản phẩm này?')">🗑</a>
+
+										<!-- Nếu đang có FlashSale hiện hành => Nút HỦY --> <th:block
+											th:if="${activeFs != null and activeFs.contains(p.productId)}">
+											<form
+												th:action="@{/admin/product/{id}/flashsale(id=${p.productId})}"
+												method="post" class="js-cancel-fs-form"
+												data-return-url="/admin/product/"
+												style="display: inline-block; margin-left: 6px">
+												<input type="hidden" name="_method" value="delete" />
+												<button type="submit"
+													class="btn btn-sm btn-outline-secondary">❌ Hủy
+													Flash Sale</button>
+											</form>
+										</th:block> <!-- Nếu CHƯA có FlashSale => Nút mở MODAL --> <th:block
+											th:unless="${activeFs != null and activeFs.contains(p.productId)}">
+											<button type="button"
+												class="btn btn-sm btn-outline-danger ms-1"
+												data-toggle="modal" data-target="#flashSalePickModal"
+												th:attr="data-product-id=${p.productId},data-shop-id=${p.shopId != null ? p.shopId : 0}">
+												⚡ Flash Sale</button>
+										</th:block></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- MODAL: Chọn Flash Sale + nhập số lượng & % (Không hiển thị danh sách item) -->
+					<div class="modal fade" id="flashSalePickModal" tabindex="-1"
+						role="dialog" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered"
+							style="max-width: 520px" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title">
+										Gắn sản phẩm vào Flash Sale <small class="text-muted d-block"
+											id="fsm-fsRangeTop"></small>
+									</h5>
+									<button type="button" class="close" data-dismiss="modal"
+										aria-label="Đóng">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+
+								<div class="modal-body">
+									<input type="hidden" id="fsm-productId" value="" /> <input
+										type="hidden" id="fsm-shopId" value="" />
+
+									<!-- Chọn Flash Sale -->
+									<div class="form-group">
+										<label class="form-label">Flash Sale của shop</label> <select
+											id="fsm-flashSaleId" class="form-control">
+											<option value="">-- chọn flash sale --</option>
+										</select> <small class="text-muted d-block mt-1" id="fsm-fsRange"></small>
+									</div>
+
+									<!-- Nhập số lượng & % giảm -->
+									<div class="form-row">
+										<div class="form-group col-6">
+											<label class="form-label">Số lượng</label> <input
+												type="number" min="0" class="form-control" id="fsm-quantity"
+												placeholder="VD: 10">
+										</div>
+										<div class="form-group col-6">
+											<label class="form-label">% giảm (0–99)</label> <input
+												type="number" min="0" max="99" class="form-control"
+												id="fsm-percent" placeholder="VD: 15">
+										</div>
+									</div>
+
+									<div id="fsm-alert" class="alert alert-danger mt-2 d-none"></div>
+								</div>
+
+								<div class="modal-footer">
+									<button class="btn btn-light" data-dismiss="modal">Đóng</button>
+									<button class="btn btn-primary" id="fsm-attach-btn">Gắn
+										vào Flash Sale</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Pagination -->
+					<div class="pagination-wrapper mt-3 d-flex justify-content-center">
+						<nav th:if="${totalPages > 1}">
+							<ul class="pagination">
+								<li class="page-item"
+									th:classappend="${currentPage == 1} ? ' disabled'"><a
+									class="page-link"
+									th:href="@{/admin/products(page=${currentPage - 1},keyword=${keyword},categoryId=${categoryId},status=${status},minPrice=${minPrice},maxPrice=${maxPrice})}">«</a>
+								</li>
+								<li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+									th:classappend="${pageNum == currentPage} ? ' active'"
+									class="page-item"><a class="page-link"
+									th:text="${pageNum}"
+									th:href="@{/admin/products(page=${pageNum},keyword=${keyword},categoryId=${categoryId},status=${status},minPrice=${minPrice},maxPrice=${maxPrice})}">1</a>
+								</li>
+								<li class="page-item"
+									th:classappend="${currentPage == totalPages} ? ' disabled'">
+									<a class="page-link"
+									th:href="@{/admin/products(page=${currentPage + 1},keyword=${keyword},categoryId=${categoryId},status=${status},minPrice=${minPrice},maxPrice=${maxPrice})}">»</a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+				<!-- /.lz-card -->
+
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script th:inline="javascript">
+    /* =======================
+     * HỦY FLASH SALE (POST + _method=delete để tránh 405)
+     * ======================= */
+    document.addEventListener('click', function (e) {
+      const form = e.target.closest('form.js-cancel-fs-form');
+      if (!form) return;
+
+      e.preventDefault();
+      if (!confirm('Hủy Flash Sale cho sản phẩm này?')) return;
+
+      const action    = form.getAttribute('action');
+      const returnUrl = form.getAttribute('data-return-url') || '/admin/product/';
+
+      const fd = new URLSearchParams();
+      fd.append('_method', 'delete');       // controller @PostMapping fallback
+      fd.append('onlyActive', 'false');
+
+      // Nếu có CSRF
+      const csrfMeta = document.querySelector('meta[name="_csrf"]');
+      const csrfHead = document.querySelector('meta[name="_csrf_header"]');
+      const headers  = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' };
+      if (csrfMeta && csrfHead) headers[csrfHead.content] = csrfMeta.content;
+
+      fetch(action, {
+        method: 'POST',
+        headers,
+        body: fd.toString(),
+        credentials: 'same-origin'
+      })
+      .then((res) => {
+        // Nếu Spring redirect, theo luôn link đó
+        if (res.redirected) {
+          window.location.href = res.url;
+          return;
+        }
+        // Không thì quay về danh sách như cũ
+        window.location.href = returnUrl;
+      })
+      .catch(() => alert('Lỗi kết nối. Vui lòng thử lại.'));
+    });
+
+    /* =======================
+     * MODAL FLASH SALE: chỉ chọn FS + nhập số lượng & %
+     * ======================= */
+    var SESSION_SHOP_ID = /*[[${session.shopId}]]*/ null;
+
+    // Mở modal -> nạp danh sách FS theo shop
+    $('#flashSalePickModal').on('show.bs.modal', function (event) {
+      var button    = $(event.relatedTarget);
+      var productId = button.data('product-id');
+      var shopId    = button.data('shop-id') || SESSION_SHOP_ID || 0;
+
+      if (!shopId) {
+        alert('Không xác định được ShopID. Vui lòng đăng nhập shop hoặc gán shop cho sản phẩm.');
+        return false;
+      }
+
+      $('#fsm-productId').val(productId);
+      $('#fsm-shopId').val(shopId);
+      $('#fsm-alert').addClass('d-none').text('');
+      $('#fsm-fsRange').text('');
+      $('#fsm-fsRangeTop').text('');
+      $('#fsm-quantity').val('');
+      $('#fsm-percent').val('');
+
+      var $sel = $('#fsm-flashSaleId');
+      $sel.empty().append('<option value="">-- chọn flash sale --</option>');
+
+      $.ajax({
+        url: '/seller/flashsale/search',
+        data: { shopId: shopId, page: 1, size: 200 },
+        method: 'GET', dataType: 'json'
+      }).done(function (data) {
+        var list = (data && data.data) ? data.data : [];
+        list.forEach(function (fs) {
+          var start = fs.startDate ? String(fs.startDate).replace('T',' ') : '';
+          var end   = fs.endDate   ? String(fs.endDate).replace('T',' ')   : '';
+          var text  = (fs.name || ('FlashSale #' + fs.flashSaleId)) + ' — ' + start + ' → ' + end;
+          $('<option/>', {
+            value: fs.flashSaleId,
+            text:  text,
+            'data-range': (start + ' → ' + end)
+          }).appendTo($sel);
+        });
+        if (list.length > 0) {
+          $sel.prop('selectedIndex', 1).trigger('change');
+        }
+      }).fail(function () {
+        $('#fsm-alert').removeClass('d-none').text('Không tải được danh sách Flash Sale của shop.');
+      });
+    });
+
+    // Hiển thị dải ngày ngay dưới select (và trên header)
+    $('#fsm-flashSaleId').on('change', function () {
+      var rangeText = $('#fsm-flashSaleId option:selected').data('range') || '';
+      $('#fsm-fsRange').text(rangeText);
+      $('#fsm-fsRangeTop').text(rangeText);
+    });
+
+    // Gắn sản phẩm vào FS -> thành công đóng modal & reload
+    $('#fsm-attach-btn').off('click').on('click', function () {
+      var flashSaleId = $('#fsm-flashSaleId').val();
+      var productId   = parseInt($('#fsm-productId').val(), 10);
+      var qtyRaw      = $('#fsm-quantity').val();
+      var pctRaw      = $('#fsm-percent').val();
+      var $alert      = $('#fsm-alert');
+
+      var quantity = (qtyRaw === '' || qtyRaw === null) ? 0 : parseInt(qtyRaw, 10);
+      var percent  = (pctRaw === '' || pctRaw === null) ? 0 : parseInt(pctRaw, 10);
+
+      if (!flashSaleId) { $alert.removeClass('d-none').text('Vui lòng chọn Flash Sale.'); return; }
+      if (isNaN(quantity) || quantity < 0) { $alert.removeClass('d-none').text('Số lượng phải ≥ 0.'); return; }
+      if (isNaN(percent)  || percent < 0 || percent > 99) { $alert.removeClass('d-none').text('Phần trăm giảm phải trong khoảng 0–99.'); return; }
+
+      const csrfMeta = document.querySelector('meta[name="_csrf"]');
+      const csrfHead = document.querySelector('meta[name="_csrf_header"]');
+      const headers  = { 'Content-Type': 'application/json' };
+      if (csrfMeta && csrfHead) headers[csrfHead.content] = csrfMeta.content;
+
+      $.ajax({
+        url: '/seller/flashsale/' + flashSaleId + '/items',
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: headers,
+        // LƯU Ý backend dùng key "percern"
+        data: JSON.stringify({ productId: productId, quantity: quantity, percern: percent })
+      }).done(function (resp) {
+        if (!resp || resp.ok !== true) {
+          $alert.removeClass('d-none').text((resp && resp.message) || 'Không thể gắn sản phẩm vào Flash Sale.');
+          return;
+        }
+        $('#flashSalePickModal').modal('hide');
+        setTimeout(function(){ window.location.reload(); }, 200);
+      }).fail(function () {
+        $alert.removeClass('d-none').text('Lỗi kết nối. Vui lòng thử lại.');
+      });
+    });
+  </script>
+	</div>
+</body>
+</html>

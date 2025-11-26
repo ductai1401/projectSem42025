@@ -1,0 +1,20 @@
+.static_info .box_info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+}
+
+.static_info .txt_info {
+  flex: 1;
+  margin-top: 25px;
+}
+
+.static_info .txt_info .title {
+  color: $dark;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}

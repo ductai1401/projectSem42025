@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Quản lý báo cáo cửa hàng</title>
+    <style>
+        .report-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid #dee2e6;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+        .report-section .form-label {
+            font-weight: 600;
+        }
+        .report-section .form-control,
+        .report-section .form-select {
+            border: none;
+            border-bottom: 2px solid #0d6efd;
+            border-radius: 0;
+            background-color: transparent;
+            padding-left: 0;
+        }
+        .report-section .form-control:focus,
+        .report-section .form-select:focus {
+            box-shadow: none;
+            border-color: #0a58ca;
+        }
+        .report-section table {
+            margin-top: 2rem;
+        }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .modal-dialog {
+            max-width: 800px;
+            margin: 6rem auto; /* tăng margin để tránh tràn navbar */
+        }
+        @media (min-width: 768px) {
+            .modal-dialog-centered {
+                align-items: center;
+            }
+        }
+        .evidence-preview img,
+        .evidence-preview video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            border-top: none;
+        }
+        .modal-footer .btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="report-section container-fluid">
+        <h3 class="mb-4">📋 Danh sách báo cáo cửa hàng</h3>
+
+        <!-- Bộ lọc tìm kiếm -->
+        <form class="row row-cols-lg-auto g-3 align-items-end mb-3 justify-content-end" method="get" th:action="@{/admin/reports/shop}">
+            <div class="col-md-3">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" placeholder="Tìm theo cửa hàng hoặc nội dung" th:value="${keyword}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Loại báo cáo</label>
+                <select name="type" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="spam">Spam</option>
+                    <option value="fraud">Gian lận</option>
+                    <option value="abuse">Hành vi xấu</option>
+                    <option value="other">Khác</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+            </div>
+        </form>
+
+        <!-- Danh sách báo cáo -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>🛒 Cửa hàng</th>
+                    <th>📂 Loại báo cáo</th>
+                    <th>📝 Nội dung</th>
+                    <th>📅 Ngày gửi</th>
+                    <th>🔧 Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+              <!--   <tr th:each="report, iterStat : ${reports}">
+                    <td th:text="${iterStat.count}">1</td>
+                    <td th:text="${report.shopName}">Shop ABC</td>
+                    <td th:text="${report.reportType}">Gian lận</td>
+                    <td th:text="${report.content}">Nội dung chi tiết...</td>
+                    <td th:text="${#dates.format(report.createdAt, 'dd/MM/yyyy')}">10/07/2025</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#reportDetailModal"
+                                th:attr="data-shop=${report.shopName}, data-type=${report.reportType}, data-content=${report.content}, data-date=${#dates.format(report.createdAt, 'dd/MM/yyyy')}, data-image=${report.imageEvidence}, data-video=${report.videoEvidence}">👁 Xem</button>
+                        <a th:href="@{'/admin/reports/shop/delete/' + ${report.id}}" class="btn btn-danger btn-sm">🗑 Xóa</a>
+                    </td>
+                </tr> -->
+              <tr>
+        <td>1</td>
+        <td>Shop Giày ABC</td>
+        <td>Gian lận</td>
+        <td>Shop yêu cầu chuyển khoản trước nhưng không giao hàng.</td>
+        <td>10/07/2025</td>
+        <td>
+            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#reportDetailModal"
+                data-shop="Shop Giày ABC"
+                data-type="Gian lận"
+                data-content="Shop yêu cầu chuyển khoản trước nhưng không giao hàng."
+                data-date="10/07/2025"
+                data-image="/uploads/reports/img/sample.jpg"
+                data-video="/uploads/reports/video/sample.mp4">👁 Xem</button>
+            <a href="#" class="btn btn-danger btn-sm">🗑 Xóa</a>
+        </td>
+    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Modal xem chi tiết báo cáo -->
+<div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportDetailModalLabel">Chi tiết báo cáo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Cửa hàng:</strong> <span id="modalShop"></span></p>
+                <p><strong>Loại báo cáo:</strong> <span id="modalType"></span></p>
+                <p><strong>Nội dung:</strong></p>
+                <p id="modalContent"></p>
+                <p><strong>Ngày gửi:</strong> <span id="modalDate"></span></p>
+                <div class="evidence-preview">
+                    <p><strong>Chứng cứ:</strong></p>
+                    <img id="modalImage" style="display:none;" />
+                    <video id="modalVideo" style="display:none;" controls></video>
+                </div>
+                <div class="modal-footer">
+                <form th:action="@{/admin/reports/shop/resolve}" method="post">
+                    <input type="hidden" name="reportId" id="footerReportId" />
+                    <button type="submit" name="action" value="approve" class="btn btn-success">✅ Duyệt</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-secondary">❌ Từ chối</button>
+                    <button type="submit" name="action" value="warn" class="btn btn-warning">⚠️ Cảnh báo</button>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<div layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('reportDetailModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                document.getElementById('modalShop').textContent = button.getAttribute('data-shop');
+                document.getElementById('modalType').textContent = button.getAttribute('data-type');
+                document.getElementById('modalContent').textContent = button.getAttribute('data-content');
+                document.getElementById('modalDate').textContent = button.getAttribute('data-date');
+
+                const image = document.getElementById('modalImage');
+                const video = document.getElementById('modalVideo');
+                const imageUrl = button.getAttribute('data-image');
+                const videoUrl = button.getAttribute('data-video');
+
+                if (imageUrl) {
+                    image.src = imageUrl;
+                    image.style.display = 'block';
+                } else {
+                    image.style.display = 'none';
+                }
+
+                if (videoUrl) {
+                    video.src = videoUrl;
+                    video.style.display = 'block';
+                } else {
+                    video.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+</div>
+</body>
+</html>

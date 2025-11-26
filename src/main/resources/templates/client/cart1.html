@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title">Cart</title>
+  <style type="text/css">
+    .checkout-bar {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      z-index: 1000;
+      border-top: 1px solid #eee;
+    }
+    .checkout-bar .btn-danger {
+      background-color: #ee4d2d;
+      border-color: #ee4d2d;
+      min-width: 180px;
+    }
+    .checkout-bar .btn-danger:hover {
+      background-color: #d73211;
+      border-color: #d73211;
+    }
+    .voucher-option { cursor: pointer; }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-section breadcrumb-bg1">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h2 class="bread-crumb-title">Cart</h2>
+          <ol class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+            <li class="breadcrumb-item"><a href="/home">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Cart</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <!-- Header Row -->
+    <div class="d-flex bg-light p-2 fw-bold align-items-center border rounded">
+      <div class="form-check me-3">
+        <input type="checkbox" class="form-check-input" id="selectAllTop">
+      </div>
+      <div class="flex-grow-1">Product</div>
+      <div style="width: 120px;" class="text-center">Unit Price</div>
+      <div style="width: 150px;" class="text-center">Quantity</div>
+      <div style="width: 120px;" class="text-center">Subtotal</div>
+      <div style="width: 100px;" class="text-center">Action</div>
+    </div>
+
+    <!-- Cart Items -->
+    <div id="cartData"></div>
+
+    <!-- Checkout Section -->
+    <div class="checkout-bar d-flex justify-content-between align-items-center p-3 border-top">
+      <div class="container py-2">
+        <div class="row align-items-center">
+          <!-- Left -->
+          <div class="col-md-5 d-flex align-items-center flex-wrap mb-2 mb-md-0">
+            <input type="checkbox" id="selectAllBottom" class="form-check-input me-2">
+            <label for="selectAllBottom" class="form-check-label me-3">Select All</label>
+            <button class="btn btn-link text-danger btn-sm px-2 btn-delete-selected">Delete</button>
+            <button class="btn btn-link text-secondary btn-sm px-2">Save to Wishlist</button>
+          </div>
+
+          <!-- Right -->
+          <div class="col-md-7 d-flex justify-content-end align-items-center flex-wrap">
+            <div class="text-end me-3">
+              
+              <div class="small">
+                Items: <span id="selected-count">0</span> |
+                Subtotal: <span id="subtotal-price">$0.00</span> |
+                Discount: <span id="discount-price">$0.00</span> |
+                Shipping: <span id="shipping-price">$0.00</span>
+              </div>
+              <div class="fw-bold mt-1">
+                Total: <span class="text-danger fs-5" id="total-price">$0.00</span>
+              </div>
+            </div>
+            <button class="btn btn-warning text-white fw-bold px-4" id="btnCheckout">Checkout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Voucher Modal -->
+  <div class="modal fade" id="voucherModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Choose Voucher</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="voucher-list">
+          <!-- vouchers loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div layout:fragment="scripts">
+<script type="text/javascript" th:inline="javascript">
+  // render Thymeleaf-provided JS variables safely
+  let roles = /*[[${session.roles}]]*/ null;
+  // voucherSan might be an object/array from backend; use JSON string if needed.
+  let voucherSan = /*[[${voucherSan}]]*/ null;
+  let isLoggedIn = roles != null;
+  let token =  /*[[${checkoutToken}]]*/ null;
+</script>
+
+<script>
+/* ===== Utilities ===== */
+/* function formatMoney(val) {
+  return "$" + Number(val || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function getCart() {
+  let cart = localStorage.getItem("cart");
+  return cart ? JSON.parse(cart) : { items: [] };
+}
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    const ctx = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(ctx, args), wait);
+  };
+} */
+
+/* ===== Render single cart item ===== */
+function renderCartItem(item) {
+  const available = item.availableQty ?? item.remaining;
+  const isOutOfStock = available === 0 || available === null;
+  const price = item.flashSalePrice ?? item.price;
+  return `
+    <div class="d-flex align-items-center border-bottom p-2 cart-item ${isOutOfStock ? 'text-muted' : ''}" 
+         data-id="${item.variantId}" data-price="${isOutOfStock ? 0 : price}" data-shop-id="${item.shopId}" data-item="${item.cartItemId}">
+        <div class="d-flex align-items-center flex-grow-1" style="min-width:250px;">
+            <input type="checkbox" class="form-check-input me-2 product-checkbox" ${isOutOfStock ? 'disabled' : ''}>
+            <img src="${item.imageVariant}" class="me-2" style="width:80px; height:80px; object-fit:cover; ${isOutOfStock ? 'opacity:0.5;' : ''}">
+            <div>
+                <div class="fw-bold">${item.productName}</div>
+                <div class="text-muted small">Variant: ${item.variantName}</div>
+                ${isOutOfStock ? '<span class="badge bg-danger">Out of Stock</span>' : ''}
+            </div>
+        </div>
+
+        <div style="width:120px;" class="text-center unit-price">
+            ${isOutOfStock ? '-' : (item.flashSalePrice ? `<span class="text-muted" style="text-decoration: line-through;">${formatMoney(item.price)}</span><br><span class="text-danger fw-bold">${formatMoney(item.flashSalePrice)}</span>` : `<span class="text-danger fw-bold">${formatMoney(item.price)}</span>`)}
+        </div>
+
+        <div style="width:150px;" class="text-center">
+            ${isOutOfStock 
+              ? `<input type="text" class="form-control text-center qty-input" value="0" disabled>` 
+              : `<div class="input-group input-group-sm justify-content-center" style="width:120px; margin:auto;">
+                    <button class="btn btn-outline-secondary btn-decrement">-</button>
+                    <input type="text" class="form-control text-center qty-input" value="${item.quantity}" min="1" max="${available}">
+                    <button class="btn btn-outline-secondary btn-increment">+</button>
+                </div>
+                <div class="small text-muted">Available: ${available}</div>`}
+        </div>
+
+        <div style="width:120px;" class="text-center product-total">
+            ${formatMoney((isOutOfStock ? 0 : price) * (isOutOfStock ? 0 : item.quantity))}
+        </div>
+
+        <div style="width:100px;" class="text-center">
+            <button class="btn btn-sm btn-link text-danger btn-remove">
+                <i class="ion-android-delete"></i>
+            </button>
+            <button class="btn btn-primary btn-sm btn-similar" data-product-id="${item.productId}">
+                Find Similar
+            </button>
+        </div>
+    </div>
+  `;
+}
+
+/* ===== Load & render cart grouped by shop ===== */
+function loadCartFromServer(cartItems) {
+  const $shopBody = $("#cartData");
+  $shopBody.empty();
+  if (!cartItems || cartItems.length === 0) {
+    $shopBody.html(`
+      <div class="card mb-3">
+        <div class="card-header bg-white d-flex align-items-center border-bottom">
+          <p>Your cart is empty <a href="/home" class="btn btn-primary ms-3">Go to store</a></p>
+        </div>
+      </div>
+    `);
+    updateTotal();
+    return;
+  }
+
+  let html = "";
+  let currentShop = null;
+  cartItems.forEach(item => {
+    if (item.shopId !== currentShop) {
+      if (currentShop !== null) {
+        // voucher shop
+        html += `
+          <div class="shop-voucher px-3 py-2 border-top">
+            <button class="btn btn-sm btn-outline-primary choose-voucher" data-scope="shop" data-shop="${currentShop}">
+              Chọn voucher shop
+            </button>
+            <span class="voucher-text text-muted ms-2" id="voucher-text-${currentShop}" data-idvoucher="">
+              Chưa chọn voucher shop
+            </span>
+          </div>
+        `;
+        // voucher platform (theo shop)
+        html += `
+          <div class="shop-voucher px-3 py-2 border-top">
+            <button class="btn btn-sm btn-outline-primary choose-voucher" data-scope="platform" data-shop="${currentShop}">
+              Chọn voucher sàn
+            </button>
+            <span class="voucher-text-platform text-muted ms-2" id="voucher-text-platform-${currentShop}" data-idvoucher="">
+              Chưa chọn voucher sàn
+            </span>
+          </div>
+        </div></div>`;
+      }
+      // mở card shop mới
+      html += `<div class="card mb-3" id="cart-shop-${item.shopId}" data-shop-id="${item.shopId}">
+                <div class="card-header bg-white d-flex align-items-center border-bottom">
+                  <input type="checkbox" class="form-check-input me-2 shop-checkbox">
+                  <span class="fw-bold">${item.shopName}</span>
+                </div>
+                <div class="card-body p-0">`;
+      currentShop = item.shopId;
+    }
+    html += renderCartItem(item);
+  });
+
+  if (currentShop !== null) {
+    // voucher shop cuối
+    html += `
+      <div class="shop-voucher px-3 py-2 border-top">
+        <button class="btn btn-sm btn-outline-primary choose-voucher" data-scope="shop" data-shop="${currentShop}">
+          Chọn voucher shop
+        </button>
+        <span class="voucher-text text-muted ms-2" id="voucher-text-${currentShop}" data-idvoucher="">
+          Chưa chọn voucher shop
+        </span>
+      </div>
+    `;
+    // voucher platform cuối
+    html += `
+      <div class="shop-voucher px-3 py-2 border-top">
+        <button class="btn btn-sm btn-outline-primary choose-voucher" data-scope="platform" data-shop="${currentShop}">
+          Chọn voucher sàn
+        </button>
+        <span class="voucher-text-platform text-muted ms-2" id="voucher-text-platform-${currentShop}" data-idvoucher="">
+          Chưa chọn voucher sàn
+        </span>
+      </div>
+    </div></div>`;
+  }
+
+  $shopBody.html(html);
+  updateTotal();
+}
+
+/* ===== Merge / load logic (keeps your original behavior) ===== */
+if (isLoggedIn) {
+  const localCart = JSON.parse(localStorage.getItem("cart") || '{"items":[]}');
+  if (localCart.items.length > 0) {
+    $.ajax({
+      url: '/cart/merge',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(localCart.items),
+      success: function(res) {
+        if (res.success) {
+          localStorage.removeItem("cart");
+          loadCartFromServer(res.items);
+        } else {
+          // fallback: try loading from server regardless
+          $.get('/cart/loadData', function(data) {
+            loadCartFromServer(data);
+          });
+        }
+      },
+      error: function() {
+        $.get('/cart/loadData', function(data) { loadCartFromServer(data); });
+      }
+    });
+  } else {
+    $.get('/cart/loadData', function(data) { loadCartFromServer(data); });
+  }
+} else {
+  const localCart = JSON.parse(localStorage.getItem("cart") || '{"items":[]}');
+  if (localCart.items.length > 0) {
+    $.ajax({
+      url: '/cart/local',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(localCart.items),
+      success: function(response) {
+        loadCartFromServer(response);
+      },
+      error: function() {
+        loadCartFromServer(localCart.items || []);
+      }
+    });
+  } else {
+    loadCartFromServer(null);
+  }
+}
+
+
+
+//remove single item
+$(document).on("click", ".btn-remove", function(){
+  const row = $(this).closest(".cart-item");
+  const shopCard = row.closest(".card");
+  const shopId = shopCard.data("shop-id");
+  const productId = row.data("id");
+
+  row.remove();
+
+  // nếu shop trống => xoá luôn card + voucher
+  if (shopCard.find(".cart-item").length === 0) {
+    shopCard.remove();
+  } else {
+    // nếu còn sản phẩm nhưng shop-checkbox đang checked thì cần đồng bộ lại
+    const totalItems = shopCard.find(".product-checkbox:not(:disabled)").length;
+    const checkedItems = shopCard.find(".product-checkbox:not(:disabled):checked").length;
+    shopCard.find(".shop-checkbox").prop("checked", totalItems > 0 && checkedItems === totalItems);
+  }
+
+  updateTotal();
+  syncSelectAll(); // 👈 đồng bộ lại selectAll
+
+  if (isLoggedIn) {
+    $.ajax({
+      url: "/cart/delete",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ variantId: productId })
+    });
+  } else {
+    let cart = getCart();
+    cart.items = cart.items.filter(i => i.variantId != productId);
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }
+});
+
+
+// delete selected items
+$(document).on("click", ".btn-delete-selected", function() {
+  const selectedItems = $(".product-checkbox:checked");
+  const shopsToCheck = new Set();
+
+  selectedItems.each(function() {
+    const row = $(this).closest(".cart-item");
+    const shopCard = row.closest(".card");
+    const shopId = shopCard.data("shop-id");
+    shopsToCheck.add(shopId);
+
+    const productId = row.data("id");
+    row.remove();
+
+    if (isLoggedIn) {
+      $.ajax({
+        url: "/cart/delete",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ variantId: productId })
+      });
+    } else {
+      let cart = getCart();
+      cart.items = cart.items.filter(i => i.variantId != productId);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  });
+
+  // Kiểm tra lại từng shop
+  shopsToCheck.forEach(function(shopId) {
+    const shopCard = $(`.card[data-shop-id='${shopId}']`);
+    if (shopCard.find(".cart-item").length === 0) {
+      shopCard.remove();
+    } else {
+      const totalItems = shopCard.find(".product-checkbox:not(:disabled)").length;
+      const checkedItems = shopCard.find(".product-checkbox:not(:disabled):checked").length;
+      shopCard.find(".shop-checkbox").prop("checked", totalItems > 0 && checkedItems === totalItems);
+    }
+  });
+
+  updateTotal();
+  syncSelectAll(); // 👈 đồng bộ lại selectAll
+});
+
+
+/* ===== Utilities ===== */
+function formatMoney(val) {
+  return "$" + Number(val || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function getCart() {
+  let cart = localStorage.getItem("cart");
+  return cart ? JSON.parse(cart) : { items: [] };
+}
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+/* ===== Checkbox Sync ===== */
+// Tổng (Top/Bottom) → tất cả
+$(document).on("change", "#selectAllTop, #selectAllBottom", function () {
+  const checked = $(this).is(":checked");
+  $(".shop-checkbox:not(:disabled), .product-checkbox:not(:disabled)").prop("checked", checked);
+  $("#selectAllTop, #selectAllBottom").prop("checked", checked);
+  updateTotal();
+});
+
+// Shop → sản phẩm
+$(document).on("change", ".shop-checkbox", function () {
+  const checked = $(this).is(":checked");
+  $(this).closest(".card").find(".product-checkbox:not(:disabled)").prop("checked", checked);
+  syncSelectAll();
+  updateTotal();
+});
+
+// Sản phẩm → shop + tổng
+$(document).on("change", ".product-checkbox", function () {
+  const $card = $(this).closest(".card");
+  const totalProducts = $card.find(".product-checkbox:not(:disabled)").length;
+  const checkedProducts = $card.find(".product-checkbox:not(:disabled):checked").length;
+  $card.find(".shop-checkbox").prop("checked", totalProducts > 0 && totalProducts === checkedProducts);
+  syncSelectAll();
+  updateTotal();
+});
+
+// Hàm đồng bộ selectAll
+function syncSelectAll() {
+  const totalSelectable = $(".product-checkbox:not(:disabled)").length;
+  const checkedCount = $(".product-checkbox:not(:disabled):checked").length;
+  $("#selectAllTop, #selectAllBottom").prop("checked", totalSelectable > 0 && checkedCount === totalSelectable);
+}
+
+/* ===== Update quantity ===== */
+function updateQty(inputEl) {
+  const $input = $(inputEl);
+  const row = $input.closest(".cart-item");
+  const variantId = row.data("id");
+  const available = parseInt($input.attr("max")) || Infinity;
+  let qty = parseInt($input.val()) || 1;
+
+  if (qty > available) {
+    qty = available;
+    $input.val(qty);
+    alert(`Only ${available} items available`);
+  } else if (qty < 1) {
+    qty = 1;
+    $input.val(qty);
+  }
+
+  // update subtotal UI
+  const price = parseFloat(row.data("price")) || 0;
+  row.find(".product-total").text(formatMoney(price * qty));
+
+  updateTotal();
+
+  // persist
+  if (isLoggedIn) {
+    $.ajax({
+      url: "/cart/updateQuantity",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ variantId, quantity: qty })
+    });
+  } else {
+    let cart = getCart();
+    let item = (cart.items || []).find(i => i.variantId == variantId);
+    if (item) item.quantity = qty;
+    else cart.items.push({ variantId, quantity: qty });
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }
+}
+const debouncedUpdateQty = debounce(updateQty, 300);
+
+// increment / decrement
+$(document).on("click", ".btn-decrement, .btn-increment", function () {
+  let $input = $(this).closest(".input-group").find(".qty-input");
+  let val = parseInt($input.val()) || 1;
+  if ($(this).hasClass("btn-decrement") && val > 1) val--;
+  if ($(this).hasClass("btn-increment")) val++;
+  $input.val(val);
+  debouncedUpdateQty($input[0]);
+});
+$(document).on("input", ".qty-input", function () {
+  debouncedUpdateQty(this);
+});
+
+/* ===== Voucher chọn ===== */
+$(document).on("click", ".choose-voucher", function(){
+  const shopId = $(this).data("shop");
+  const scope = $(this).data("scope");
+
+  if (!canApplyVoucher(shopId)) {
+    alert(scope === "shop" 
+      ? "Bạn cần chọn ít nhất 1 sản phẩm của shop này trước khi áp voucher shop!"
+      : "Bạn cần chọn ít nhất 1 sản phẩm trong shop này trước khi áp voucher sàn!");
+    return;
+  }
+
+  $("#voucherModal").data("scope", scope).data("shop", shopId);
+
+  if (scope === "platform") {
+    let vouchers = [];
+    if (voucherSan) {
+      vouchers = (typeof voucherSan === "string") ? JSON.parse(voucherSan) : voucherSan;
+    }
+    renderVoucherList(vouchers, "platform", shopId);
+  } else {
+    $.ajax({
+      url: "/cart/voucherShop",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ idShop: shopId }),
+      success: function(res) { renderVoucherList(res || [], "shop", shopId); },
+      error: function() { renderVoucherList([], "shop", shopId); }
+    });
+  }
+});
+
+function renderVoucherList(vouchers, scope, shopId) {
+  let subtotal = 0;
+  $(`#cart-shop-${shopId} .cart-item`).each(function(){
+    if ($(this).find(".product-checkbox").is(":checked")) {
+      const price = parseFloat($(this).data("price")) || 0;
+      const qty = parseInt($(this).find(".qty-input").val()) || 1;
+      subtotal += price * qty;
+    }
+  });
+
+  let html = "";
+  vouchers.forEach(v => {
+    const minAmount = v.minOrderAmount || 0;
+    const canUse = subtotal >= minAmount;
+
+    // check voucher đã dùng ở shop khác
+    let alreadyUsed = false;
+    $("[id^='voucher-text-platform-']").each(function() {
+      const sid = $(this).attr("id").split("-").pop();
+      const chosenId = $(this).attr("data-idvoucher");
+      if (chosenId && chosenId == v.couponId && sid != shopId) alreadyUsed = true;
+    });
+
+    let cls = "", extraMsg = "";
+    if (!canUse) { cls = "text-muted not-eligible"; extraMsg = ` | Mua thêm ${formatMoney(minAmount - subtotal)} để dùng`; }
+    if (alreadyUsed) { cls = "text-muted not-eligible"; extraMsg = " | Đã được sử dụng ở shop khác"; }
+
+    html += `
+      <div class="voucher-option p-2 border rounded mb-2 bg-light ${cls}"
+           data-code="${v.code}" data-idvoucher="${v.couponId}"
+           data-discount-type="${v.discountType}" data-discount-value="${v.discountValue}"
+           data-minorder="${minAmount}" data-shop="${shopId}">
+        <div><strong>${v.code}</strong> - ${v.discountType === "PERCENT" ? v.discountValue + "%" : formatMoney(v.discountValue)}</div>
+        <small>Đơn tối thiểu: ${formatMoney(minAmount)}${extraMsg}</small>
+      </div>`;
+  });
+
+  $("#voucher-list").html(html);
+  $("#voucherModal").modal("show");
+}
+
+$(document).on("click", ".voucher-option", function(){
+  if ($(this).hasClass("not-eligible")) return;
+
+  const scope = $("#voucherModal").data("scope");
+  const shopId = $(this).data("shop");
+  const code = $(this).data("code");
+  const idVoucher = $(this).data("idvoucher");
+  const type = $(this).data("discount-type");
+  const value = parseFloat($(this).data("discount-value"));
+  const minOrder = parseFloat($(this).data("minorder")) || 0;
+
+  const target = (scope === "platform") 
+      ? $(`#voucher-text-platform-${shopId}`)
+      : $(`#voucher-text-${shopId}`);
+
+  target.attr("data-idvoucher", idVoucher)
+        .attr("data-discount-type", type)
+        .attr("data-discount-value", value)
+        .attr("data-minorder", minOrder)
+        .removeClass("text-muted").addClass("text-success")
+        .text(`${code} (${type === "PERCENT" ? value + "%" : formatMoney(value)})`);
+
+  $("#voucherModal").modal("hide");
+  updateTotal();
+});
+
+/* ===== Update totals ===== */
+function updateTotal() {
+  let subtotal = 0, discount = 0, shipping = 0, countItem = 0;
+  const shopTotals = {};
+
+  $(".cart-item").each(function(){
+    if (!$(this).find(".product-checkbox").is(":checked")) return;
+    const price = parseFloat($(this).data("price")) || 0;
+    const qty = parseInt($(this).find(".qty-input").val()) || 1;
+    const rowTotal = price * qty;
+    subtotal += rowTotal;
+    countItem++;
+    const shopId = $(this).data("shop-id");
+    shopTotals[shopId] = (shopTotals[shopId] || 0) + rowTotal;
+  });
+
+  // Voucher shop & platform
+  $("[id^='voucher-text-']").each(function(){
+    const $v = $(this);
+    const shopId = $v.attr("id").split("-").pop();
+    const idvoucher = $v.attr("data-idvoucher");
+    const discountType = $v.data("discount-type");
+    const discountValue = parseFloat($v.data("discount-value")) || 0;
+    const minOrder = parseFloat($v.data("minorder")) || 0;
+    const shopTotal = shopTotals[shopId] || 0;
+
+    if (idvoucher && discountValue && shopTotal >= minOrder) {
+      discount += (discountType === "PERCENT") ? shopTotal * discountValue / 100 : discountValue;
+    } else if (idvoucher) {
+      $v.text($v.hasClass("voucher-text-platform") ? "Chưa chọn voucher sàn" : "Chưa chọn voucher shop")
+        .removeClass("text-success").addClass("text-muted")
+        .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+    }
+  });
+
+  const total = Math.max(0, subtotal - discount + shipping);
+  $("#selected-count").text(countItem);
+  $("#subtotal-price").text(formatMoney(subtotal));
+  $("#discount-price").text("-" + formatMoney(discount));
+  $("#shipping-price").text(formatMoney(shipping));
+  $("#total-price").text(formatMoney(total));
+}
+
+/* ===== Checkout ===== */
+$(document).on("click", "#btnCheckout", function(){
+  let cartItemIds = [];
+  $(".cart-item .product-checkbox:checked").each(function(){
+    cartItemIds.push($(this).closest(".cart-item").data("item"));
+  });
+  if (cartItemIds.length === 0) { alert("Vui lòng chọn ít nhất 1 sản phẩm"); return; }
+  if (!isLoggedIn) { window.location.href = "/auth?redirect=/cart"; return; }
+
+  let shopCoupons = [];
+  $("[id^='voucher-text-']").each(function () {
+      const $v = $(this);
+      const idAttr = $v.attr("id");
+      if (idAttr.startsWith("voucher-text-platform-")) {
+          // platform coupon
+          const shopId = idAttr.split("-").pop();
+          const couponId = parseInt($v.attr("data-idvoucher")) || null;
+          if (!couponId) return;
+          let existing = shopCoupons.find(sc => sc.shopId == shopId);
+          if (existing) existing.platformCouponId = couponId;
+          else shopCoupons.push({ shopId: parseInt(shopId), shopCouponId: null, platformCouponId: couponId, freeshipCouponId: null });
+      } else if (idAttr.startsWith("voucher-text-")) {
+          // shop coupon
+          const shopId = idAttr.split("-").pop();
+          const couponId = parseInt($v.attr("data-idvoucher")) || null;
+          if (!couponId) return;
+          let existing = shopCoupons.find(sc => sc.shopId == shopId);
+          if (existing) existing.shopCouponId = couponId;
+          else shopCoupons.push({ shopId: parseInt(shopId), shopCouponId: couponId, platformCouponId: null, freeshipCouponId: null });
+      }
+  });
+
+  const payload = { cartItemIds, shopCoupons , token};
+  console.log("Checkout payload:", payload);
+
+  $.ajax({
+    url: "/cart/checkCart",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(payload),
+    success: function(res){
+      if (res.success) window.location.href = "/checkout";
+      else showInvalidItems(res.invalidItems || []);
+    },
+    error: function(xhr){
+      const res = xhr.responseJSON;
+      if (res && res.invalidItems) showInvalidItems(res.invalidItems);
+      else alert("Có lỗi xảy ra, vui lòng thử lại.");
+    }
+  });
+});
+
+function showInvalidItems(invalids) {
+  let msg = "";
+  invalids.forEach(i => { msg += `- ${i.message}\n`; });
+  alert("Lỗi khi kiểm tra giỏ hàng:\n" + msg);
+}
+
+/* ===== init ===== */
+$(document).ready(function () {
+  setTimeout(updateTotal, 300);
+});
+function canApplyVoucher(shopId) {
+	  if (shopId) {
+	    return $(`.cart-item[data-shop-id='${shopId}']`).find(".product-checkbox:checked").length > 0;
+	  } else {
+	    return $(".cart-item").find(".product-checkbox:checked").length > 0;
+	  }
+	}
+
+</script>
+
+</div>
+</body>
+</html>

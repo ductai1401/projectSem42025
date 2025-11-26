@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<title layout:fragment="title">My Account</title>
+<style type="text/css">
+.orderTab {
+	max-height: 600px; /* hoặc theo layout */
+	overflow-y: auto;
+}
+
+.media-square {
+	width: 100px;
+	height: 100px;
+	border: 2px dashed #ccc;
+	border-radius: 8px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	background: #f8f9fa;
+}
+
+.media-square .preview {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.media-square .preview span {
+	font-size: 28px;
+	color: #999;
+	user-select: none;
+}
+
+.media-square img, .media-square video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.media-square .remove-btn {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	border: none;
+	border-radius: 50%;
+	width: 22px;
+	height: 22px;
+	font-size: 14px;
+	line-height: 20px;
+	padding: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.media-square.has-file .remove-btn {
+	display: flex;
+}
+
+        /* Order Card */
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Order Header */
+        .order-card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 16px 20px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .order-id {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .order-date {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        /* Status Badges */
+        .order-status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-unpaid { background-color: #fff3cd; color: #856404; }
+        .status-pending { background-color: #cfe2ff; color: #084298; }
+        .status-preparing { background-color: #d1e7dd; color: #0f5132; }
+        .status-shipping { background-color: #cff4fc; color: #055160; }
+        .status-completed { background-color: #d1e7dd; color: #0a3622; }
+        .status-cancelled { background-color: #f8d7da; color: #842029; }
+        .status-default { background-color: #e9ecef; color: #495057; }
+
+        /* Order Body */
+        .order-card-body {
+            padding: 20px;
+        }
+
+        /* Product Items */
+        .order-product-item {
+            display: flex;
+            gap: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            align-items: center;
+        }
+
+        .order-product-item:hover {
+            background: #e9ecef;
+        }
+
+        .order-product-item.collapsed-item {
+            display: none;
+        }
+
+        .product-image-wrapper {
+            flex-shrink: 0;
+        }
+
+        .product-image-wrapper img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #212529;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .product-quantity {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .product-total {
+            font-size: 1rem;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            height: 100%;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Voucher Section */
+        .voucher-section {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+
+        .voucher-list {
+            margin-top: 8px;
+        }
+
+        .voucher-item {
+            background: #e7f3ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .voucher-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Order Total */
+        .order-total-section {
+            background: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #0d6efd;
+        }
+
+        .order-total-label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .order-total-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #dc3545;
+        }
+
+        /* Order Footer */
+        .order-card-footer {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .order-actions .btn {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .order-actions .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Show More Button */
+        .btn-show-more {
+            border-radius: 20px;
+            padding: 6px 20px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h5 {
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #adb5bd;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .order-card-body .row {
+                flex-direction: column;
+            }
+
+            .order-summary {
+                margin-top: 20px;
+            }
+
+            .order-actions {
+                width: 100%;
+            }
+
+            .order-actions .btn {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .product-image-wrapper img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .order-total-amount {
+                font-size: 1.25rem;
+            }
+        }
+
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+
+		<!-- bread crumb section start -->
+		<nav class="breadcrumb-section breadcrumb-bg1">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="bread-crumb-title">My Account</h2>
+						<ol
+							class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+							<li class="breadcrumb-item"><a href="index.html">Home</a></li>
+							<li class="breadcrumb-item active" aria-current="page">My
+								Account</li>
+						</ol>
+					</div>
+				</div>
+			</div>
+		</nav>
+		<!-- bread crumb section end -->
+
+		<div class="my-account section-padding-bottom">
+			<div class="container">
+				<div class="row mb-n5">
+					<div class="col-12">
+						<h3 class="title text-capitalize mb-5 pb-4">My Account</h3>
+					</div>
+
+					<!-- Tab menu -->
+					<div class="col-lg-3 col-12 mb-5">
+						<div class="myaccount-tab-menu nav" role="tablist">
+							<a href="#dashboad" data-bs-toggle="tab"><i
+								class="fa fa-tachometer"></i> Dashboard</a> <a href="#orders"
+								data-bs-toggle="tab"><i class="fa fa-cart-arrow-down"></i>
+								Orders</a> <a href="#download" data-bs-toggle="tab"><i
+								class="fa fa-download"></i> Change Password</a> <a
+								href="#payment-method" data-bs-toggle="tab"><i
+								class="fa fa-credit-card"></i> Payment Method</a> <a
+								href="#address-edit" data-bs-toggle="tab"><i
+								class="fa fa-map-marker"></i> Address</a> <a href="#account-info"
+								data-bs-toggle="tab" class="active"><i class="fa fa-user"></i>
+								Account Details</a> <a th:href="@{/logout}"><i
+								class="fa fa-sign-out"></i> Logout</a>
+						</div>
+					</div>
+
+					<!-- Tab content -->
+					<div class="col-lg-9 col-12 mb-5">
+						<div th:if="${success}" class="alert alert-success"
+							th:text="${success}"></div>
+						<div th:if="${error}" class="alert alert-danger"
+							th:text="${error}"></div>
+
+						<div class="tab-content" id="myaccountContent">
+
+							<!-- Dashboard -->
+							<div class="tab-pane fade" id="dashboad" role="tabpanel">
+								<div class="myaccount-content">
+									<h3>Dashboard</h3>
+									<div class="welcome mb-20">
+										<p>
+											Hello, <strong th:text="${me.fullName}">User</strong>
+										</p>
+									</div>
+									<p class="mb-0">From your account dashboard you can view
+										your recent orders, manage addresses, and edit password &
+										details.</p>
+								</div>
+							</div>
+
+							<!-- Orders & Refunds -->
+							<div class="tab-pane fade" id="orders" role="tabpanel">
+								<div class="myaccount-content">
+									<h3>My Purchases</h3>
+
+									<!-- Tabs trạng thái chính -->
+									<ul class="nav nav-tabs mb-3" id="orderStatusTabs"
+										role="tablist">
+										<li class="nav-item">
+											<button class="nav-link active" id="all-tab"
+												data-bs-toggle="tab" data-bs-target="#all" type="button"
+												role="tab">All</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="unpaid-tab" data-bs-toggle="tab"
+												data-bs-target="#unpaid" type="button" role="tab">UNPAID</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="pending-tab"
+												data-bs-toggle="tab" data-bs-target="#pending" type="button"
+												role="tab">Pending</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="shipping-tab"
+												data-bs-toggle="tab" data-bs-target="#shipping"
+												type="button" role="tab">Shipping</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="completed-tab"
+												data-bs-toggle="tab" data-bs-target="#completed"
+												type="button" role="tab">Completed</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="cancelled-tab"
+												data-bs-toggle="tab" data-bs-target="#cancelled"
+												type="button" role="tab">Cancelled</button>
+										</li>
+										<li class="nav-item">
+											<button class="nav-link" id="refunds-tab"
+												data-bs-toggle="tab" data-bs-target="#refunds" type="button"
+												role="tab">Refund & Return</button>
+										</li>
+									</ul>
+
+									<div class="tab-content"
+										style="height: 600px; overflow-y: auto;">
+										<!-- Orders tabs -->
+										<div class="tab-pane fade show active orderTab" id="all"
+											data-status="ALL" data-page="0"></div>
+										<div class="tab-pane fade orderTab" id="unpaid"
+											data-status="UNPAID" data-page="0"></div>
+										<div class="tab-pane fade orderTab" id="pending"
+											data-status="PENDING" data-page="0"></div>
+										<div class="tab-pane fade orderTab" id="shipping"
+											data-status="SHIPPING" data-page="0"></div>
+										<div class="tab-pane fade orderTab" id="completed"
+											data-status="COMPLETED" data-page="0"></div>
+										<div class="tab-pane fade orderTab" id="cancelled"
+											data-status="CANCELLED" data-page="0"></div>
+
+										<div class="tab-pane fade orderTab" id="refunds" role="tabpanel"
+											data-status="REFUND" data-page="0">
+											<div class="myaccount-content">
+												<h3>My Refunds</h3>
+
+												<!-- Container để render HTML từ server -->
+												<div id="refundListContainer"
+													style="height: 500px; overflow-y: auto;">
+													<!-- Dữ liệu refund sẽ được load vào đây -->
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Password change -->
+							<div class="tab-pane fade" id="download" role="tabpanel">
+								<div class="myaccount-content">
+									<div class="account-details-form">
+										<div class="col-12 mb-5">
+											<h3>Change Password</h3>
+										</div>
+
+										<form th:action="@{/account/password}" method="post"
+											th:object="${pwdForm}">
+											<div class="col-12 mb-5">
+												<input id="current-pwd" placeholder="Current Password"
+													type="password" th:field="*{currentPassword}">
+												<div class="text-danger small"
+													th:if="${#fields.hasErrors('currentPassword')}"
+													th:errors="*{currentPassword}"></div>
+											</div>
+
+											<div class="col-12 mb-5">
+												<input id="new-pwd" placeholder="New Password"
+													type="password" th:field="*{newPassword}">
+												<div class="text-danger small"
+													th:if="${#fields.hasErrors('newPassword')}"
+													th:errors="*{newPassword}"></div>
+											</div>
+
+											<div class="col-12 mb-5">
+												<input id="confirm-pwd" placeholder="Confirm Password"
+													type="password" th:field="*{confirmPassword}">
+												<div class="text-danger small"
+													th:if="${#fields.hasErrors('confirmPassword')}"
+													th:errors="*{confirmPassword}"></div>
+											</div>
+
+											<div class="col-12">
+												<button class="btn btn-dark" type="submit">Save
+													Changes</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+
+							<!-- Payment method -->
+							<div class="tab-pane fade" id="payment-method" role="tabpanel">
+								<div class="myaccount-content">
+									<h3>Payment Method</h3>
+									<p class="saved-message">You can't save your payment method
+										yet.</p>
+								</div>
+							</div>
+
+							<!-- Address -->
+							<div class="tab-pane fade" id="address-edit" role="tabpanel">
+								<div class="myaccount-content">
+									<div class="account-details-form">
+										<div
+											class="d-flex justify-content-between align-items-center mb-4">
+											<h3 class="mb-0">My Addresses</h3>
+											<button class="btn btn-dark" data-bs-toggle="modal"
+												data-bs-target="#addAddressModal">+ Add New Address</button>
+										</div>
+
+										<!-- Address list -->
+										<div class="row g-3">
+											<div class="col-12" th:each="addr : ${addresses}"
+												th:if="${addresses != null}">
+												<div class="border rounded p-3 bg-light">
+													<div class="fw-semibold mb-2" th:text="${me.fullName}">Nguyen
+														Van A</div>
+													<div th:text="${addr.street}"></div>
+													<div>
+														<span th:text="${addr.wardName}"></span>, <span
+															th:text="${addr.districtName}"></span>, <span
+															th:text="${addr.provinceName}"></span>
+													</div>
+													<div class="text-muted" th:text="'Phone: ' + ${addr.phone}">
+														Phone: 0901234567</div>
+
+													<div class="mt-3 d-flex gap-2">
+														<!-- Edit -->
+														<button type="button" class="btn btn-sm btn-outline-dark"
+															th:data-id="${addr.id}" onclick="editAddress(this)"
+															name="id">Edit</button>
+
+														<!-- Delete -->
+														<form th:action="@{/account/address/delete}" method="post"
+															class="d-inline">
+															<input type="hidden" name="id" th:value="${addr.id}" />
+															<button type="submit"
+																class="btn btn-sm btn-outline-danger"
+																onclick="return confirm('Delete this address?')">Delete</button>
+														</form>
+
+														<!-- Set Default -->
+														<form th:if="${!addr.isDefault}"
+															th:action="@{/account/address/default}" method="post"
+															class="d-inline">
+															<input type="hidden" name="id" th:value="${addr.id}" />
+															<button type="submit"
+																class="btn btn-sm btn-outline-success">Set as
+																Default</button>
+														</form>
+
+														<!-- Badge Default -->
+														<span class="badge bg-success" th:if="${addr.isDefault}">Default</span>
+													</div>
+												</div>
+											</div>
+
+											<!-- Nếu chưa có địa chỉ -->
+											<div class="col-12" th:if="${#lists.isEmpty(addresses)}">
+												<div class="alert alert-info">No address saved yet.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Account details -->
+							<div class="tab-pane fade active show" id="account-info"
+								role="tabpanel">
+								<div class="myaccount-content">
+									<div class="account-details-form">
+										<div class="row">
+
+											<!-- LEFT: PROFILE -->
+											<div class="col-md-7 mb-5">
+												<form th:action="@{/account/profile}" method="post"
+													th:object="${profileForm}">
+													<div class="col-12 mb-3">
+														<label class="form-label">Full Name</label> <input
+															id="full-name" placeholder="Full Name" type="text"
+															class="form-control" th:field="*{fullName}">
+														<div class="text-danger small"
+															th:if="${#fields.hasErrors('fullName')}"
+															th:errors="*{fullName}"></div>
+													</div>
+
+													<div class="col-12 mb-3">
+														<label class="form-label">Phone Number</label> <input
+															id="phone" placeholder="Phone Number" type="text"
+															class="form-control" th:field="*{phoneNumber}">
+														<div class="text-danger small"
+															th:if="${#fields.hasErrors('phoneNumber')}"
+															th:errors="*{phoneNumber}"></div>
+													</div>
+
+													<div class="col-12 mb-3">
+														<label class="form-label">Email Address</label> <input
+															id="email" type="email" class="form-control"
+															th:value="${me.email}" readonly> <small
+															class="text-muted">Email cannot be changed.</small>
+													</div>
+
+													<div class="col-12">
+														<button class="btn btn-dark" type="submit">Save
+															Changes</button>
+													</div>
+												</form>
+											</div>
+
+											<!-- RIGHT: AVATAR -->
+											<div class="col-md-5 mb-5 d-flex justify-content-center">
+												<div class="position-relative"
+													style="width: 300px; height: 350px;">
+													<img
+														th:src="${me.image} != null ? @{/uploads/{file}(file=${me.image})} : @{/client/assets/images/No-Images.png}"
+														alt="Profile Image" class="img-fluid rounded"
+														style="width: 100%; height: 100%; object-fit: cover; display: block;">
+
+													<!-- Nút X (xoá) -->
+													<form th:action="@{/account/avatar/delete}" method="post"
+														id="deleteAvatarForm" class="d-none"></form>
+													<button type="button" title="Delete image"
+														class="btn btn-dark btn-sm position-absolute top-0 end-0 rounded-circle shadow"
+														style="width: 40px; height: 40px; margin: 6px;"
+														th:if="${me.image != null and !#strings.isEmpty(me.image)}"
+														onclick="if(confirm('Delete current image?')) document.getElementById('deleteAvatarForm').submit();">
+														X</button>
+
+													<!-- Nút Update -->
+													<form th:action="@{/account/avatar}" method="post"
+														enctype="multipart/form-data" id="avatarUploadForm"
+														class="d-none">
+														<input type="file" name="avatar" id="avatarInput"
+															accept="image/*">
+													</form>
+													<button type="button" title="Change image"
+														class="btn btn-dark position-absolute bottom-0 start-0 shadow"
+														style="width: 120px; height: 40px; margin: 8px;"
+														onclick="document.getElementById('avatarInput').click();">
+														Update</button>
+												</div>
+											</div>
+
+											<script>
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                const input = document.getElementById('avatarInput');
+                                                if (!input) return;
+
+                                                input.addEventListener('change', function () {
+                                                    if (!this.files || !this.files[0]) return;
+                                                    const max = 10 * 1024 * 1024;
+                                                    if (this.files[0].size > max) {
+                                                        alert('Image exceeds 10MB. Please choose a smaller one.');
+                                                        this.value = '';
+                                                        return;
+                                                    }
+                                                    document.getElementById('avatarUploadForm').submit();
+                                                });
+                                            });
+                                        </script>
+
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- End Account details -->
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Add Address Modal -->
+		<div class="modal fade" id="addAddressModal" tabindex="-1"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<form id="addressForm" th:action="@{/account/address}"
+						method="post">
+						<div class="modal-header">
+							<h5 class="modal-title">Add New Address</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+						</div>
+
+						<div class="modal-body">
+							<div class="mb-3">
+								<label for="phoneAddr" class="form-label">Phone</label> <input
+									id="phoneAddr" name="phone" type="text" class="form-control"
+									required>
+							</div>
+							<div class="mb-3">
+								<label for="street" class="form-label">Street / Detail</label> <input
+									id="street" name="street" type="text" class="form-control"
+									placeholder="e.g. 123 Nguyen Trai, block A" required>
+							</div>
+
+							<div class="row">
+								<div class="col-md-4 mb-3">
+									<label for="provinceKho" class="form-label">Province/City</label>
+									<select id="provinceKho" name="provinceId" class="form-select"
+										required>
+										<option value="">-- Select Province/City --</option>
+									</select>
+								</div>
+								<div class="col-md-4 mb-3">
+									<label for="districtKho" class="form-label">District</label> <select
+										id="districtKho" name="districtId" class="form-select"
+										disabled required>
+										<option value="">-- Select District --</option>
+									</select>
+								</div>
+								<div class="col-md-4 mb-3">
+									<label for="wardKho" class="form-label">Ward/Commune</label> <select
+										id="wardKho" name="wardCode" class="form-select" disabled
+										required>
+										<option value="">-- Select Ward/Commune --</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" name="default"
+									id="setDefault"> <label class="form-check-label"
+									for="setDefault">Set as default</label>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<input type="hidden" id="addressesHidden" name="addressesJson">
+							<input type="hidden" id="addressId" name="addressId">
+							<button type="button" class="btn btn-outline-secondary"
+								data-bs-dismiss="modal">Cancel</button>
+							<button type="button" id="saveAddressBtn" class="btn btn-dark">Save
+								Address</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- Refund Modal -->
+		<div class="modal fade" id="refundModal" tabindex="-1"
+			aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-lg">
+				<div class="modal-content">
+
+					<div class="modal-header">
+						<h5 class="modal-title">Yêu cầu hoàn tiền</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Đóng"></button>
+					</div>
+
+					<div class="modal-body">
+						<form id="refundForm">
+							<input type="hidden" name="orderId">
+
+							<!-- Mã đơn hàng -->
+							<div class="mb-3">
+								<label class="form-label">Mã đơn hàng</label> <input type="text"
+									class="form-control" name="orderCode" readonly>
+							</div>
+
+							<!-- Danh sách sản phẩm -->
+							<div class="mb-3">
+								<label class="form-label">Chọn sản phẩm muốn hoàn tiền</label>
+								<ul id="refundItemsList" class="list-group">
+									<!-- JS sẽ append li ở đây -->
+								</ul>
+							</div>
+
+							<!-- Lý do hoàn tiền -->
+							<div class="mb-3">
+								<label class="form-label">Lý do hoàn tiền</label>
+								<textarea class="form-control" name="reason" rows="3"
+									placeholder="Nhập lý do..."></textarea>
+								<div id="errorReason" class="text-danger small"></div>
+							</div>
+
+							<!-- Upload hình ảnh / video -->
+							<div class="mb-3">
+								<label class="form-label">Đính kèm hình ảnh / video (tối
+									đa 4)</label>
+								<div id="mediaContainer" class="d-flex gap-2 flex-wrap"></div>
+								<div id="errorFiles" class="text-danger small"></div>
+							</div>
+
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Đóng</button>
+						<button type="button" class="btn btn-danger" id="btnSubmitRefund">Gửi
+							yêu cầu</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div layout:fragment="scripts">
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script type="text/javascript">
+    $(document).ready(function () {
+      // ===== Load Provinces =====
+      function loadProvinces(selector) {
+        $.ajax({
+          url: "/api/ghn/provinces",
+          method: "GET",
+          dataType: "json",
+          success: function (data) {
+            if (typeof data === "string") {
+              data = JSON.parse(data);
+            }
+            let provinces = Array.isArray(data) ? data : data.data || [];
+            let $select = $(selector);
+            $select.empty().append('<option value="">-- Select Province/City --</option>');
+            provinces.forEach(p => {
+              $select.append(`<option value="${p.ProvinceID}">${p.ProvinceName}</option>`);
+            });
+          }
+        });
+      }
+      
+   
+
+      function makeSquare() {
+    	    const square = document.createElement('div');
+    	    square.className = 'media-square';
+
+    	    const preview = document.createElement('div');
+    	    preview.className = 'preview';
+    	    preview.innerHTML = '<span>+</span>';
+
+    	    const input = document.createElement('input');
+    	    input.type = 'file';
+    	    input.accept = 'image/*,video/*';
+    	    input.style.display = 'none';
+
+    	    const removeBtn = document.createElement('button');
+    	    removeBtn.type = 'button';
+    	    removeBtn.className = 'remove-btn';
+    	    removeBtn.textContent = '×';
+
+    	    square.addEventListener('click', (e) => {
+    	      if (e.target === removeBtn) return;
+    	      input.click();
+    	    });
+
+    	    input.addEventListener('change', () => {
+    	      const file = input.files[0];
+    	      if (!file) return;
+
+    	      preview.innerHTML = '';
+    	      if (file.type.startsWith('image/')) {
+    	        const img = document.createElement('img');
+    	        img.src = URL.createObjectURL(file);
+    	        preview.appendChild(img);
+    	      } else if (file.type.startsWith('video/')) {
+    	        const vid = document.createElement('video');
+    	        vid.src = URL.createObjectURL(file);
+    	        vid.controls = true;
+    	        preview.appendChild(vid);
+    	      } else {
+    	        preview.textContent = file.name;
+    	      }
+    	      square.classList.add('has-file');
+    	    });
+
+    	    removeBtn.addEventListener('click', (e) => {
+    	      e.stopPropagation();
+    	      input.value = '';
+    	      preview.innerHTML = '<span>+</span>';
+    	      square.classList.remove('has-file');
+    	    });
+
+    	    square.appendChild(preview);
+    	    square.appendChild(input);
+    	    square.appendChild(removeBtn);
+    	    return square;
+    	  }
+
+    	  function resetSquares() {
+    	    const container = document.getElementById('mediaContainer');
+    	    if (!container) return;
+    	    container.innerHTML = '';
+    	    for (let i = 0; i < 4; i++) {
+    	      container.appendChild(makeSquare());
+    	    }
+    	  }
+
+    	  const modalEl = document.getElementById('refundModal');
+    	  if (modalEl) {
+    	    modalEl.addEventListener('show.bs.modal', resetSquares);
+    	  }
+
+       
+
+      // ===== Load Districts =====
+      function loadDistricts(provinceId, selector) {
+        let $select = $(selector);
+        $select.empty().append('<option value="">-- Select District --</option>').prop("disabled", true);
+        if (!provinceId) return;
+
+        $.ajax({
+          url: "/api/ghn/districts",
+          method: "POST",
+          dataType: "json",
+          data: { provinceId: provinceId },
+          success: function (data) {
+            if (typeof data === "string") {
+              data = JSON.parse(data);
+            }
+            let districts = Array.isArray(data) ? data : data.data || [];
+            $select.empty().append('<option value="">-- Select District --</option>');
+            districts.forEach(d => {
+              $select.append(`<option value="${d.DistrictID}">${d.DistrictName}</option>`);
+            });
+            $select.prop("disabled", false);
+
+            // 🔥 báo cho editAddress biết district đã load
+            $(document).trigger("districtsLoaded");
+          }
+        });
+      }
+
+      // ===== Load Wards =====
+      function loadWards(districtId, selector) {
+        let $select = $(selector);
+        $select.empty().append('<option value="">-- Select Ward / Commune --</option>').prop("disabled", true);
+        if (!districtId) return;
+
+        $.ajax({
+          url: "/api/ghn/wards",
+          method: "POST",
+          dataType: "json",
+          data: { districtId: districtId },
+          success: function (data) {
+            if (typeof data === "string") {
+              data = JSON.parse(data);
+            }
+            let wards = Array.isArray(data) ? data : data.data || [];
+            $select.empty().append('<option value="">-- Select Ward/Commune --</option>');
+            wards.forEach(w => {
+              $select.append(`<option value="${w.WardCode}">${w.WardName}</option>`);
+            });
+            $select.prop("disabled", false);
+
+            // 🔥 báo cho editAddress biết ward đã load
+            $(document).trigger("wardsLoaded");
+          }
+        });
+      }
+
+      // ===== Khởi tạo =====
+      loadProvinces("#provinceKho");
+
+      // Khi chọn Province -> load Districts
+      $("#provinceKho").change(function () {
+        let provinceId = $(this).val();
+        loadDistricts(provinceId, "#districtKho");
+        $("#wardKho").empty()
+          .append('<option value="">-- Select Ward / Commune --</option>')
+          .prop("disabled", true);
+      });
+
+      // Khi chọn District -> load Wards
+      $("#districtKho").change(function () {
+        let districtId = $(this).val();
+        loadWards(districtId, "#wardKho");
+      });
+
+      // ===== Save Address =====
+      $("#saveAddressBtn").on("click", function (e) {
+    	  e.preventDefault();
+
+    	  const id = $("#addressId").val();  // lấy id (nếu có)
+    	  const street = $("#street").val().trim();
+    	  const phone = $("#phoneAddr").val().trim();
+    	  const provVal = $("#provinceKho").val();
+    	  const distVal = $("#districtKho").val();
+    	  const wardVal = $("#wardKho").val();
+
+    	  const provText = $("#provinceKho option:selected").text().trim();
+    	  const distText = $("#districtKho option:selected").text().trim();
+    	  const wardText = $("#wardKho option:selected").text().trim();
+    	  const isDefault = $("#setDefault").is(":checked");
+
+    	  const addressObj = {
+    	    id: id || null,   // 👈 nếu có id thì update, không có thì add
+    	    street: street,
+    	    wardCode: wardVal,
+    	    wardName: wardText,
+    	    districtId: distVal,
+    	    districtName: distText,
+    	    provinceId: provVal,
+    	    provinceName: provText,
+    	    phone: phone,
+    	    isDefault: isDefault
+    	  };
+
+    	  $("#addressesHidden").val(JSON.stringify(addressObj));
+    	  $("#addressForm").submit();
+    	});
+      
+      
+      
+    });
+
+    // ===== Edit Address =====
+    function editAddress(btn) {
+	  const id = $(btn).data("id");
+	
+	  $.get("/account/address/" + id, function(addr) {
+	    $("#addressForm").attr("action", "/account/address/update");
+	
+	    // set hidden id
+	    $("#addressId").val(addr.id);
+	
+	    $("#phoneAddr").val(addr.phone);
+	    $("#street").val(addr.street);
+	    $("#provinceKho").val(addr.provinceId).trigger("change");
+	
+	    $(document).one("districtsLoaded", function() {
+	      $("#districtKho").val(addr.districtId).trigger("change");
+	    });
+	
+	    $(document).one("wardsLoaded", function() {
+	      $("#wardKho").val(addr.wardCode);
+	    });
+	
+	    $("#setDefault").prop("checked", addr.isDefault);
+	    $("#addAddressModal").modal("show");
+	  });
+	  
+
+		
+		    
+		
+		}
+    // Hàm load dữ liệu
+ // Khi bấm nút "Yêu cầu hoàn tiền"
+    $(document).on("click", ".btn-refund", function () {
+    let orderId = $(this).data("order-id");
+
+    const $modal = $("#refundModal");
+    $modal.find("ul#refundItemsList").empty();
+    $modal.find("input[name=orderId]").val(orderId);
+    $modal.find("input[name=orderCode]").val("#" + orderId);
+    $modal.find("textarea[name=reason]").val("");
+
+    $.get("/account/orders/detail/" + orderId, function(order) {
+        if (!order) {
+            alert("Không lấy được thông tin đơn hàng.");
+            return;
+        }
+
+        // Append items
+        order.items.forEach(item => {
+            let li = $(`
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="form-check me-2">
+                        <input class="form-check-input refund-item-checkbox" type="checkbox" data-item-id="${item.orderItemId}">
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <img src="${item.productVariantImage}" style="width:50px; height:50px; object-fit:cover" class="me-2"/>
+                        <div>
+                            <div>${item.productVariantName}</div>
+                            <small>Số lượng: <input type="number" class="form-control refund-item-qty" min="1" max="${item.quantity}" value="${item.quantity}" style="width:70px; display:inline-block;"></small>
+                        </div>
+                    </div>
+                    <span>₫${item.unitFinalPrice}</span>
+                </li>
+            `);
+            $modal.find("#refundItemsList").append(li);
+        });
+
+        let modal = new bootstrap.Modal(document.getElementById('refundModal'));
+        modal.show();
+
+    }).fail(function() {
+        alert("Lỗi khi lấy thông tin đơn hàng.");
+    });
+});
+
+
+$(document).ready(function () {
+
+	$(document).on("click", ".btn-pay", function () {
+	    let $btn = $(this);
+	    let orderId = $btn.data("order-id");
+
+	    // Disable nút để tránh spam
+	    $btn.prop("disabled", true).text("Đang chuyển hướng...");
+
+	    // Gọi API tạo lại link thanh toán
+	    $.post("/checkout/continue", {orderId: orderId}, function (res) {
+	        if (res.paymentUrl) {
+	            window.location.href = res.paymentUrl;
+	        } else {
+	        	
+               Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại!',
+                        text: res.message || 'Không thể tạo link thanh toán, vui lòng thử lại sau.'
+                });
+                
+	            
+	            $btn.prop("disabled", false).text("Tiếp tục thanh toán");
+	        }
+	    }).fail(function (res) {
+	    	Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: res.error || 'Loi he thong, vui long thu lai sau'
+            }).then(() => $btn.prop("disabled", false).text("Tiếp tục thanh toán"));
+	        
+	       
+	    });
+	});
+
+    // Hủy đơn
+   $(document).on("click", ".btn-cancel", function () {
+    let orderId = $(this).data("order-id");
+
+    Swal.fire({
+        title: `Hủy đơn #${orderId}`,
+        text: "Vui lòng nhập lý do hủy đơn:",
+        input: 'text',
+        inputPlaceholder: 'Nhập lý do hủy...',
+        showCancelButton: true,
+        confirmButtonText: 'Xác nhận hủy',
+        cancelButtonText: 'Hủy',
+        preConfirm: (reason) => {
+            if (!reason || reason.trim() === '') {
+                Swal.showValidationMessage('Bạn phải nhập lý do hủy đơn!');
+            }
+            return reason;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const reason = result.value.trim();
+
+            $.post("/checkout/cancel", { orderId: orderId, reason: reason }, function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: res.message || 'Đơn đã được hủy.'
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại!',
+                        text: res.message || 'Không thể hủy đơn.'
+                    });
+                }
+            });
+        }
+    });
+});
+
+
+    // Mua lại
+    $(document).on("click", ".btn-reorder", function () {
+        let orderId = $(this).data("order-id");
+        $.post("/orders/reorder", {orderId: orderId}, function (res) {
+            alert(res.message || "Sản phẩm đã được thêm lại giỏ hàng.");
+            window.location.href = "/cart";
+        });
+    });
+
+    const btnSubmit = document.getElementById("btnSubmitRefund");
+    const refundForm = document.getElementById("refundForm");
+
+    btnSubmit.addEventListener("click", () => {
+        // Xóa tất cả lỗi trước khi submit
+        document.querySelectorAll("#refundForm div[id^='error']").forEach(div => div.innerHTML = "");
+
+        // Lấy item được chọn và số lượng
+        const refundItems = [];
+        document.querySelectorAll(".refund-item-checkbox:checked").forEach(cb => {
+            const li = cb.closest("li");
+            const qtyInput = li.querySelector(".refund-item-qty");
+            const qty = parseInt(qtyInput.value);
+            const maxQty = parseInt(qtyInput.getAttribute("max"));
+            if(qty <= 0 || qty > maxQty){
+                alert("Số lượng hoàn tiền không hợp lệ cho sản phẩm: " + li.querySelector("div div").textContent);
+                return;
+            }
+            refundItems.push({
+                itemId: cb.dataset.itemId,
+                quantity: qty
+            });
+        });
+
+        if(refundItems.length === 0){
+            alert("Chọn ít nhất một sản phẩm để hoàn tiền");
+            return;
+        }
+
+        const formData = new FormData(refundForm);
+        formData.append("items", JSON.stringify(refundItems)); // gửi array items dạng JSON
+
+        // Lấy file từ mediaContainer
+        for (const input of document.querySelectorAll("#mediaContainer input[type=file]")) {
+		    if (input.files[0]) {
+		        const file = input.files[0];
+		        if (file.type.startsWith("image/") && file.size > 5 * 1024 * 1024) {
+		            alert("Ảnh quá lớn (max 5MB): " + file.name);
+		            return; // ✅ dừng hẳn
+		        }
+		        if (file.type.startsWith("video/") && file.size > 20 * 1024 * 1024) {
+		            alert("Video quá lớn (max 20MB): " + file.name);
+		            return;
+		        }
+		        formData.append("files", file);
+		    }
+		}
+        
+        console.log(formData);
+
+        fetch("/refund/create", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                alert(data.message);
+                const modal = bootstrap.Modal.getInstance(document.getElementById('refundModal'));
+                modal.hide();
+            } else {
+                if (data.errors) {
+                    for (const [field, message] of Object.entries(data.errors)) {
+                        const errorDiv = document.getElementById("error" + field.charAt(0).toUpperCase() + field.slice(1));
+                        if (errorDiv) errorDiv.innerHTML = `<span class="text-danger">${message}</span>`;
+                    }
+                } else {
+                    alert(data.message || "Yêu cầu hoàn tiền thất bại.");
+                }
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi upload:", err);
+            alert("Có lỗi xảy ra khi gửi yêu cầu.");
+        });
+    });
+
+
+	// Đánh giá
+	$(document).on("click", ".btn-review", function() {
+		const orderId = $(this).data("order-id");
+		const variantId = $(this).data("variant-id");
+
+		const $modal = $("#reviewModal");
+		const $body = $modal.find("#reviewModalContent");
+
+		// Hiện loading trước
+		$body.html('<div class="text-center py-4">Loading...</div>');
+
+		// Gọi đúng route ReviewController
+		$body.load('/review/create?orderId=' + encodeURIComponent(orderId)
+			+ '&variantId=' + encodeURIComponent(variantId),
+			function(response, status, xhr) {
+				if (status === "error") {
+					console.error("Load review form error:", xhr.status, xhr.responseText);
+					$body.html("<div class='text-danger text-center py-4'>Không thể tải form đánh giá.</div>");
+					return;
+				}
+				// Khi load xong thì mở modal
+				const modalInstance = new bootstrap.Modal(document.getElementById("reviewModal"));
+				modalInstance.show();
+			}
+		);
+	});
+    
+
+});
+
+
+$(document).ready(function () {
+    let currentRequest = null;
+
+    // -----------------------------
+    // Load Orders
+    // -----------------------------
+    function loadOrders($tabPane, append = false) {
+        if (currentRequest) currentRequest.abort();
+
+        let status = $tabPane.data("status");
+        let page = $tabPane.data("page") || 0;
+
+        currentRequest = $.ajax({
+            url: "/account/orders/list",
+            type: "GET",
+            data: { status, page },
+            beforeSend: function () {
+                $tabPane.find(".loading, .loading-more").remove();
+                $tabPane.html(!append
+                    ? "<div class='text-center py-3 loading'>Loading...</div>"
+                    : $tabPane.html() + "<div class='text-center py-3 loading-more'>Loading more...</div>");
+            },
+            success: function (html) {
+                $tabPane.find(".loading, .loading-more").remove();
+                append ? $tabPane.append(html) : $tabPane.html(html);
+                $tabPane.data("page", page + 1);
+                currentRequest = null;
+            },
+            error: function () {
+                $tabPane.find(".loading, .loading-more").remove();
+                $tabPane.append("<div class='text-danger text-center py-3'>Error loading orders</div>");
+                currentRequest = null;
+            }
+        });
+    }
+
+    // -----------------------------
+    // Load Refunds
+    // -----------------------------
+    function loadRefunds($container, page = 0, append = false) {
+        $.ajax({
+            url: "/refund/list", // endpoint trả về HTML fragment table
+            type: "GET",
+            data: { page: page },
+            beforeSend: function () {
+                $container.find(".loading, .loading-more").remove();
+                if (!append) {
+                    $container.html("<div class='text-center py-3'>Loading...</div>");
+                } else {
+                    $container.append("<div class='text-center py-3 loading-more'>Loading more...</div>");
+                }
+            },
+            success: function (html) {
+            	console.log(html)
+                $container.find(".loading, .loading-more").remove();
+                append ? $container.append(html) : $container.html(html);
+                $container.data("page", page + 1);
+            },
+            error: function (xhr) {
+                console.error("Refund load error:", xhr.status, xhr.responseText);
+                $container.find(".loading, .loading-more").remove();
+                $container.html("<div class='text-danger text-center py-3'>Error loading refunds</div>");
+            }
+        });
+    }
+
+    // -----------------------------
+    // Khi đổi tab chính Orders / Refund
+    // -----------------------------
+    $('#orderStatusTabs button[data-bs-toggle="tab"]').on("shown.bs.tab", function (e) {
+        let target = $(e.target).data("bs-target");
+        let $tabPane = $(target);
+        $tabPane.data("page", 0);
+
+        if ($tabPane.data("status") === "REFUND") {
+            let $refundContainer = $("#refundListContainer");
+            $refundContainer.data("page", 0);
+            loadRefunds($refundContainer, 0, false);
+        } else {
+            loadOrders($tabPane, false);
+        }
+    });
+
+    // -----------------------------
+    // Infinite scroll Orders
+    // -----------------------------
+    $(".tab-content").on("scroll", ".orderTab", function () {
+        let $tabPane = $(this);
+        if (!$tabPane.hasClass("active") || $tabPane.data("noMore")) return;
+
+        if ($tabPane.scrollTop() + $tabPane.innerHeight() >= this.scrollHeight - 50) {
+            loadOrders($tabPane, true);
+        }
+    });
+
+    // -----------------------------
+    // Infinite scroll Refunds
+    // -----------------------------
+    $("#refundListContainer").on("scroll", function () {
+        let $container = $(this);
+        if ($container.data("noMore")) return;
+
+        if ($container.scrollTop() + $container.innerHeight() >= this.scrollHeight - 50) {
+            let page = $container.data("page") || 0;
+            loadRefunds($container, page, true);
+        }
+    });
+
+    // -----------------------------
+    // Load tab mặc định All Orders
+    // -----------------------------
+    loadOrders($("#all"), false);
+});
+</script>
+	</div>
+</body>
+</html>

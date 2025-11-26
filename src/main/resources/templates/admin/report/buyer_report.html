@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Quản lý báo cáo người mua</title>
+    <style>
+        .report-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid #dee2e6;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+        .form-control,
+        .form-select {
+            border: none;
+            border-bottom: 2px solid #0d6efd;
+            border-radius: 0;
+            background-color: transparent;
+        }
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow: none;
+            border-color: #0a58ca;
+        }
+        .modal-dialog {
+            max-width: 800px;
+            margin: 6rem auto;
+        }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .evidence-preview img,
+        .evidence-preview video {
+            max-width: 100%;
+            height: auto;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="report-section container-fluid">
+        <h3 class="mb-4">📋 Danh sách báo cáo người mua</h3>
+
+        <form class="row row-cols-lg-auto g-3 align-items-end mb-3 justify-content-end" method="get" th:action="@{/admin/reports/buyer}">
+            <div class="col-md-3">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên hoặc nội dung" th:value="${keyword}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Loại báo cáo</label>
+                <select name="type" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="scam">Lừa đảo</option>
+                    <option value="abuse">Hành vi xấu</option>
+                    <option value="spam">Spam</option>
+                    <option value="other">Khác</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
+            </div>
+        </form>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>👤 Người mua</th>
+                <th>📂 Loại báo cáo</th>
+                <th>📝 Nội dung</th>
+                <th>📅 Ngày gửi</th>
+                <th>🔧 Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report, iter : ${reports}">
+                <td th:text="${iter.count}">1</td>
+                <td th:text="${report.buyerName}">Nguyễn Văn B</td>
+                <td th:text="${report.reportType}">Lừa đảo</td>
+                <td th:text="${report.content}">Gian lận thanh toán</td>
+                <td th:text="${#dates.format(report.createdAt, 'dd/MM/yyyy')}">10/07/2025</td>
+                <td>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#buyerReportModal"
+                            th:attr="data-id=${report.id}, data-name=${report.buyerName}, data-type=${report.reportType}, data-content=${report.content}, data-date=${#dates.format(report.createdAt, 'dd/MM/yyyy')}, data-image=${report.imageEvidence}, data-video=${report.videoEvidence}">👁 Xem</button>
+                </td>
+            </tr>
+            <tr>
+			  <td>1</td>
+			  <td>Nguyễn Văn B</td>
+			  <td>Lừa đảo</td>
+			  <td>Người mua không thanh toán dù đã nhận hàng</td>
+			  <td>10/07/2025</td>
+			  <td>
+			    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#buyerReportModal"
+			        data-id="1"
+			        data-name="Nguyễn Văn B"
+			        data-type="Lừa đảo"
+			        data-content="Người mua không thanh toán dù đã nhận hàng"
+			        data-date="10/07/2025"
+			        data-image="/uploads/proofs/image1.jpg"
+			        data-video="/uploads/proofs/video1.mp4">👁 Xem</button>
+			  </td>
+			</tr>
+            </tbody>
+        </table>
+    </div>
+    
+    
+    <!-- Modal -->
+<div class="modal fade" id="buyerReportModal" tabindex="-1" aria-labelledby="buyerReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buyerReportModalLabel">Chi tiết báo cáo người mua</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reportId" name="reportId">
+                <p><strong>Người mua:</strong> <span id="modalName"></span></p>
+                <p><strong>Loại báo cáo:</strong> <span id="modalType"></span></p>
+                <p><strong>Nội dung:</strong></p>
+                <p id="modalContent"></p>
+                <p><strong>Ngày gửi:</strong> <span id="modalDate"></span></p>
+                <div class="evidence-preview">
+                    <p><strong>Chứng cứ:</strong></p>
+                    <img id="modalImage" style="display:none;" />
+                    <video id="modalVideo" style="display:none;" controls></video>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form th:action="@{/admin/reports/buyer/resolve}" method="post">
+                    <input type="hidden" name="reportId" id="footerReportId" />
+                    <button type="submit" name="action" value="approve" class="btn btn-success">✅ Duyệt</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-secondary">❌ Từ chối</button>
+                    <button type="submit" name="action" value="warn" class="btn btn-warning">⚠️ Cảnh báo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+
+
+<div layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('buyerReportModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                document.getElementById('modalName').textContent = button.getAttribute('data-name');
+                document.getElementById('modalType').textContent = button.getAttribute('data-type');
+                document.getElementById('modalContent').textContent = button.getAttribute('data-content');
+                document.getElementById('modalDate').textContent = button.getAttribute('data-date');
+                document.getElementById('reportId').value = button.getAttribute('data-id');
+                document.getElementById('footerReportId').value = button.getAttribute('data-id');
+
+                const image = document.getElementById('modalImage');
+                const video = document.getElementById('modalVideo');
+                const imageUrl = button.getAttribute('data-image');
+                const videoUrl = button.getAttribute('data-video');
+
+                image.style.display = imageUrl ? 'block' : 'none';
+                video.style.display = videoUrl ? 'block' : 'none';
+
+                if (imageUrl) image.src = imageUrl;
+                if (videoUrl) video.src = videoUrl;
+            });
+        }
+    });
+</script>
+</div>
+</body>
+</html>

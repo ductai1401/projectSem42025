@@ -1,0 +1,29 @@
+.btn {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 12px 20px;
+  border-radius: 25px;
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.btn-dark {
+  &:hover {
+    background-color: $danger;
+    border-color: $danger;
+  }
+}
+.btn-outline-dark {
+  &:hover {
+    background-color: $danger;
+    border-color: $danger;
+  }
+}
+
+.btn-light {
+  &:hover {
+    color: $danger;
+  }
+}

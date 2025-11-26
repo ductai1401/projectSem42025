@@ -1,0 +1,18 @@
+/* Tab mặc định (chưa active) */
+.nav-tabs .nav-link {
+	color: red;
+}
+
+/* Tab khi hover (tùy chọn) */
+.nav-tabs .nav-link:hover {
+	color: darkred;
+}
+
+/* Tab đang active */
+.nav-tabs .nav-link.active {
+	color: black;
+}
+
+#myTab {
+	border-bottom: #D4D3CE solid 1px;
+}

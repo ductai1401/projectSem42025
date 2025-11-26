@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title">Giỏ hàng</title>
+  <style type="text/css">
+    /* Cart Page Styles */
+    .cart-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 15px;
+    }
+
+    /* Header */
+    .cart-header {
+      background: #f8f9fa;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #495057;
+      display: flex;
+      align-items: center;
+      border: 1px solid #e8e9eb;
+    }
+
+    .cart-header .form-check-input {
+      margin-right: 16px;
+    }
+
+    /* Shop Card */
+    .shop-card {
+      background: #fff;
+      border: 1px solid #e8e9eb;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .shop-card-header {
+      background: #f8f9fa;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e8e9eb;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .shop-card-header .shop-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #2c3e50;
+    }
+
+    /* Cart Item */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item:hover {
+      background: #f8f9fa;
+    }
+
+    .cart-item.out-of-stock {
+      opacity: 0.6;
+      background: #fafafa;
+    }
+
+    .cart-item-checkbox {
+      margin-right: 16px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .cart-item-image {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #e8e9eb;
+      margin-right: 12px;
+    }
+
+    .cart-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cart-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #2c3e50;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .cart-item-variant {
+      font-size: 13px;
+      color: #6c757d;
+      margin-bottom: 4px;
+    }
+
+    .out-of-stock-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #f8d7da;
+      color: #721c24;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .cart-item-price {
+      width: 120px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: #6c757d;
+      font-size: 13px;
+    }
+
+    .sale-price {
+      color: #dc3545;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .cart-item-quantity {
+      width: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .quantity-control button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f8f9fa;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quantity-control button:hover:not(:disabled) {
+      background: #e9ecef;
+    }
+
+    .quantity-control button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .quantity-control input {
+      width: 50px;
+      height: 32px;
+      border: none;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .available-text {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .cart-item-total {
+      width: 120px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: #0d6efd;
+    }
+
+    .cart-item-actions {
+      width: 100px;
+      text-align: center;
+    }
+
+    .btn-remove {
+      color: #dc3545;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: transform 0.2s;
+    }
+
+    .btn-remove:hover {
+      transform: scale(1.2);
+    }
+
+    .btn-similar {
+      font-size: 12px;
+      padding: 4px 12px;
+      margin-top: 4px;
+    }
+
+    /* Voucher Section */
+    .voucher-section {
+      background: #fff9e6;
+      padding: 12px 16px;
+      border-top: 1px solid #e8e9eb;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-choose-voucher {
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid #ffc107;
+      background: #fff;
+      color: #856404;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-choose-voucher:hover {
+      background: #ffc107;
+      color: #fff;
+    }
+
+    .voucher-text {
+      font-size: 13px;
+      flex: 1;
+    }
+
+    .voucher-text.selected {
+      color: #28a745;
+      font-weight: 500;
+    }
+
+    .btn-clear-voucher {
+      font-size: 12px;
+      color: #dc3545;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Checkout Bar */
+    .checkout-bar {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      z-index: 1000;
+      border-top: 2px solid #e8e9eb;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .checkout-bar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .checkout-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .checkout-bar-left .form-check {
+      margin: 0;
+    }
+
+    .checkout-bar-left .btn-link {
+      font-size: 13px;
+      padding: 0;
+      text-decoration: none;
+    }
+
+    .checkout-bar-left .btn-link:hover {
+      text-decoration: underline;
+    }
+
+    .checkout-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .checkout-summary {
+      text-align: right;
+    }
+
+    .checkout-summary-detail {
+      font-size: 13px;
+      color: #6c757d;
+      margin-bottom: 4px;
+    }
+
+    .checkout-summary-detail span {
+      margin: 0 4px;
+    }
+
+    .checkout-total {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .checkout-total-amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: #dc3545;
+      margin-left: 8px;
+    }
+
+    .btn-checkout {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-checkout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-checkout:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Empty Cart */
+    .empty-cart {
+      text-align: center;
+      padding: 60px 20px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8e9eb;
+    }
+
+    .empty-cart i {
+      font-size: 64px;
+      color: #adb5bd;
+      margin-bottom: 16px;
+    }
+
+    .empty-cart h5 {
+      color: #495057;
+      margin-bottom: 8px;
+    }
+
+    .empty-cart p {
+      color: #6c757d;
+      margin-bottom: 20px;
+    }
+
+    /* Voucher Modal */
+    .voucher-option {
+      padding: 12px;
+      border: 1px solid #e8e9eb;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+    }
+
+    .voucher-option:hover:not(.not-eligible) {
+      border-color: #667eea;
+      background: #f8f9ff;
+      transform: translateX(4px);
+    }
+
+    .voucher-option.not-eligible {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f8f9fa;
+    }
+
+    .voucher-option strong {
+      color: #667eea;
+      font-size: 15px;
+    }
+
+    .voucher-option small {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .cart-header {
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+
+      .cart-item {
+        flex-wrap: wrap;
+        padding: 12px;
+      }
+
+      .cart-item-info {
+        flex: 1 1 100%;
+        margin-bottom: 12px;
+      }
+
+      .cart-item-price,
+      .cart-item-quantity,
+      .cart-item-total,
+      .cart-item-actions {
+        width: auto;
+        flex: 1;
+      }
+
+      .cart-item-price,
+      .cart-item-total {
+        text-align: left;
+      }
+
+      .checkout-bar-content {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .checkout-bar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .btn-checkout {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-section breadcrumb-bg1">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h2 class="bread-crumb-title">Giỏ hàng</h2>
+          <ol class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+            <li class="breadcrumb-item"><a href="/home">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Giỏ hàng</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="cart-container">
+    <!-- Header Row -->
+    <div class="cart-header">
+      <input type="checkbox" class="form-check-input" id="selectAllTop">
+      <span style="flex: 1;">Sản phẩm</span>
+      <span style="width: 120px; text-align: center;">Đơn giá</span>
+      <span style="width: 150px; text-align: center;">Số lượng</span>
+      <span style="width: 120px; text-align: center;">Thành tiền</span>
+      <span style="width: 100px; text-align: center;">Thao tác</span>
+    </div>
+
+    <!-- Cart Items -->
+    <div id="cartData"></div>
+
+    <!-- Checkout Bar -->
+    <div class="checkout-bar">
+      <div class="checkout-bar-content">
+        <!-- Left -->
+        <div class="checkout-bar-left">
+          <div class="form-check">
+            <input type="checkbox" id="selectAllBottom" class="form-check-input">
+            <label for="selectAllBottom" class="form-check-label">Chọn tất cả</label>
+          </div>
+          <button class="btn btn-link text-danger btn-delete-selected">Xóa</button>
+          <button class="btn btn-link text-secondary">Lưu vào yêu thích</button>
+        </div>
+
+        <!-- Right -->
+        <div class="checkout-bar-right">
+          <div class="checkout-summary">
+            <div class="checkout-summary-detail">
+              <span>Sản phẩm: <strong id="selected-count">0</strong></span>
+              <span>|</span>
+              <span>Tạm tính: <strong id="subtotal-price">0₫</strong></span>
+              <span>|</span>
+              <span>Giảm giá: <strong class="text-danger" id="discount-price">0₫</strong></span>
+            </div>
+            <div class="checkout-total">
+              Tổng thanh toán:
+              <span class="checkout-total-amount" id="total-price">0₫</span>
+            </div>
+          </div>
+          <button class="btn-checkout" id="btnCheckout">Thanh toán</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voucher Modal -->
+  <div class="modal fade" id="voucherModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">
+          <h5 class="modal-title">
+            <i class="bi bi-ticket-perforated me-2"></i>Chọn mã giảm giá
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="voucher-list" style="max-height: 500px; overflow-y: auto;">
+          <!-- vouchers loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div layout:fragment="scripts">
+<script type="text/javascript" th:inline="javascript">
+  let roles = /*[[${session.roles}]]*/ null;
+  let voucherSan = /*[[${voucherSan}]]*/ null;
+  let isLoggedIn = roles != null;
+  let token = /*[[${checkoutToken}]]*/ null;
+</script>
+
+<script>
+/* ===== Render single cart item ===== */
+function renderCartItem(item) {
+  const available = item.availableQty ?? item.remaining;
+  const isOutOfStock = available === 0 || available === null;
+  const price = item.flashSalePrice ?? item.price;
+  
+  return `
+    <div class="cart-item ${isOutOfStock ? 'out-of-stock' : ''}" 
+         data-id="${item.variantId}" 
+         data-price="${isOutOfStock ? 0 : price}" 
+         data-shop-id="${item.shopId}" 
+         data-item="${item.cartItemId}">
+      <input type="checkbox" class="cart-item-checkbox product-checkbox" ${isOutOfStock ? 'disabled' : ''}>
+      
+      <img src="${item.imageVariant}" class="cart-item-image" 
+           alt="${item.variantName}"
+           onerror="this.src='/images/no-image.png'">
+      
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.productName}</div>
+        <div class="cart-item-variant">Phân loại: ${item.variantName}</div>
+        ${isOutOfStock ? '<span class="out-of-stock-badge">Hết hàng</span>' : ''}
+      </div>
+
+      <div class="cart-item-price">
+        ${isOutOfStock ? '-' : 
+          (item.flashSalePrice 
+            ? `<div class="original-price">${formatMoney(item.price)}</div>
+               <div class="sale-price">${formatMoney(item.flashSalePrice)}</div>` 
+            : `<div class="sale-price">${formatMoney(item.price)}</div>`
+          )
+        }
+      </div>
+
+      <div class="cart-item-quantity">
+        ${isOutOfStock 
+          ? `<input type="text" class="form-control text-center qty-input" value="0" disabled style="width: 60px;">` 
+          : `<div class="quantity-control">
+              <button class="btn-decrement" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+              <input type="text" class="qty-input" value="${item.quantity}" min="1" max="${available}">
+              <button class="btn-increment" ${item.quantity >= available ? 'disabled' : ''}>+</button>
+            </div>
+            <div class="available-text">Còn ${available} sản phẩm</div>`
+        }
+      </div>
+
+      <div class="cart-item-total">
+        ${formatMoney((isOutOfStock ? 0 : price) * (isOutOfStock ? 0 : item.quantity))}
+      </div>
+
+      <div class="cart-item-actions">
+        <button class="btn-remove" title="Xóa">
+          <i class="ion-android-delete"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/* ===== Load & render cart grouped by shop ===== */
+function loadCartFromServer(cartItems) {
+  const $cartData = $("#cartData");
+  $cartData.empty();
+  
+  if (!cartItems || cartItems.length === 0) {
+    $cartData.html(`
+      <div class="empty-cart">
+        <i class="bi bi-cart-x"></i>
+        <h5>Giỏ hàng trống</h5>
+        <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+        <a href="/home" class="btn btn-primary">Mua sắm ngay</a>
+      </div>
+    `);
+    updateTotal();
+    return;
+  }
+
+  let html = "";
+  let currentShop = null;
+  
+  cartItems.forEach(item => {
+    if (item.shopId !== currentShop) {
+      if (currentShop !== null) {
+        html += renderVoucherSection(currentShop);
+        html += `</div></div>`;
+      }
+      
+      html += `
+        <div class="shop-card" id="cart-shop-${item.shopId}" data-shop-id="${item.shopId}">
+          <div class="shop-card-header">
+            <input type="checkbox" class="form-check-input shop-checkbox">
+            <span class="shop-name">
+              <i class="bi bi-shop me-2"></i>${item.shopName}
+            </span>
+          </div>
+          <div>`;
+      currentShop = item.shopId;
+    }
+    html += renderCartItem(item);
+  });
+
+  if (currentShop !== null) {
+    html += renderVoucherSection(currentShop);
+    html += `</div></div>`;
+  }
+
+  $cartData.html(html);
+  updateTotal();
+}
+
+function renderVoucherSection(shopId) {
+  return `
+    <div class="voucher-section">
+      <button class="btn-choose-voucher choose-voucher" data-scope="shop" data-shop="${shopId}">
+        <i class="bi bi-ticket-perforated me-1"></i>Voucher Shop
+      </button>
+      <span class="voucher-text" id="voucher-text-${shopId}" data-idvoucher="">
+        Chưa chọn voucher shop
+      </span>
+      <button class="btn-clear-voucher" data-scope="shop" data-shop="${shopId}" style="display:none;">
+        Bỏ chọn
+      </button>
+    </div>
+    <div class="voucher-section">
+      <button class="btn-choose-voucher choose-voucher" data-scope="platform" data-shop="${shopId}">
+        <i class="bi bi-ticket-perforated me-1"></i>Voucher Sàn
+      </button>
+      <span class="voucher-text voucher-text-platform" id="voucher-text-platform-${shopId}" data-idvoucher="">
+        Chưa chọn voucher sàn
+      </span>
+      <button class="btn-clear-voucher" data-scope="platform" data-shop="${shopId}" style="display:none;">
+        Bỏ chọn
+      </button>
+    </div>
+  `;
+}
+
+/* ===== Load logic ===== */
+if (isLoggedIn) {
+  const localCart = JSON.parse(localStorage.getItem("cart") || '{"items":[]}');
+  if (localCart.items.length > 0) {
+    $.ajax({
+      url: '/cart/merge',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(localCart.items),
+      success: function(res) {
+        if (res.success) {
+          localStorage.removeItem("cart");
+          loadCartFromServer(res.items);
+        } else {
+          $.get('/cart/loadData', data => loadCartFromServer(data));
+        }
+      },
+      error: () => $.get('/cart/loadData', data => loadCartFromServer(data))
+    });
+  } else {
+    $.get('/cart/loadData', data => loadCartFromServer(data));
+  }
+} else {
+  const localCart = JSON.parse(localStorage.getItem("cart") || '{"items":[]}');
+  if (localCart.items.length > 0) {
+    $.ajax({
+      url: '/cart/local',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(localCart.items),
+      success: response => loadCartFromServer(response),
+      error: () => loadCartFromServer(localCart.items || [])
+    });
+  } else {
+    loadCartFromServer(null);
+  }
+}
+
+/* ===== Remove item ===== */
+$(document).on("click", ".btn-remove", function(){
+  const row = $(this).closest(".cart-item");
+  const shopCard = row.closest(".shop-card");
+  const shopId = shopCard.data("shop-id");
+  const productId = row.data("id");
+
+  row.remove();
+
+  if (shopCard.find(".cart-item").length === 0) {
+    shopCard.remove();
+  } else {
+    const totalItems = shopCard.find(".product-checkbox:not(:disabled)").length;
+    const checkedItems = shopCard.find(".product-checkbox:not(:disabled):checked").length;
+    shopCard.find(".shop-checkbox").prop("checked", totalItems > 0 && checkedItems === totalItems);
+  }
+
+  updateTotal();
+  syncSelectAll();
+
+  if (isLoggedIn) {
+    $.ajax({
+      url: "/cart/delete",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ variantId: productId })
+    });
+  } else {
+    let cart = getCart();
+    cart.items = cart.items.filter(i => i.variantId != productId);
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }
+});
+
+/* ===== Delete selected ===== */
+$(document).on("click", ".btn-delete-selected", function() {
+  const selectedItems = $(".product-checkbox:checked");
+  if (selectedItems.length === 0) {
+    alert("Vui lòng chọn sản phẩm cần xóa");
+    return;
+  }
+  
+  if (!confirm(`Bạn có chắc muốn xóa ${selectedItems.length} sản phẩm đã chọn?`)) {
+    return;
+  }
+
+  const shopsToCheck = new Set();
+
+  selectedItems.each(function() {
+    const row = $(this).closest(".cart-item");
+    const shopCard = row.closest(".shop-card");
+    const shopId = shopCard.data("shop-id");
+    shopsToCheck.add(shopId);
+
+    const productId = row.data("id");
+    row.remove();
+
+    if (isLoggedIn) {
+      $.ajax({
+        url: "/cart/delete",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ variantId: productId })
+      });
+    } else {
+      let cart = getCart();
+      cart.items = cart.items.filter(i => i.variantId != productId);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  });
+
+  shopsToCheck.forEach(shopId => {
+    const shopCard = $(`.shop-card[data-shop-id='${shopId}']`);
+    if (shopCard.find(".cart-item").length === 0) {
+      shopCard.remove();
+    } else {
+      const totalItems = shopCard.find(".product-checkbox:not(:disabled)").length;
+      const checkedItems = shopCard.find(".product-checkbox:not(:disabled):checked").length;
+      shopCard.find(".shop-checkbox").prop("checked", totalItems > 0 && checkedItems === totalItems);
+    }
+  });
+
+  updateTotal();
+  syncSelectAll();
+});
+
+/* ===== Utilities ===== */
+function formatMoney(val) {
+  return Number(val || 0).toLocaleString("vi-VN") + "₫";
+}
+
+function getCart() {
+  let cart = localStorage.getItem("cart");
+  return cart ? JSON.parse(cart) : { items: [] };
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+/* ===== Checkbox Sync ===== */
+$(document).on("change", "#selectAllTop, #selectAllBottom", function() {
+  const checked = $(this).is(":checked");
+  $(".shop-checkbox:not(:disabled), .product-checkbox:not(:disabled)").prop("checked", checked);
+  $("#selectAllTop, #selectAllBottom").prop("checked", checked);
+  updateTotal();
+});
+
+$(document).on("change", ".shop-checkbox", function() {
+  const checked = $(this).is(":checked");
+  $(this).closest(".shop-card").find(".product-checkbox:not(:disabled)").prop("checked", checked);
+  syncSelectAll();
+  updateTotal();
+});
+
+$(document).on("change", ".product-checkbox", function() {
+  const $card = $(this).closest(".shop-card");
+  const totalProducts = $card.find(".product-checkbox:not(:disabled)").length;
+  const checkedProducts = $card.find(".product-checkbox:not(:disabled):checked").length;
+  $card.find(".shop-checkbox").prop("checked", totalProducts > 0 && totalProducts === checkedProducts);
+  syncSelectAll();
+  updateTotal();
+});
+
+function syncSelectAll() {
+  const totalSelectable = $(".product-checkbox:not(:disabled)").length;
+  const checkedCount = $(".product-checkbox:not(:disabled):checked").length;
+  $("#selectAllTop, #selectAllBottom").prop("checked", totalSelectable > 0 && checkedCount === totalSelectable);
+}
+
+/* ===== Update quantity ===== */
+function updateQty(inputEl) {
+  const $input = $(inputEl);
+  const row = $input.closest(".cart-item");
+  const variantId = row.data("id");
+  const available = parseInt($input.attr("max")) || Infinity;
+  let qty = parseInt($input.val()) || 1;
+
+  if (qty > available) {
+    qty = available;
+    $input.val(qty);
+    alert(`Chỉ còn ${available} sản phẩm`);
+  } else if (qty < 1) {
+    qty = 1;
+    $input.val(qty);
+  }
+
+  const price = parseFloat(row.data("price")) || 0;
+  row.find(".cart-item-total").text(formatMoney(price * qty));
+
+  // Update buttons state
+  const $decrementBtn = $input.siblings('.btn-decrement');
+  const $incrementBtn = $input.siblings('.btn-increment');
+  $decrementBtn.prop('disabled', qty <= 1);
+  $incrementBtn.prop('disabled', qty >= available);
+
+  updateTotal();
+
+  // Persist
+  if (isLoggedIn) {
+    $.ajax({
+      url: "/cart/updateQuantity",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ variantId, quantity: qty })
+    });
+  } else {
+    let cart = getCart();
+    let item = (cart.items || []).find(i => i.variantId == variantId);
+    if (item) item.quantity = qty;
+    else cart.items.push({ variantId, quantity: qty });
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }
+}
+
+const debouncedUpdateQty = debounce(updateQty, 300);
+
+// Increment / Decrement
+$(document).on("click", ".btn-decrement, .btn-increment", function() {
+  let $input = $(this).siblings(".qty-input");
+  let val = parseInt($input.val()) || 1;
+  let max = parseInt($input.attr("max"));
+  
+  if ($(this).hasClass("btn-decrement") && val > 1) {
+    val--;
+  }
+  if ($(this).hasClass("btn-increment") && val < max) {
+    val++;
+  }
+  
+  $input.val(val);
+  debouncedUpdateQty($input[0]);
+});
+
+$(document).on("input", ".qty-input", function() {
+  debouncedUpdateQty(this);
+});
+
+/* ===== Voucher Selection ===== */
+$(document).on("click", ".choose-voucher", function() {
+  const shopId = $(this).data("shop");
+  const scope = $(this).data("scope");
+
+  if (!canApplyVoucher(shopId)) {
+    alert(scope === "shop" 
+      ? "Bạn cần chọn ít nhất 1 sản phẩm của shop này trước khi áp voucher shop!"
+      : "Bạn cần chọn ít nhất 1 sản phẩm trong shop này trước khi áp voucher sàn!");
+    return;
+  }
+
+  $("#voucherModal").data("scope", scope).data("shop", shopId);
+
+  if (scope === "platform") {
+    let vouchers = [];
+    if (voucherSan) {
+      vouchers = (typeof voucherSan === "string") ? JSON.parse(voucherSan) : voucherSan;
+    }
+    renderVoucherList(vouchers, "platform", shopId);
+  } else {
+    $.ajax({
+      url: "/cart/voucherShop",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ idShop: shopId }),
+      success: res => renderVoucherList(res || [], "shop", shopId),
+      error: () => renderVoucherList([], "shop", shopId)
+    });
+  }
+});
+
+function renderVoucherList(vouchers, scope, shopId) {
+  let subtotal = 0;
+  $(`#cart-shop-${shopId} .cart-item`).each(function() {
+    if ($(this).find(".product-checkbox").is(":checked")) {
+      const price = parseFloat($(this).data("price")) || 0;
+      const qty = parseInt($(this).find(".qty-input").val()) || 1;
+      subtotal += price * qty;
+    }
+  });
+
+  let html = "";
+  if (vouchers.length === 0) {
+    html = `
+      <div class="text-center py-4">
+        <i class="bi bi-ticket-perforated" style="font-size: 48px; color: #dee2e6;"></i>
+        <p class="text-muted mt-3">Chưa có mã giảm giá nào cho shop này</p>
+      </div>
+    `;
+  } else {
+    vouchers.forEach(v => {
+      const minAmount = v.minOrderAmount || 0;
+      const canUse = subtotal >= minAmount;
+
+      let alreadyUsed = false;
+      $("[id^='voucher-text-platform-']").each(function() {
+        const sid = $(this).attr("id").split("-").pop();
+        const chosenId = $(this).attr("data-idvoucher");
+        if (chosenId && chosenId == v.couponId && sid != shopId) alreadyUsed = true;
+      });
+
+      let cls = "", extraMsg = "", icon = "";
+      if (!canUse) {
+        cls = "not-eligible";
+        extraMsg = ` | Mua thêm ${formatMoney(minAmount - subtotal)} để dùng`;
+        icon = '<i class="bi bi-lock-fill text-muted me-2"></i>';
+      } else if (alreadyUsed) {
+        cls = "not-eligible";
+        extraMsg = " | Đã được sử dụng ở shop khác";
+        icon = '<i class="bi bi-check-circle-fill text-success me-2"></i>';
+      } else {
+        icon = '<i class="bi bi-ticket-perforated-fill text-primary me-2"></i>';
+      }
+
+      html += `
+        <div class="voucher-option ${cls}"
+             data-code="${v.code}" 
+             data-idvoucher="${v.couponId}"
+             data-discount-type="${v.discountType}" 
+             data-discount-value="${v.discountValue}"
+             data-minorder="${minAmount}" 
+             data-shop="${shopId}">
+          <div>
+            ${icon}
+            <strong>${v.code}</strong> - 
+            ${v.discountType === "PERCENT" ? v.discountValue + "%" : formatMoney(v.discountValue)}
+          </div>
+          <small>Đơn tối thiểu: ${formatMoney(minAmount)}${extraMsg}</small>
+        </div>`;
+    });
+  }
+
+  $("#voucher-list").html(html);
+  $("#voucherModal").modal("show");
+}
+
+// Click voucher option
+$(document).on("click", ".voucher-option", function() {
+  if ($(this).hasClass("not-eligible")) return;
+
+  const scope = $("#voucherModal").data("scope");
+  const modalShopId = $("#voucherModal").data("shop");
+  const shopId = $(this).data("shop") ?? modalShopId;
+  const code = $(this).data("code");
+  const idVoucher = $(this).data("idvoucher");
+  const type = $(this).data("discount-type");
+  const value = parseFloat($(this).data("discount-value"));
+  const minOrder = parseFloat($(this).data("minorder")) || 0;
+
+  let $target = $(`#voucher-text-platform-${shopId}`);
+  if (scope !== "platform") {
+    $target = $(`#voucher-text-${shopId}`);
+  }
+
+  if ($target.length === 0) {
+    const $shopCard = $(`#cart-shop-${shopId}`);
+    if ($shopCard.length) {
+      if (scope === "platform") {
+        $target = $shopCard.find(".voucher-text-platform").first();
+      } else {
+        $target = $shopCard.find(".voucher-text").first();
+      }
+    }
+  }
+
+  if ($target.length === 0) {
+    console.warn("Không tìm thấy target voucher element");
+    $("#voucherModal").modal("hide");
+    return;
+  }
+
+  $target.attr("data-idvoucher", idVoucher)
+         .attr("data-discount-type", type)
+         .attr("data-discount-value", value)
+         .attr("data-minorder", minOrder)
+         .removeClass("text-muted").addClass("selected")
+         .text(`${code} (${type === "PERCENT" ? value + "%" : formatMoney(value)})`);
+
+  let $clearBtn = $(`#cart-shop-${shopId}`).find(`.btn-clear-voucher[data-scope='${scope}'][data-shop='${shopId}']`);
+  if ($clearBtn.length === 0) {
+    $clearBtn = $target.nextAll(".btn-clear-voucher").first();
+  }
+  $clearBtn.show();
+
+  $("#voucherModal").modal("hide");
+  updateTotal();
+});
+
+// Clear voucher
+$(document).on("click", ".btn-clear-voucher", function() {
+  const scope = $(this).data("scope");
+  const shopId = $(this).data("shop");
+
+  let $target = scope === "platform"
+      ? $(`#voucher-text-platform-${shopId}`)
+      : $(`#voucher-text-${shopId}`);
+
+  if ($target.length === 0) {
+    const $shopCard = $(`#cart-shop-${shopId}`);
+    if ($shopCard.length) {
+      $target = scope === "platform"
+        ? $shopCard.find(".voucher-text-platform").first()
+        : $shopCard.find(".voucher-text").first();
+    }
+  }
+
+  if ($target.length === 0) {
+    console.warn("Clear voucher: target not found");
+    return;
+  }
+
+  $target.text(scope === "platform" ? "Chưa chọn voucher sàn" : "Chưa chọn voucher shop")
+         .removeClass("selected").addClass("text-muted")
+         .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+
+  $(this).hide();
+  updateTotal();
+});
+
+/* ===== Update totals ===== */
+function updateTotal() {
+  let subtotal = 0, discount = 0, countItem = 0;
+
+  const shopTotals = {};
+  $(".cart-item").each(function() {
+    const $row = $(this);
+    if (!$row.find(".product-checkbox").is(":checked")) return;
+
+    const price = Number($row.data("price")) || 0;
+    const qty = Number($row.find(".qty-input").val()) || 1;
+    const rowTotal = price * qty;
+
+    subtotal += rowTotal;
+    countItem++;
+
+    const shopId = $row.data("shop-id");
+    shopTotals[shopId] = (shopTotals[shopId] || 0) + rowTotal;
+  });
+
+  Object.keys(shopTotals).forEach(shopId => {
+    const shopTotal = shopTotals[shopId] || 0;
+    let shopDiscount = 0, platformDiscount = 0;
+
+    // Shop voucher
+    const $shopV = $(`#voucher-text-${shopId}`);
+    if ($shopV.length) {
+      const idvoucher = $shopV.attr("data-idvoucher");
+      const discountType = $shopV.attr("data-discount-type");
+      const discountValue = Number($shopV.attr("data-discount-value")) || 0;
+      const minOrder = parseFloat($shopV.attr("data-minorder")) || 0;
+
+      if (idvoucher && discountValue && shopTotal >= minOrder) {
+        shopDiscount = (discountType === "PERCENT")
+          ? shopTotal * discountValue / 100
+          : Math.min(discountValue, shopTotal);
+      } else if (idvoucher) {
+        $shopV.text("Chưa chọn voucher shop")
+             .removeClass("selected").addClass("text-muted")
+             .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+        $(`#cart-shop-${shopId}`).find(".btn-clear-voucher[data-scope='shop'][data-shop='"+shopId+"']").hide();
+      }
+    }
+
+    const afterShop = Math.max(0, shopTotal - shopDiscount);
+
+    // Platform voucher
+    const $platV = $(`#voucher-text-platform-${shopId}`);
+    if ($platV.length) {
+      const idvoucher = $platV.attr("data-idvoucher");
+      const discountType = $platV.attr("data-discount-type");
+      const discountValue = Number($platV.attr("data-discount-value")) || 0;
+      const minOrder = parseFloat($platV.attr("data-minorder")) || 0;
+
+      if (idvoucher && discountValue && afterShop >= minOrder) {
+        platformDiscount = (discountType === "PERCENT")
+          ? afterShop * discountValue / 100
+          : Math.min(discountValue, afterShop);
+      } else if (idvoucher) {
+        $platV.text("Chưa chọn voucher sàn")
+              .removeClass("selected").addClass("text-muted")
+              .removeAttr("data-idvoucher data-discount-type data-discount-value data-minorder");
+        $(`#cart-shop-${shopId}`).find(".btn-clear-voucher[data-scope='platform'][data-shop='"+shopId+"']").hide();
+      }
+    }
+
+    discount += shopDiscount + platformDiscount;
+  });
+
+  const total = Math.max(0, subtotal - discount);
+
+  $("#selected-count").text(countItem);
+  $("#subtotal-price").text(formatMoney(subtotal));
+  $("#discount-price").text("-" + formatMoney(discount));
+  $("#total-price").text(formatMoney(total));
+}
+
+/* ===== Checkout ===== */
+$(document).on("click", "#btnCheckout", function() {
+  let cartItemIds = [];
+  $(".cart-item .product-checkbox:checked").each(function() {
+    cartItemIds.push($(this).closest(".cart-item").data("item"));
+  });
+  
+  if (cartItemIds.length === 0) {
+    alert("Vui lòng chọn ít nhất 1 sản phẩm");
+    return;
+  }
+  
+  if (!isLoggedIn) {
+    window.location.href = "/auth?redirect=/cart";
+    return;
+  }
+
+  let shopCoupons = [];
+  $("[id^='voucher-text-']").each(function() {
+    const $v = $(this);
+    const idAttr = $v.attr("id");
+    
+    if (idAttr.startsWith("voucher-text-platform-")) {
+      const shopId = idAttr.split("-").pop();
+      const couponId = parseInt($v.attr("data-idvoucher")) || null;
+      if (!couponId) return;
+      
+      let existing = shopCoupons.find(sc => sc.shopId == shopId);
+      if (existing) existing.platformCouponId = couponId;
+      else shopCoupons.push({ 
+        shopId: parseInt(shopId), 
+        shopCouponId: null, 
+        platformCouponId: couponId, 
+        freeshipCouponId: null 
+      });
+    } else if (idAttr.startsWith("voucher-text-")) {
+      const shopId = idAttr.split("-").pop();
+      const couponId = parseInt($v.attr("data-idvoucher")) || null;
+      if (!couponId) return;
+      
+      let existing = shopCoupons.find(sc => sc.shopId == shopId);
+      if (existing) existing.shopCouponId = couponId;
+      else shopCoupons.push({ 
+        shopId: parseInt(shopId), 
+        shopCouponId: couponId, 
+        platformCouponId: null, 
+        freeshipCouponId: null 
+      });
+    }
+  });
+
+  const payload = { cartItemIds, shopCoupons, token };
+  console.log("Checkout payload:", payload);
+
+  $.ajax({
+    url: "/cart/checkCart",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(payload),
+    success: function(res) {
+      if (res.success) {
+        window.location.href = "/checkout";
+      } else {
+        showInvalidItems(res.invalidItems || []);
+      }
+    },
+    error: function(xhr) {
+      const res = xhr.responseJSON;
+      if (res && res.invalidItems) {
+        showInvalidItems(res.invalidItems);
+      } else {
+        alert("Có lỗi xảy ra, vui lòng thử lại.");
+      }
+    }
+  });
+});
+
+function showInvalidItems(invalids) {
+  let msg = "Lỗi khi kiểm tra giỏ hàng:\n\n";
+  invalids.forEach(i => { msg += `• ${i.message}\n`; });
+  alert(msg);
+}
+
+function canApplyVoucher(shopId) {
+  if (shopId) {
+    return $(`.cart-item[data-shop-id='${shopId}']`).find(".product-checkbox:checked").length > 0;
+  } else {
+    return $(".cart-item").find(".product-checkbox:checked").length > 0;
+  }
+}
+
+/* ===== Init ===== */
+$(document).ready(function() {
+  setTimeout(updateTotal, 300);
+});
+</script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title">Create Shop Coupon</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="content-wrapper pt-3">
+    <div class="container-fluid">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h3>➕ Create Shop Coupon</h3>
+          <small class="text-muted">Seller / Coupons / Create</small>
+        </div>
+        <a th:href="@{/seller/coupons}" class="btn btn-light border">← Back</a>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <form th:action="@{/seller/coupons/create}" method="post" th:object="${form}">
+            <input type="hidden" th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+              <strong>Vui lòng sửa các lỗi bên dưới.</strong>
+              <ul class="mb-0">
+                <li th:each="e : ${#fields.errors('*')}" th:text="${e}"></li>
+              </ul>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input type="text" th:field="*{code}" class="form-control" placeholder="Coupon Code">
+                  <label>Coupon Code</label>
+                  <div class="text-danger small" th:errors="*{code}"></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <select th:field="*{discountType}" class="form-select">
+                    <option value="PERCENT">Percent (%)</option>
+                    <option value="AMOUNT">Amount (₫)</option>
+                  </select>
+                  <label>Discount Type</label>
+                  <div class="text-danger small" th:errors="*{discountType}"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-floating mb-3">
+                  <input type="number" step="0.01" th:field="*{discountValue}" class="form-control" placeholder="Value">
+                  <label>Discount Value</label>
+                  <div class="text-danger small" th:errors="*{discountValue}"></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-floating mb-3">
+                  <input type="number" step="0.01" th:field="*{maxDiscount}" class="form-control" placeholder="Max Discount">
+                  <label>Max Discount (optional)</label>
+                  <div class="text-danger small" th:errors="*{maxDiscount}"></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-floating mb-3">
+                  <input type="number" step="0.01" th:field="*{minOrderAmount}" class="form-control" placeholder="Min Order Amount">
+                  <label>Min Order Amount</label>
+                  <div class="text-danger small" th:errors="*{minOrderAmount}"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input type="datetime-local" th:field="*{startDate}" class="form-control">
+                  <label>Start Date</label>
+                  <div class="text-danger small" th:errors="*{startDate}"></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input type="datetime-local" th:field="*{endDate}" class="form-control">
+                  <label>End Date</label>
+                  <div class="text-danger small" th:errors="*{endDate}"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input type="number" th:field="*{usageLimit}" class="form-control">
+              <label>Usage Limit</label>
+              <div class="text-danger small" th:errors="*{usageLimit}"></div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <select th:field="*{status}" class="form-select">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+              </select>
+              <label>Status</label>
+              <div class="text-danger small" th:errors="*{status}"></div>
+            </div>
+
+            <button type="submit" class="btn btn-success px-4">
+              <i class="fa fa-save me-2"></i>Create
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

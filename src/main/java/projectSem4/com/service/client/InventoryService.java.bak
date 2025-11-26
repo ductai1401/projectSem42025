@@ -1,0 +1,69 @@
+package projectSem4.com.service.client;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import projectSem4.com.model.entities.InventoryLog;
+
+import projectSem4.com.model.repositories.InventoryLogRepository;
+
+@Service
+public class InventoryService {
+
+    
+    @Autowired
+    private InventoryLogRepository iLRepo;
+
+    /**
+     * Kiểm tra tồn kho của một productinven
+     *
+     * @param productinvenId id biến thể sản phẩm
+     * @param requiredQty số lượng cần
+     * @return Map { success, message }
+     */
+    public Map<String, Object> checkStock(int variantId, int requiredQty) {
+        Map<String, Object> response = new HashMap<>();
+
+        InventoryLog inven = iLRepo.findLatestByVariantId(variantId);
+       
+        if (inven == null) {
+            response.put("success", false);
+            response.put("message", "The product is no longer sold in the store.");
+            return response;
+        }
+
+        if (inven.getRemaining() <= 0) {
+            response.put("success", false);
+            response.put("message", "The product is out of stock.");
+            return response;
+        }
+
+        if (inven.getRemaining() < requiredQty) {
+            response.put("success", false);
+            response.put("message", "This product is left with only " + inven.getRemaining() + ". Do you want to buy this quantity?");
+            response.put("availableQty", inven.getRemaining());
+            return response;
+        }
+
+        response.put("success", true);
+        response.put("message", "Còn hàng");
+        response.put("availableQty", inven.getRemaining());
+        return response;
+    }
+    
+    public int getStock(int variantId) {
+    	return iLRepo.getStock(variantId);
+    }
+    
+    public int addLog(InventoryLog inven) {
+    	return iLRepo.addLog(inven);
+    }
+    
+    public InventoryLog getRemainning(int variantId) {
+    	
+    	return iLRepo.findLatestByVariantId(variantId);
+    }
+}

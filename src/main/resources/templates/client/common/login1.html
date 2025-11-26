@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<title layout:fragment="title">Login & Register</title>
+</head>
+<body>
+	<div layout:fragment="content">
+		<!-- breadcrumb -->
+		<nav class="breadcrumb-section breadcrumb-bg1">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="bread-crumb-title">Login & Register</h2>
+						<ol
+							class="breadcrumb bg-transparent m-0 p-0 justify-content-center align-items-center">
+							<li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+							<li class="breadcrumb-item active" aria-current="page">Login
+								& Register</li>
+						</ol>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="login-register-area section-padding-bottom">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-7 col-md-12 mx-auto">
+						<div class="login-register-wrapper">
+							<!-- Tabs -->
+							<div class="login-register-tab-list nav nav-tabs" id="nav-tab"
+								role="tablist">
+								<!-- Ưu tiên:
+                   - Có registerError  => mở Register
+                   - Có registerSuccess => mở Login
+                   - Mặc định mở Login -->
+								<a data-bs-toggle="tab" href="#lg1"
+									th:classappend="${(registerError == null) or (registerSuccess != null)} ? 'active' : ''">
+									<h4>Login</h4>
+								</a> <a data-bs-toggle="tab" href="#lg2"
+									th:classappend="${(registerError != null) and (registerSuccess == null)} ? 'active' : ''">
+									<h4>Register</h4>
+								</a>
+							</div>
+
+							<div class="tab-content">
+								<!-- LOGIN TAB -->
+								<div id="lg1" class="tab-pane"
+									th:classappend="${(registerError == null) or (registerSuccess != null)} ? ' show active' : ''">
+									<div class="login-form-container">
+										<div class="login-register-form">
+											<!-- Success message sau khi đăng ký -->
+											<div class="text-success mb-2" th:if="${registerSuccess}"
+												th:text="${registerSuccess}"></div>
+
+											<!-- Form LOGIN: khớp LoginController#doLogin -->
+											<form id="loginForm" th:action="@{/do-login}" method="post">
+												<!-- CSRF -->
+												<input type="hidden" th:if="${_csrf != null}"
+													th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+												<!-- name phải khớp @RequestParam("user-email") / ("user-password") -->
+												<input type="text" name="user-email" id="email"
+													placeholder="Your Email" required> <input
+													type="password" name="user-password" id="password"
+													placeholder="Password" required>
+
+												<!-- optional -->
+												<input type="hidden" name="deviceId" value="WEB123">
+												<input type="hidden" name="deviceType" value="WEB">
+
+												<div
+													class="button-box d-flex justify-content-between align-items-center mb-3">
+													<div class="login-toggle-btn">
+														<input id="remember" type="checkbox" name="remember">
+														<label for="remember">Remember me</label>
+													</div>
+													<a th:href="@{/forgot-password}">Forgot Password?</a>
+												</div>
+
+												<!-- Lỗi login -->
+												<div class="text-danger mb-2" th:if="${error}"
+													th:text="${error}"></div>
+
+												<button type="submit" class="btn btn-dark">
+													<span>Login</span>
+												</button>
+											</form>
+										</div>
+									</div>
+								</div>
+
+								<!-- REGISTER TAB -->
+								<div id="lg2" class="tab-pane"
+									th:classappend="${(registerError != null) and (registerSuccess == null)} ? ' show active' : ''">
+									<div class="login-form-container">
+										<div class="login-register-form">
+											<form th:action="@{/register}" method="post"
+												th:object="${registerRequest}">
+												<input type="hidden" th:if="${_csrf != null}"
+													th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+												<input type="text" th:field="*{fullName}"
+													placeholder="Full name" required> <input
+													type="email" th:field="*{email}" placeholder="Email"
+													required> <input type="password"
+													th:field="*{password}" placeholder="Password" required>
+												<input type="password" th:field="*{confirmPassword}"
+													placeholder="Confirm password" required> <input
+													type="text" th:field="*{phoneNumber}"
+													placeholder="Phone number">
+
+												<div class="text-danger mb-2" th:if="${registerError}"
+													th:text="${registerError}"></div>
+
+												<button type="submit" class="btn btn-dark">
+													<span>Register</span>
+												</button>
+											</form>
+										</div>
+									</div>
+								</div>
+								<!-- END REGISTER TAB -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- <div layout:fragment="scripts">
+		<script>
+		document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault(); // Ngăn form submit mặc định
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const deviceId = "web-" + Date.now(); // tạo deviceId tạm
+    const deviceType = "DESKTOP";
+	console.log("zo")
+    try {
+        const res = await fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                email: email, 
+                password: password,
+                deviceId: deviceId,
+                deviceType: deviceType
+            })
+        });
+
+        const data = await res.json();
+        console.log(data)
+        if (res.ok) {
+            // Lưu token vào localStorage hoặc cookie
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
+            document.getElementById("loginMessage").className = "text-success";
+            document.getElementById("loginMessage").innerText = "Login success!";
+            // Chuyển hướng nếu muốn
+            //window.location.href = "/";
+            console.log("loginThanhcong");
+        } else {
+            document.getElementById("loginMessage").innerText = data.error || "Login failed";
+        }
+    } catch (err) {
+       /*  document.getElementById("loginMessage").innerText = ""; */
+        console.error(err);
+    }
+});
+</script> -->
+</body>
+</html>

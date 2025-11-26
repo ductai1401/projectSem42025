@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:th="http://www.thymeleaf.org"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<meta charset="UTF-8">
+<title>Seller Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" th:href="@{/client/assets/mycss/sellerstyle.css}" />
+</head>
+
+<body>
+	<div layout:fragment="content" style="border-top: 2px solid red;">
+		<div class="my-account section-padding-bottom">
+			<div class="container mt-5">
+				<div class="row mb-n5">
+					<!-- My Account Tab Menu Start -->
+					<div class="col-lg-3 col-12 mb-5">
+						<div class="myaccount-tab-menu nav flex-column nav-pills"
+							role="tablist">
+							<a th:href="@{/seller/transport}" > <i
+								class="fa fa-truck"></i> Transport
+							</a> <a th:href="@{/seller/order/index}" > <i
+								class="fa fa-shopping-cart"></i> Order Management
+							</a> <a  th:href="@{/seller/}" > <i
+								class="fa fa-cubes"></i> Product Management
+							</a> <a  th:href="@{/seller/}" >
+								<i class="fa fa-bullhorn"></i> Marketing
+							</a> <a  th:href="@{/seller/}" >
+								<i class="fa fa-comments"></i> Customer Care (chat assistant)
+							</a> <a  th:href="@{/seller/}" > <i
+								class="fa fa-credit-card"></i> Finance
+							</a> <a  th:href="@{/seller/}" > <i
+								class="fa fa-database"></i> Data
+							</a> <a  th:href="@{/seller/}" > <i
+								class="fa fa-store"></i> Shop Management
+							</a> <a  th:href="@{/seller/}" > <i
+								class="fa fa-comment-dots"></i> Chat Feature
+							</a>
+						</div>
+					</div>
+					<!-- My Account Tab Menu End -->
+
+					<!-- My Account Tab Content Start -->
+					<div class="col-lg-9 col-12 mb-5">
+						<div class="tab-content" id="myaccountContent">
+							<!-- Single Tab Content Start -->
+							<!-- MAIN -->
+							<main class="seller-main">
+								<div layout:fragment="sellercontent"></div>
+							</main>
+						</div>
+						<!-- My Account Tab Content End -->
+					</div>
+				</div>
+			</div>
+			<!-- main content end -->
+		</div>
+	</div>
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			const groups = document.querySelectorAll('.seller-menu-group');
+
+			groups.forEach(function(group) {
+				const title = group.querySelector('.seller-menu-title');
+				const arrow = title.querySelector('.toggle-arrow');
+				const menu = group.querySelector('.seller-menu-list');
+
+				title.addEventListener('click', function() {
+					menu.classList.toggle('collapsed');
+					arrow.classList.toggle('rotate');
+				});
+			});
+		});
+	</script>
+
+</body>
+</html>

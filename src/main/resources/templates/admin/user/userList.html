@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+<title layout:fragment="title">Quản lý người dùng</title>
+<style>
+.filter-box {
+	background: #f8f9fa;
+	border-radius: .5rem;
+	padding: 1rem;
+	border: 1px solid #dee2e6;
+	margin-bottom: 1rem
+}
+
+.filter-box .form-label {
+	font-weight: 600
+}
+
+.filter-box .form-control, .filter-box .form-select {
+	border: none;
+	border-bottom: 2px solid #0d6efd;
+	border-radius: 0;
+	background: transparent;
+	padding-left: 0
+}
+
+.filter-box .form-control:focus, .filter-box .form-select:focus {
+	box-shadow: none;
+	border-color: #0a58ca
+}
+
+.filter-box button.btn {
+	border: none;
+	border-bottom: 3px solid #0d6efd;
+	background: transparent;
+	padding: .5rem 1rem;
+	font-weight: 600;
+	color: #0d6efd
+}
+
+.filter-box button.btn:hover {
+	background: #e9ecef
+}
+
+.modal.fade .modal-dialog {
+	transform: translate(0, 10%) !important
+}
+
+.modal-dialog {
+	max-width: 800px;
+	margin: 6rem auto
+}
+
+.modal-content {
+	border-radius: 10px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, .2)
+}
+
+.pagination .page-link {
+	min-width: 2.5rem;
+	text-align: center
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="card shadow-sm border-0">
+			<div class="card-body">
+				<h2 class="mb-4">👥 Quản lý người dùng</h2>
+
+				<!-- Tabs -->
+				<ul class="nav nav-tabs mb-3" id="userTabs" role="tablist">
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						th:classappend="${buyers} != null ? 'active' : ''"
+						th:href="@{/admin/users/buyers}" role="tab">Người mua</a></li>
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						th:classappend="${sellers} != null ? 'active' : ''"
+						th:href="@{/admin/users/sellers}" role="tab">Người bán</a></li>
+				</ul>
+
+				<!-- BUYERS TAB -->
+				<div th:if="${buyers} != null">
+					<form
+						class="filter-box row g-3 justify-content-end align-items-end"
+						method="get" th:action="@{/admin/users/buyers}">
+						<div class="col-md-3">
+							<label class="form-label">Từ khóa</label> <input type="text"
+								name="keyword" class="form-control" placeholder="Tên/Email/SĐT"
+								th:value="${buyerKeyword}">
+						</div>
+						<div class="col-auto">
+							<button type="submit" class="btn">🔍 Tìm kiếm</button>
+						</div>
+					</form>
+
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover align-middle">
+							<thead class="table-light">
+								<tr>
+									<th style="width: 60px">#</th>
+									<th>👤 Họ tên</th>
+									<th>📧 Email</th>
+									<th>📱 Điện thoại</th>
+									<th style="width: 160px">⚙️ Trạng thái</th>
+									<th style="width: 260px">🔧 Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(buyers)}">
+									<td colspan="6" class="text-center text-muted py-4">Không
+										có dữ liệu</td>
+								</tr>
+								<tr th:each="u,st : ${buyers}">
+									<td
+										th:text="${st.index + 1 + ((buyerPage?:1) - 1) * (size?:10)}">1</td>
+									<td th:text="${u.fullName}">Tên</td>
+									<td th:text="${u.email}">email</td>
+									<td th:text="${u.phoneNumber}">phone</td>
+									<td><span
+										th:classappend="${u.status == 1} ? 'badge bg-success' : 'badge bg-secondary'"
+										th:text="${u.status == 1 ? 'Đang hoạt động' : 'Đã khóa'}"></span>
+									</td>
+									<td class="d-flex gap-2">
+										<button class="btn btn-info " data-bs-toggle="modal"
+											data-bs-target="#buyerDetailModal"
+											th:attr="data-name=${u.fullName},data-email=${u.email},data-phone=${u.phoneNumber},
+                                 data-address=${u.addresses},data-status=${u.status == 1 ? 'Đang hoạt động' : 'Đã khóa'},
+                                 data-joined=${#temporals.format(u.createdAt,'dd/MM/yyyy HH:mm')}">👁
+											Xem</button>
+
+										<form th:action="@{|/admin/users/${u.userId}/toggle|}"
+											method="post" class="d-inline">
+											<input type="hidden" name="tab" value="buyers" /> <input
+												type="hidden" name="page" th:value="${buyerPage}" />
+											<button class="btn btn-warning "
+												th:text="${u.status == 1 ? '🚫 Khóa' : '✅ Mở khóa'}"></button>
+										</form>
+
+										<form th:action="@{|/admin/users/${u.userId}/delete|}"
+											method="post" class="d-inline"
+											onsubmit="return confirm('Xóa người dùng này?')">
+											<input type="hidden" name="tab" value="buyers" /> <input
+												type="hidden" name="page" th:value="${buyerPage}" />
+											<button class="btn btn-danger ">🗑 Xóa</button>
+										</form>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Pagination -->
+					<nav th:if="${buyerTotal > 0}">
+						<ul class="pagination justify-content-end">
+							<li class="page-item"
+								th:classappend="${buyerPage<=1} ? 'disabled'"><a
+								class="page-link"
+								th:href="@{|/admin/users/buyers?page=${buyerPage-1}&keyword=${buyerKeyword}|}">‹</a>
+							</li>
+							<li class="page-item disabled"><span class="page-link"
+								th:text="'Trang ' + (buyerPage?:1) + ' / ' + (${T(java.lang.Math).ceil(buyerTotal*1.0/(size?:10))})">Trang</span>
+							</li>
+							<li class="page-item"
+								th:classappend="${buyerPage >= T(java.lang.Math).ceil(buyerTotal*1.0/(size?:10))} ? 'disabled'">
+								<a class="page-link"
+								th:href="@{|/admin/users/buyers?page=${buyerPage+1}&keyword=${buyerKeyword}|}">›</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+
+				<!-- SELLERS TAB -->
+				<div th:if="${sellers} != null">
+					<form
+						class="filter-box row g-3 justify-content-end align-items-end"
+						method="get" th:action="@{/admin/users/sellers}">
+						<div class="col-md-3">
+							<label class="form-label">Từ khóa</label> <input type="text"
+								name="keyword" class="form-control" placeholder="Tên/Email/SĐT"
+								th:value="${sellerKeyword}">
+						</div>
+						<div class="col-auto">
+							<button type="submit" class="btn">🔍 Tìm kiếm</button>
+						</div>
+					</form>
+
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover align-middle">
+							<thead class="table-light">
+								<tr>
+									<th style="width: 60px">#</th>
+									<th>👤 Họ tên / Tên shop</th>
+									<th>📧 Email</th>
+									<th>📱 Điện thoại</th>
+									<th style="width: 160px">⚙️ Trạng thái</th>
+									<th style="width: 260px">🔧 Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(sellers)}">
+									<td colspan="6" class="text-center text-muted py-4">Không
+										có dữ liệu</td>
+								</tr>
+								<tr th:each="u,st : ${sellers}">
+									<td
+										th:text="${st.index + 1 + ((sellerPage?:1) - 1) * (size?:10)}">1</td>
+									<td th:text="${u.fullName}">Shop ABC</td>
+									<td th:text="${u.email}">abc@shop.com</td>
+									<td th:text="${u.phoneNumber}">0912xxx</td>
+									<td><span
+										th:classappend="${u.status == 1} ? 'badge bg-success' : 'badge bg-secondary'"
+										th:text="${u.status == 1 ? 'Đang hoạt động' : 'Đã khóa'}"></span>
+									</td>
+									<td class="d-flex gap-2">
+										<!-- Xem -->
+										<button class="btn btn-outline-info btn-icon-text action-btn"
+											data-bs-toggle="modal" data-bs-target="#sellerDetailModal"
+											th:attr="data-name=${u.fullName},data-email=${u.email},data-phone=${u.phoneNumber},
+                 data-store=${u.fullName},data-address=${u.addresses},
+                 data-status=${u.status == 1 ? 'Đang hoạt động' : 'Đã khóa'},
+                 data-joined=${#temporals.format(u.createdAt,'dd/MM/yyyy HH:mm')}"
+											style="min-width: 90px">
+											<i class="bi bi-eye"></i> Xem
+										</button> <!-- Khóa / Mở khóa -->
+										<form th:action="@{|/admin/users/${u.userId}/toggle|}"
+											method="post" class="d-inline">
+											<input type="hidden" name="tab" value="sellers" /> <input
+												type="hidden" name="page" th:value="${sellerPage}" />
+											<button
+												class="btn btn-outline-warning btn-icon-text action-btn"
+												th:classappend="${u.status == 1} ? 'btn-warning' : 'btn-success'"
+												th:text="${u.status == 1 ? '🚫 Khóa' : '✅ Mở khóa'}"
+												style="min-width: 90px"></button>
+										</form> <!-- Xóa -->
+										<form th:action="@{|/admin/users/${u.userId}/delete|}"
+											method="post" class="d-inline"
+											onsubmit="return confirm('Xóa người bán này?')">
+											<input type="hidden" name="tab" value="sellers" /> <input
+												type="hidden" name="page" th:value="${sellerPage}" />
+											<button
+												class="btn btn-outline-danger btn-icon-text action-btn"
+												style="min-width: 90px">
+												<i class="bi bi-trash"></i> Xóa
+											</button>
+										</form>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Pagination -->
+					<nav th:if="${sellerTotal > 0}">
+						<ul class="pagination justify-content-end">
+							<li class="page-item"
+								th:classappend="${sellerPage<=1} ? 'disabled'"><a
+								class="page-link"
+								th:href="@{|/admin/users/sellers?page=${sellerPage-1}&keyword=${sellerKeyword}|}">‹</a>
+							</li>
+							<li class="page-item disabled"><span class="page-link"
+								th:text="'Trang ' + (sellerPage?:1) + ' / ' + (${T(java.lang.Math).ceil(sellerTotal*1.0/(size?:10))})">Trang</span>
+							</li>
+							<li class="page-item"
+								th:classappend="${sellerPage >= T(java.lang.Math).ceil(sellerTotal*1.0/(size?:10))} ? 'disabled'">
+								<a class="page-link"
+								th:href="@{|/admin/users/sellers?page=${sellerPage+1}&keyword=${sellerKeyword}|}">›</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Buyer Detail Modal -->
+		<div class="modal fade" id="buyerDetailModal" tabindex="-1"
+			aria-labelledby="buyerDetailModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="buyerDetailModalLabel">Chi tiết
+							người mua</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Đóng"></button>
+					</div>
+					<div class="modal-body"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Seller Detail Modal -->
+		<div class="modal fade" id="sellerDetailModal" tabindex="-1"
+			aria-labelledby="sellerDetailModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="sellerDetailModalLabel">Chi tiết
+							người bán</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Đóng"></button>
+					</div>
+					<div class="modal-body"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div layout:fragment="scripts">
+		<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const buyerModal = document.getElementById('buyerDetailModal');
+    if (buyerModal) {
+      buyerModal.addEventListener('show.bs.modal', function (event) {
+        const b = event.relatedTarget;
+        buyerModal.querySelector('.modal-body').innerHTML = `
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Họ tên:</strong> ${b.getAttribute('data-name')||''}</p>
+              <p><strong>Email:</strong> ${b.getAttribute('data-email')||''}</p>
+              <p><strong>Điện thoại:</strong> ${b.getAttribute('data-phone')||''}</p>
+              <p><strong>Trạng thái:</strong> ${b.getAttribute('data-status')||''}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Địa chỉ:</strong> ${b.getAttribute('data-address')||''}</p>
+              <p><strong>Ngày tham gia:</strong> ${b.getAttribute('data-joined')||''}</p>
+            </div>
+          </div>`;
+      });
+    }
+
+    const sellerModal = document.getElementById('sellerDetailModal');
+    if (sellerModal) {
+      sellerModal.addEventListener('show.bs.modal', function (event) {
+        const b = event.relatedTarget;
+        sellerModal.querySelector('.modal-body').innerHTML = `
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Tên shop/người bán:</strong> ${b.getAttribute('data-name')||''}</p>
+              <p><strong>Email:</strong> ${b.getAttribute('data-email')||''}</p>
+              <p><strong>Điện thoại:</strong> ${b.getAttribute('data-phone')||''}</p>
+              <p><strong>Trạng thái:</strong> ${b.getAttribute('data-status')||''}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Tên cửa hàng:</strong> ${b.getAttribute('data-store')||''}</p>
+              <p><strong>Địa chỉ cửa hàng:</strong> ${b.getAttribute('data-address')||''}</p>
+              <p><strong>Ngày tham gia:</strong> ${b.getAttribute('data-joined')||''}</p>
+            </div>
+          </div>`;
+      });
+    }
+  });
+</script>
+	</div>
+
+</body>
+</html>

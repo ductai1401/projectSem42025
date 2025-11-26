@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}"
+      >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Shop Detail - Admin</title>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+/>
+     <style>
+        /* Shop Detail Styling */
+        .shop-detail-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Header Card */
+        .shop-header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .shop-header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .shop-logo-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            border: 4px solid white;
+            object-fit: cover;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .shop-header-info h2 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .shop-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .shop-rating i {
+            color: #ffc107;
+        }
+
+        .shop-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .shop-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-card-title i {
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-label i {
+            color: #667eea;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #333;
+            text-align: right;
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-box.products::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-box.orders::before { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-box.revenue::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .stat-box.rating::before { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-box.products .stat-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-box.orders .stat-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+        .stat-box.revenue .stat-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; }
+        .stat-box.rating .stat-icon { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* Description Card */
+        .description-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .description-card h5 {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 0;
+            bottom: -25px;
+            width: 2px;
+            background: #e8e8e8;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-dot i {
+            font-size: 0.7rem;
+            color: #667eea;
+        }
+
+        .timeline-content {
+            background: #f8f9fb;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-date {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Status Badge */
+        .status-badge-large {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        .status-blocked {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-action-detail {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-approve-detail {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .btn-block-detail {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .btn-notify-detail {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        /* Recent Products */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .product-card h6 {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            color: #fa709a;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .shop-header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div  layout:fragment="content">
+   
+    <!-- Shop Header -->
+    <div class="shop-header-card">
+        <div class="shop-header-content">
+            <img th:src="${shop.logo}" 
+                 th:alt="${shop.shopName}" 
+                 class="shop-logo-large"
+                 />
+            
+            <div class="shop-header-info">
+                <h2 th:text="${shop.shopName}">Shop Name</h2>
+                
+                <div class="shop-rating">
+                    <span>
+                        <i class="bi bi-star-fill"></i>
+                        <strong th:text="${shop.rating}">4.8</strong>
+                    </span>
+                    <small >150 reviews</small>
+<!--                     <small th:text="${shop.reviewsCount} + ' reviews'">150 reviews</small> -->
+                </div>
+                
+                <div class="shop-meta">
+                    <div class="shop-meta-item">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Joined: <strong th:text="${#temporals.format(shop.createdAt, 'MMM yyyy')}">Jan 2024</strong></span>
+                    </div>
+                    <div class="shop-meta-item">
+                        <i class="bi bi-box-seam"></i>
+                        <span><strong >120</strong> Products</span>
+<!--                         <span><strong th:text="${stats.totalProducts}">120</strong> Products</span> -->
+                    </div>
+                    <div class="shop-meta-item">
+                        <i class="bi bi-people"></i>
+                        <span><strong >1.2K</strong> Followers</span>
+<!--                         <span><strong th:text="${shop.followersCount}">1.2K</strong> Followers</span> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-row">
+        <div class="stat-box products">
+            <div class="stat-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value" >120</div>
+<!--             <div class="stat-value" th:text="${stats.totalProducts}">120</div> -->
+        </div>
+
+        <div class="stat-box orders">
+            <div class="stat-icon">
+                <i class="bi bi-cart-check"></i>
+            </div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value" th:text="${stats.totalOrder}">850</div>
+        </div>
+
+        <div class="stat-box revenue">
+            <div class="stat-icon">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" th:text="${#numbers.formatCurrency(shop.totalRevenue)}">$45,230</div>
+        </div>
+
+        <div class="stat-box rating">
+            <div class="stat-icon">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div class="stat-label">Average Rating</div>
+            <div class="stat-value">
+                <span th:text="${shop.rating}">4.8</span>
+                <small style="font-size: 1rem; color: #666;">/5.0</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="info-grid">
+        <!-- Owner Information -->
+        <div class="info-card">
+            <div class="info-card-title">
+                <i class="bi bi-person-circle"></i>
+                Owner Information
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-person"></i>
+                    Full Name
+                </span>
+                <span class="info-value" th:text="${shop.fullName}">Nguyen Van A</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-envelope"></i>
+                    Email
+                </span>
+                <span class="info-value" th:text="${shop.email}">owner@email.com</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-telephone"></i>
+                    Phone
+                </span>
+                <span class="info-value" th:text="${shop.phone}">0901234567</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-flag"></i>
+                    Status
+                </span>
+                <span class="info-value">
+                    <span class="status-badge-large"
+                          th:classappend="${shop.status == 1 ? 'status-active' : 
+                                           shop.status == 0 ? 'status-pending' : 
+                                           'status-blocked'}">
+                        <i class="bi" th:classappend="${shop.status == 1 ? 'bi-check-circle' : 
+                                                        shop.status == 0 ? 'bi-clock' : 
+                                                        'bi-x-circle'}"></i>
+                        <span th:text="${shop.status == 1 ? 'Active' : 
+                                        shop.status == 0 ? 'Pending' : 
+                                        'Blocked'}">Active</span>
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Shop Details -->
+        <div class="info-card">
+            <div class="info-card-title">
+                <i class="bi bi-shop"></i>
+                Shop Details
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-hash"></i>
+                    Shop ID
+                </span>
+                <span class="info-value" th:text="${shop.shopId}">1001</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-calendar-plus"></i>
+                    Created Date
+                </span>
+                <span class="info-value" 
+                      th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy HH:mm')}">
+                    01/01/2024 10:00
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-calendar-event"></i>
+                    Last Updated
+                </span>
+                <span class="info-value" 
+                      th:text="${#temporals.format(shop.updatedAt, 'dd/MM/yyyy HH:mm')}">
+                    15/10/2024 14:30
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-geo-alt"></i>
+                    Warehouse
+                </span>
+                <span class="info-value" th:text="${stats.strAddress}">
+                    District 1, HCMC
+                </span>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="info-card">
+            <div class="info-card-title">
+                <i class="bi bi-graph-up"></i>
+                Performance Metrics
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-speedometer2"></i>
+                    Response Rate
+                </span>
+                <span class="info-value">
+                    <strong >95</strong>%
+<!--                     <strong th:text="${stats.responseRate}">95</strong>% -->
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-clock-history"></i>
+                    Avg Response Time
+                </span>
+                <span class="info-value" >2 hours</span>
+<!--                 <span class="info-value" th:text="${stats.avgResponseTime}">2 hours</span> -->
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-truck"></i>
+                    On-time Delivery
+                </span>
+                <span class="info-value">
+                    <strong >92</strong>%
+<!--                     <strong th:text="${stats.onTimeDelivery}">92</strong>% -->
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-arrow-return-left"></i>
+                    Return Rate
+                </span>
+                <span class="info-value">
+                    <strong >3</strong>%
+<!--                     <strong th:text="${stats.returnRate}">3</strong>% -->
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="description-card" th:if="${shop.description != null and !shop.description.isEmpty()}">
+        <h5><i class="bi bi-file-text me-2"></i>Shop Description</h5>
+        <p th:text="${shop.description}">
+            Welcome to our shop! We provide high-quality products with excellent customer service.
+        </p>
+    </div>
+
+    <!-- Recent Products -->
+    <!-- <div class="description-card" th:if="${products != null and !products.isEmpty()}">
+        <h5><i class="bi bi-box-seam me-2"></i>Recent Products</h5>
+        <div class="products-grid">
+            <div th:each="product : ${products}" class="product-card">
+                <img th:src="${product.image}" th:alt="${product.name}" 
+                     onerror="this.src='/images/no-product.png'" />
+                <h6 th:text="${product.name}">Product Name</h6>
+                <div class="product-price" 
+                     th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} + 'đ'">
+                    100,000đ
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Activity Timeline -->
+    <div class="description-card" th:if="${history != null and !history.isEmpty()}">
+        <h5><i class="bi bi-clock-history me-2"></i>Activity History</h5>
+        <div class="timeline">
+            <div th:each="item : ${history}" class="timeline-item">
+                <div class="timeline-dot">
+                    <i class="bi" th:classappend="${item.type == 'CREATE' ? 'bi-plus-circle-fill' : 
+                                                    item.type == 'APPROVE' ? 'bi-check-circle-fill' : 
+                                                    item.type == 'BLOCK' ? 'bi-x-circle-fill' : 
+                                                    'bi-circle-fill'}"></i>
+                </div>
+                <div class="timeline-content">
+                    <strong th:text="${item.action}">Shop Created</strong>
+                    <p th:if="${item.description}" 
+                       th:text="${item.description}" 
+                       class="mb-0 text-muted">
+                        Description
+                    </p>
+                    <div class="timeline-date">
+                        <i class="bi bi-calendar me-1"></i>
+                        <span th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            01/01/2024 10:00
+                        </span>
+                        <span th:if="${item.adminName}" class="ms-2">
+                            by <strong th:text="${item.adminName}">Admin</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button th:if="${shop.status == 0}" 
+                class="btn-action-detail btn-approve-detail"
+                onclick="approveShop()" 
+                th:attr="data-shop-id=${shop.shopId}">
+            <i class="bi bi-check-circle"></i>
+            Approve Shop
+        </button>
+        
+        <button th:if="${shop.status == 1}" 
+                class="btn-action-detail btn-block-detail"
+                onclick="blockShop()" 
+                th:attr="data-shop-id=${shop.shopId}">
+            <i class="bi bi-x-circle"></i>
+            Block Shop
+        </button>
+        
+        <button class="btn-action-detail btn-notify-detail"
+                onclick="sendNotification()" 
+                th:attr="data-shop-id=${shop.shopId}">
+            <i class="bi bi-bell"></i>
+            Send Notification
+        </button>
+    </div>
+	<script>
+function approveShop() {
+    const shopId = event.target.closest('button').getAttribute('data-shop-id');
+    // Trigger parent modal action
+    $('#detailModal').modal('hide');
+    setTimeout(() => {
+        $(`.btn-approve[data-id="${shopId}"]`).click();
+    }, 300);
+}
+
+function blockShop() {
+    const shopId = event.target.closest('button').getAttribute('data-shop-id');
+    $('#detailModal').modal('hide');
+    setTimeout(() => {
+        $(`.btn-block[data-id="${shopId}"]`).click();
+    }, 300);
+}
+
+function sendNotification() {
+    const shopId = event.target.closest('button').getAttribute('data-shop-id');
+    $('#detailModal').modal('hide');
+    setTimeout(() => {
+        $(`.btn-notify[data-id="${shopId}"]`).click();
+    }, 300);
+}
+</script>
+</div>
+
+</body>
+</html>

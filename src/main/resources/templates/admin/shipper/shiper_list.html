@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <title>Shipper Management - Admin</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="bi bi-truck me-2"></i>Shipper Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createShipperModal">
+                <i class="bi bi-plus-circle me-2"></i>Add Shipper
+            </button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h6>Total Shippers</h6>
+                        <h3 th:text="${totalShippers}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h6>Available</h6>
+                        <h3 th:text="${availableShippers}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h6>Currently Delivering</h6>
+                        <h3 th:text="${busyShippers}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h6>Total Deliveries</h6>
+                        <h3 th:text="${totalDeliveries}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/shippers}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Availability</label>
+                        <select name="isAvailable" class="form-select">
+                            <option value="">All</option>
+                            <option value="1">Available</option>
+                            <option value="0">Busy</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="keyword" class="form-control" placeholder="Name, phone...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Shippers Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Total Deliveries</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                            <th>Availability</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="shipper : ${shippers}">
+                            <td th:text="${shipper.shipperID}">#001</td>
+                            <td th:text="${shipper.fullName}">John Doe</td>
+                            <td th:text="${shipper.phoneNumber}">0901234567</td>
+                            <td th:text="${shipper.email}">email@example.com</td>
+                            <td th:text="${shipper.totalDeliveries}">150</td>
+                            <td>
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <span th:text="${shipper.rating}">4.5</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${shipper.status == 1} ? 'bg-success' : 'bg-danger'"
+                                      th:text="${shipper.status == 1} ? 'Active' : 'Inactive'">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${shipper.isAvailable} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${shipper.isAvailable} ? 'Available' : 'Busy'">
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info"
+                                            th:onclick="'viewShipper(' + ${shipper.shipperID} + ')'">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning"
+                                            th:onclick="'editShipper(' + ${shipper.shipperID} + ')'">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger"
+                                            th:onclick="'toggleShipperStatus(' + ${shipper.shipperID} + ')'">
+                                        <i class="bi bi-lock"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Shipper Modal -->
+    <div class="modal fade" id="createShipperModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Shipper</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/shippers/create}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">User ID <span class="text-danger">*</span></label>
+                            <input type="number" name="userId" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" name="phoneNumber" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Shipper</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

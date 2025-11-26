@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+    <title layout:fragment="title">Refund Detail</title>
+    <style type="text/css">
+        /* ===== TIMELINE ===== */
+        .refund-timeline {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 0;
+            position: relative;
+        }
+        
+        .refund-timeline::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .timeline-step.active .step-circle {
+            border-color: #007bff;
+            background: #007bff;
+            color: #fff;
+        }
+        
+        .timeline-step.completed .step-circle {
+            border-color: #28a745;
+            background: #28a745;
+            color: #fff;
+        }
+        
+        .timeline-step.rejected .step-circle {
+            border-color: #dc3545;
+            background: #dc3545;
+            color: #fff;
+        }
+        
+        .step-label {
+            font-size: 13px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .timeline-step.active .step-label {
+            color: #007bff;
+            font-weight: 600;
+        }
+        
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .status-refunded { background: #d1e7dd; color: #0f5132; }
+        
+        /* ===== CARD ===== */
+        .info-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+        }
+        
+        .card-body { padding: 20px; }
+        
+        /* ===== INFO ROW ===== */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #666; }
+        .info-value { font-weight: 600; }
+        
+        /* ===== PRODUCT ITEM ===== */
+        .product-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .product-item img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .product-info { flex: 1; }
+        .product-name { font-weight: 600; margin-bottom: 5px; }
+        .product-variant { color: #666; font-size: 13px; }
+        
+        /* ===== EVIDENCE ===== */
+        .evidence-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        .evidence-item {
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .evidence-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+        
+        /* ===== MESSAGES ===== */
+        .message-box {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .message-item {
+            margin-bottom: 15px;
+        }
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            max-width: 70%;
+        }
+        .from-buyer .message-bubble {
+            background: #007bff;
+            color: #fff;
+        }
+        .from-shop .message-bubble {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            margin-left: auto;
+        }
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        /* ===== BUTTONS ===== */
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .refund-timeline { flex-wrap: wrap; }
+            .timeline-step { flex: 0 0 33.33%; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-section breadcrumb-bg1">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="bread-crumb-title">Refund Detail</h2>
+                    <ol class="breadcrumb bg-transparent m-0 p-0 justify-content-center">
+                        <li class="breadcrumb-item"><a href="/home">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/account#order">Orders</a></li>
+                        <li class="breadcrumb-item active">Refund Detail</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4>Refund #<span th:text="${refund.refundId}"></span></h4>
+                <small class="text-muted" th:text="${#temporals.format(refund.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+            </div>
+            <span class="status-badge"
+                  th:classappend="${refund.status == 'PENDING'} ? 'status-pending' : 
+                                  (${refund.status.contains('APPROVED')} ? 'status-approved' : 
+                                  (${refund.status.contains('REJECTED')} ? 'status-rejected' : 
+                                  (${refund.status == 'REFUNDED'} ? 'status-refunded' : 'status-processing')))"
+                  th:text="${refund.status.replace('_', ' ')}">
+            </span>
+        </div>
+
+        <!-- Timeline -->
+        <div class="info-card">
+            <div class="card-body">
+                <div class="refund-timeline">
+                    <div class="timeline-step" th:classappend="${refund.status == 'PENDING'} ? 'active' : 'completed'">
+                        <div class="step-circle"><i class="fa fa-file-alt"></i></div>
+                        <span class="step-label">Submitted</span>
+                    </div>
+                    
+                    <div class="timeline-step" 
+                         th:classappend="${refund.status.contains('APPROVED')} ? 'active' : 
+                                         (${refund.status.contains('REJECTED')} ? 'rejected' : '')">
+                        <div class="step-circle"><i class="fa fa-search"></i></div>
+                        <span class="step-label">Review</span>
+                    </div>
+                    
+                    <div class="timeline-step"
+                         th:classappend="${refund.status == 'WAITING_FOR_RETURN'} ? 'active' : 
+                                         (${refund.status == 'PROCESSING_REFUND' or refund.status == 'REFUNDED'} ? 'completed' : '')">
+                        <div class="step-circle"><i class="fa fa-truck"></i></div>
+                        <span class="step-label">Return</span>
+                    </div>
+                    
+                    <div class="timeline-step"
+                         th:classappend="${refund.status == 'PROCESSING_REFUND'} ? 'active' : 
+                                         (${refund.status == 'REFUNDED'} ? 'completed' : '')">
+                        <div class="step-circle"><i class="fa fa-cog"></i></div>
+                        <span class="step-label">Processing</span>
+                    </div>
+                    
+                    <div class="timeline-step" th:classappend="${refund.status == 'REFUNDED'} ? 'completed' : ''">
+                        <div class="step-circle"><i class="fa fa-check"></i></div>
+                        <span class="step-label">Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Products -->
+                <div class="info-card" th:if="${refundItems != null and !refundItems.isEmpty()}">
+                    <div class="card-header">Products</div>
+                    <div class="card-body">
+                        <div class="product-item" th:each="item : ${refundItems}">
+                            <img th:src="${item.productVariantImage}" alt="Product">
+                            <div class="product-info">
+                                <div class="product-name" th:text="${item.productName}"></div>
+                                <div class="product-variant" th:text="${item.productVariantName}"></div>
+                                <div class="text-muted">Qty: <span th:text="${item.quantity}"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="info-card">
+                    <div class="card-header">Refund Reason</div>
+                    <div class="card-body">
+                        <p th:text="${refund.reason}"></p>
+                    </div>
+                </div>
+
+                <!-- Evidence -->
+                <div class="info-card" th:if="${refund.evidence != null and !refund.evidence.isEmpty()}">
+                    <div class="card-header">Evidence</div>
+                    <div class="card-body">
+                        <div class="evidence-gallery">
+                            <div class="evidence-item" th:each="img : ${refund.evidence.split(',')}"
+                                 data-bs-toggle="modal" data-bs-target="#evidenceModal"
+                                 th:data-img="${img}">
+                                <img th:src="${img}" alt="Evidence">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="info-card">
+                    <div class="card-header">Messages</div>
+                    <div class="card-body">
+                        <div class="message-box" id="messageBox">
+                            <div class="message-item" th:each="msg : ${messages}" 
+                                 th:classappend="${msg.fromBuyer} ? 'from-buyer' : 'from-shop'">
+                                <div class="message-bubble" th:text="${msg.content}"></div>
+                                <div class="message-time" th:text="${#temporals.format(msg.createdAt, 'dd/MM HH:mm')}"></div>
+                            </div>
+                            <div class="text-center text-muted py-3" th:if="${messages == null or messages.isEmpty()}">
+                                No messages yet
+                            </div>
+                        </div>
+                        <div class="mt-3" th:if="${refund.status != 'REFUNDED' and !refund.status.contains('REJECTED')}">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="messageInput" placeholder="Type message...">
+                                <button class="btn btn-primary" onclick="sendMessage()">
+                                    <i class="fa fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Summary -->
+                <div class="info-card">
+                    <div class="card-header">Summary</div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <span class="info-label">Order ID</span>
+                            <a th:href="@{/account/orders/{id}(id=${refund.orderId})}" class="info-value text-primary">
+                                #<span th:text="${refund.orderId}"></span>
+                            </a>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Shop</span>
+                            <span class="info-value" th:text="${refund.shopName}"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Refund Type</span>
+                            <span class="info-value" th:text="${refund.refundType}"></span>
+                        </div>
+                        <hr>
+                        <div class="info-row">
+                            <span class="info-label h6">Total Refund</span>
+                            <span class="info-value h6 text-success" 
+                                  th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refund Method -->
+                <div class="info-card">
+                    <div class="card-header">Refund Method</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa fa-wallet fa-2x text-primary"></i>
+                            <span th:text="${refund.refundMethod}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Return Info -->
+                <div class="info-card" th:if="${shipment != null}">
+                    <div class="card-header">Return Info</div>
+                    <div class="card-body">
+                        <div class="info-row" th:if="${shipment.shipmentID != null}">
+                            <span class="info-label">Tracking</span>
+                            <span class="info-value" th:text="${shipment.shipmentID}"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Address</span>
+                            <span class="info-value" th:text="${shipment.deliveryAddress}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="info-card">
+                    <div class="card-body">
+                        <button class="btn btn-outline-danger btn-action w-100 mb-2"
+                                th:if="${refund.status == 'PENDING'}"
+                                th:onclick="cancelRefund([[${refund.refundId}]])">
+                            Cancel Request
+                        </button>
+                  <!--       
+                        <button class="btn btn-warning btn-action w-100 mb-2"
+                                th:if="${refund.status == 'SHOP_REJECTED' and canEscalate}"
+                                data-bs-toggle="modal" data-bs-target="#escalateModal">
+                            Escalate to Admin
+                        </button> -->
+                        <button class="btn btn-warning btn-action w-100 mb-2"
+                                th:if="${refund.status == 'SHOP_REJECTED' and canEscalate}"
+                                id="btnEscalate" th:onclick="submitEscalate([[${refund.refundId}]])">
+                            Escalate to Admin
+                        </button>
+                        
+             <!--            <button class="btn btn-primary btn-action w-100 mb-2"
+                                th:if="${refund.status == 'WAITING_FOR_RETURN'}"
+                                data-bs-toggle="modal" data-bs-target="#returnModal">
+                            Confirm Return
+                        </button> -->
+                        
+                        <div class="alert alert-success text-center" th:if="${refund.status == 'REFUNDED'}">
+                            <i class="fa fa-check-circle fa-2x mb-2"></i>
+                            <p class="mb-0 fw-bold">Refund Completed!</p>
+                        </div>
+                        
+                        <div class="alert alert-danger text-center" th:if="${refund.status.contains('REJECTED')}">
+                            <i class="fa fa-times-circle fa-2x mb-2"></i>
+                            <p class="mb-0 fw-bold">Refund Rejected</p>
+                        </div>
+                        
+                        <a class="btn btn-outline-secondary btn-action w-100" th:href="@{/account#order}">
+                            Back to Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div class="modal fade" id="evidenceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Evidence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="evidencePreview" src="" alt="Evidence" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="returnForm">
+                        <div class="mb-3">
+                            <label class="form-label">Shipping Carrier</label>
+                            <select class="form-select" id="shippingCarrier" required>
+                                <option value="">Select...</option>
+                                <option value="GHN">Giao Hàng Nhanh</option>
+                                <option value="GHTK">Giao Hàng Tiết Kiệm</option>
+                                <option value="VNPost">Vietnam Post</option>
+                                <option value="JT">J&T Express</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tracking Number</label>
+                            <input type="text" class="form-control" id="trackingNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="returnNotes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReturn()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Escalate Modal -->
+    <!-- <div class="modal fade" id="escalateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Escalate to Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="escalateForm">
+                        <div class="mb-3">
+                            <label class="form-label">Why do you disagree?</label>
+                            <textarea class="form-control" id="escalateReason" rows="4" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="submitEscalate()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+</div>
+
+<!-- Scripts -->
+<div layout:fragment="scripts" th:inline="javascript">
+    <script th:inline="javascript">
+        const refundId = /*[[${refund.refundId}]]*/ 0;
+        
+        function cancelRefund(id) {
+            if (!confirm('Cancel this refund request?')) return;
+            
+            $.ajax({
+                url: '/buyer/refunds/cancel',
+                type: 'POST',
+                data: { refundId: id },
+                success: function() {
+                    alert('Refund cancelled');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert(xhr.responseJSON?.message || 'Failed to cancel');
+                }
+            });
+        }
+        
+        function submitReturn() {
+            const carrier = $('#shippingCarrier').val();
+            const tracking = $('#trackingNumber').val();
+            
+            if (!carrier || !tracking) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            $.ajax({
+                url: '/buyer/refunds/confirm-return',
+                type: 'POST',
+                data: {
+                    refundId: refundId,
+                    carrier: carrier,
+                    trackingNumber: tracking,
+                    notes: $('#returnNotes').val()
+                },
+                success: function() {
+                    $('#returnModal').modal('hide');
+                    alert('Return confirmed');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert(xhr.responseJSON?.message || 'Failed');
+                }
+            });
+        }
+        
+        
+        
+        function submitEscalate(id) {
+        	 if (!confirm('Are you sure you want to send it to the administrator?')) return;
+            
+            $.ajax({
+                url: '/refund/escalate',
+                type: 'POST',
+                data: { refundId: refundId },
+                success: function(res) {
+					if(res.success){
+						Swal.fire({
+							icon: 'success',
+							title: 'Success!',
+							text: res.message || 'Escalation submitted',
+							timer: 2000,
+							showConfirmButton: false
+						}).then(() => {
+							location.reload();
+						});
+					}else {
+						Swal.fire({
+							icon: 'error',
+							title: 'Failed!',
+							text: res.message || 'Failed',
+							timer: 2000,
+							showConfirmButton: false
+						});
+					}
+                	
+                  
+                    
+                },
+                error: function(xhr) {
+                	Swal.fire({
+						icon: 'error',
+						title: 'Failed!',
+						text: xhr.responseJSON?.message || 'Failed',
+						timer: 2000,
+						showConfirmButton: false
+					})
+                  
+                }
+            });
+        }
+        
+        function sendMessage() {
+            const content = $('#messageInput').val().trim();
+            if (!content) return;
+            
+            $.ajax({
+                url: '/buyer/refunds/message',
+                type: 'POST',
+                data: { refundId: refundId, content: content },
+                success: function() {
+                    $('#messageInput').val('');
+                    location.reload();
+                },
+                error: function() {
+                    alert('Failed to send message');
+                }
+            });
+        }
+        
+        // Evidence modal
+        $('.evidence-item').click(function() {
+            $('#evidencePreview').attr('src', $(this).data('img'));
+        });
+        
+        // Message enter key
+        $('#messageInput').keypress(function(e) {
+            if (e.which === 13) sendMessage();
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý hoàn tiền - Admin</title>
+    <style>
+        .timeline {
+            list-style: none;
+            padding-left: 0;
+            position: relative;
+        }
+        
+        .timeline li {
+            padding-left: 30px;
+            padding-bottom: 20px;
+            position: relative;
+            border-left: 2px solid #dee2e6;
+        }
+        
+        .timeline li:last-child {
+            border-left: 2px solid transparent;
+        }
+        
+        .timeline li:before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            position: absolute;
+            left: -7px;
+            top: 0;
+        }
+        
+        .timeline li.text-danger:before {
+            border-color: #dc3545;
+        }
+        
+        .timeline li.text-warning:before {
+            border-color: #ffc107;
+        }
+    </style>
+    
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-undo-alt"></i> Refund Request Management (Admin)
+                        </h4>
+                        <small class="text-muted">Only show requests that have complaints requiring Admin intervention</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filter Section -->
+                        <form th:action="@{/admin/refunds}" method="get" class="mb-4">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Request code</label>
+                                        <input type="text" class="form-control" name="refundId" 
+                                               th:value="${param.refundId}" placeholder="REF-XXXX">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label> Status </label>
+                                        <select class="form-control" name="status">
+                                            <option value="">All</option>
+                                            <option value="ESCALATED" th:selected="${param.status == 'ESCALATED'}">
+                                                Waiting for Admin to handle
+                                            </option>
+                                            <option value="ADMIN_APPROVED" th:selected="${param.status == 'ADMIN_APPROVED'}">
+                                                Approved by admin 
+                                            </option>
+                                            <option value="ADMIN_REJECTED" th:selected="${param.status == 'ADMIN_REJECTED'}">
+                                                Rejected by admin
+                                            </option>
+                                            <option value="REFUNDED" th:selected="${param.status == 'REFUNDED'}">
+                                                Refunded
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>Shop</label>
+                                        <select class="form-control" name="shopId">
+                                            <option value="">All shop</option>
+                                            <option th:each="shop : ${shops}" 
+                                                    th:value="${shop.id}" 
+                                                    th:text="${shop.shopName}"
+                                                    th:selected="${param.shopId == shop.id}">
+                                                Shop A
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>From date</label>
+                                        <input type="date" class="form-control" name="fromDate" 
+                                               th:value="${param.fromDate}">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>To date</label>
+                                        <input type="date" class="form-control" name="toDate" 
+                                               th:value="${param.toDate}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <a th:href="@{/admin/refunds}" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h6>Pending</h6>
+                                        <h2 th:text="${escalatedCount ?: 0}">0</h2>
+                                        <small>Customer escalated from Shop decision</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h6>Approved</h6>
+                                        <h2 th:text="${adminApprovedCount ?: 0}">0</h2>
+                                        <small>Waiting for refund processing</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body">
+                                        <h6>Rejected</h6>
+                                        <h2 th:text="${adminRejectedCount ?: 0}">0</h2>
+                                        <small>Refund not granted</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h6>Refunded</h6>
+                                        <h2 th:text="${refundedCount ?: 0}">0</h2>
+                                        <small>Completed</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alert Info -->
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Lưu ý:</strong> Admin only handles requests in <strong>ESCALATED</strong> status 
+                            (when customer files a complaint after Shop rejects or when dispute is complicated).
+                        </div>
+
+                        <!-- Refund Requests Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th width="8%">Id</th>
+                                        <th width="10%">Shop</th>
+                                        <th width="8%">Order</th>
+                                        <th width="10%">Customer</th>
+                                        <th width="15%">Complaint Reason</th>
+                                        <th width="10%">Amount</th>
+                                        <th width="12%">Date</th>
+                                        <th width="10%">Status</th>
+                                        <th width="17%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="refund : ${refunds}">
+                                        <td>
+                                            <strong th:text="${refund.refundId}">REF-001</strong>
+                                        </td>
+                                        <td>
+                                            <div >Shop ABC</div>
+                                       <div th:text="${refund.shopName}">Shop ABC</div> 
+                                           <!--  <small class="text-muted" th:text="${refund.shopCode}">SHOP-001</small> -->
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/orders/{id}(id=${refund.orderId})}" 
+                                               th:text="${refund.orderId}"></a>
+                                        </td>
+                                        <td>
+                                            <div th:text="${refund.buyerName}">Nguyễn Văn A</div>
+                                            <small class="text-muted" th:text="${refund.buyerPhone}">0123456789</small>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <span class="badge badge-warning">Shop từ chối</span>
+                                                <p class="mb-0 mt-1 small">
+                                                    Khách không đồng ý với lý do từ chối của shop
+                                                </p>
+                                                <!-- <p class="mb-0 mt-1 small" th:text="${refund.escalationReason}">
+                                                    Khách không đồng ý với lý do từ chối của shop
+                                                </p> -->
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong class="text-danger" 
+                                                    th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                                1.000.000 ₫
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <div th:text="${#temporals.format(refund.updatedAt, 'dd/MM/yyyy')}">
+                                                01/01/2024
+                                            </div>
+                                            <small class="text-muted" th:text="${#temporals.format(refund.updatedAt, 'HH:mm')}">
+                                                10:00
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <th:block th:switch="${refund.status}">
+											    <span th:case="'ESCALATED'" class="badge badge-warning">Pending</span>
+											    <span th:case="'ADMIN_APPROVED'" class="badge badge-info">Approved</span>
+											    <span th:case="'ADMIN_REJECTED'" class="badge badge-danger">Rejected</span>
+											    <span th:case="'REFUNDED'" class="badge badge-success">Refunded</span>
+											    <span th:case="*"
+											          class="badge badge-secondary">N/A</span>
+											</th:block>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-info" 
+                                                    data-toggle="modal" 
+                                                    th:data-target="'#refundDetailModal' + ${refund.refundId}">
+                                                <i class="fas fa-eye"></i> Details
+                                            </button>
+                                            
+                                            <!-- Action buttons based on status -->
+                                            <div th:if="${refund.status == 'ESCALATED'}">
+                                                <button type="button" class="btn btn-sm btn-success mt-1"
+                                                        data-toggle="modal"
+                                                        th:data-target="'#adminApproveModal' + ${refund.refundId}">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger mt-1"
+                                                        data-toggle="modal"
+                                                        th:data-target="'#adminRejectModal' + ${refund.refundId}">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </div>
+                                            
+                                            <div th:if="${refund.status == 'ADMIN_APPROVED'}">
+                                                <button type="button" class="btn btn-sm btn-primary mt-1"
+                                                        data-toggle="modal"
+                                                        th:data-target="'#refundModal' + ${refund.refundId}">
+                                                    <i class="fas fa-money-bill-wave"></i> Refund
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Empty state -->
+                                    <tr th:if="${#lists.isEmpty(refunds)}">
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">There are no refund requests for the Admin to handle</p>
+                                            <small class="text-muted">The requirements will appear when the customer disputes the Shop's decision</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${totalPages > 1}">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/refunds(page=${currentPage - 1}, status=${param.status})}">
+                                        Previous
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                    th:classappend="${i == page} ? 'active'">
+                                    <a class="page-link" th:href="@{/admin/refunds(page=${i}, status=${param.status})}" 
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${page == totalPages - 1} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/refunds(page=${page + 1}, status=${param.status})}">
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Detail Modal -->
+    <div th:each="refund : ${refunds}" 
+         class="modal fade" 
+         th:id="'refundDetailModal' + ${refund.refundId}" 
+         tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Refund Request Details - <span th:text="${refund.refundId}">REF-001</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <!-- Timeline -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <strong><i class="fas fa-history"></i> Processing history</strong>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="timeline">
+                                        <li>
+                                            <strong>1. The customer requested a refund</strong>
+                                            <p class="text-muted small mb-0" 
+                                               th:text="${#temporals.format(refund.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                                01/01/2024 10:00
+                                            </p>
+                                            <p class="small" th:text="${refund.reason}">Sản phẩm lỗi</p>
+                                        </li>
+                                        <li class="text-danger">
+                                            <strong>2. Shop Response</strong>
+                                            <!-- <p class="text-muted small mb-0" 
+                                               th:text="${#temporals.format(refund.shopRejectedDate, 'dd/MM/yyyy HH:mm')}">
+                                                02/01/2024 14:00
+                                            </p> -->
+                                            <p class="small" th:text="${refund.notes}">
+                                                Sản phẩm không lỗi, khách sử dụng sai
+                                            </p>
+                                        </li>
+                                        <li class="text-warning">
+                                            <strong>3. Customer complaints to the Admin</strong>
+                                           <!--  <p class="text-muted small mb-0" 
+                                               th:text="${#temporals.format(refund.escalatedDate, 'dd/MM/yyyy HH:mm')}">
+                                                03/01/2024 09:00
+                                            </p> -->
+                                            <!-- <p class="small" th:text="${refund.escalationReason}">
+                                                Không đồng ý với lý do từ chối. Có video chứng minh sản phẩm lỗi
+                                            </p> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Customer Info -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <strong><i class="fas fa-user"></i> Customer information</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Name :</strong> <span th:text="${refund.buyerName}">Nguyễn Văn A</span></p>
+                                            <p><strong>Phone :</strong> <span th:text="${refund.buyerPhone}">0123456789</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <!-- <p><strong>Email:</strong> <span th:text="${refund.customerEmail}">email@example.com</span></p> -->
+                                            <p><strong>Order :</strong> <span th:text="${refund.orderId}">ORD-001</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shop Info -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <strong><i class="fas fa-store"></i> Shop Information</strong>
+                                </div>
+                                <div class="card-body">
+                                     <p><strong>Name :</strong> <span th:text="${refund.shopName}">Shop ABC</span></p>
+                                    <!-- <p><strong>Shop :</strong> <span th:text="${refund.shopId}">SHOP-001</span></p> -->
+                                    <p><strong>Phone :</strong> <span >0987654321</span></p>
+<!--                                     <p><strong>SĐT Shop:</strong> <span th:text="${refund.shopPhone}">0987654321</span></p> -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <!-- Refund Items -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <strong><i class="fas fa-box"></i> Returned product </strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="item : ${refund.refundItem}">
+                                                <td>
+                                                    <div th:text="${item.productName}">Sản phẩm A</div>
+                                                    <small class="text-muted" th:text="${item.productVariantName}">Size M</small>
+                                                </td>
+                                                <td th:text="${item.quantity}">1</td>
+                                                <td th:text="${#numbers.formatDecimal(item.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                                    500.000 ₫
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" class="text-right"><strong>Total Amount:</strong></td>
+                                                <td>
+                                                    <strong class="text-danger" 
+                                                            th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                                        1.000.000 ₫
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Customer Evidence -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <strong><i class="fas fa-image"></i> Customer Evidence </strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" th:if="${refund.evidence != null and !#lists.isEmpty(refund.evidence)}">
+                                        <div class="col-md-4 mb-2" th:each="image : ${refund.evidence}">
+                                            <img th:src="${image}" class="img-thumbnail" alt="Customer evidence">
+                                        </div>
+                                    </div>
+                                    <p th:if="${refund.evidence == null or #lists.isEmpty(refund.evidence)}" 
+                                       class="text-muted">
+                                        No Evidence
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Shop Evidence -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <strong><i class="fas fa-image"></i> Shop Evidence </strong>
+                                </div>
+                                <div class="card-body">
+                                   <!--  <div class="row" th:if="${refund.shopImages != null and !#lists.isEmpty(refund.shopImages)}">
+                                        <div class="col-md-4 mb-2" th:each="image : ${refund.shopImages}">
+                                            <img th:src="${image}" class="img-thumbnail" alt="Shop evidence">
+                                        </div>
+                                    </div> -->
+                                    <!-- <p th:if="${refund.shopImages == null or #lists.isEmpty(refund.shopImages)}" 
+                                       class="text-muted">
+                                        Shop không cung cấp bằng chứng
+                                    </p> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <div th:if="${refund.status == 'ESCALATED'}">
+                        <button type="button" class="btn btn-danger"
+                                data-dismiss="modal"
+                                data-toggle="modal"
+                                th:data-target="'#adminRejectModal' + ${refund.refundId}">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                        <button type="button" class="btn btn-success"
+                                data-dismiss="modal"
+                                data-toggle="modal"
+                                th:data-target="'#adminApproveModal' + ${refund.refundId}">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Approve Modal -->
+    <div th:each="refund : ${refunds}" 
+         class="modal fade" 
+         th:id="'adminApproveModal' + ${refund.refundId}" 
+         tabindex="-1" role="dialog" >
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form th:action="@{/admin/refunds/{id}/approve(id=${refund.refundId})}" method="post" id="approveForm">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-circle"></i> Approve Refund
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note :</strong> When approved, the Shop will be responsible for this refund!
+                        </div>
+                        
+                        <p>Confirm refund request approval <strong th:text="${refund.refundId}">REF-001</strong>?</p>
+                        <p>Amount of money : <strong class="text-danger h4" th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">1.000.000 ₫</strong></p>
+                        
+                        <hr>
+                        
+                        <!-- <div class="form-group">
+                            <label>Who is responsible for refunding ? <span class="text-danger">*</span></label>
+                            <select class="form-control" name="refundResponsibility" required>
+                                <option value="">-- Choose the responsible party --</option>
+                                <option value="SHOP">Shop is responsible (Deducted from the Shop's wallet)</option>
+                                <option value="PLATFORM">Platform responsible (Platform pays)</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                Select Shop if the issue is from the Shop. Select Platform if the dispute is unclear.
+                            </small>
+                        </div> -->
+                        
+                        <div class="form-group">
+                            <label> Reason Admin approved :<span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="adminApprovalReason" rows="3" id="adminApprovalReason"
+                                      placeholder="VD: After reviewing the evidence, determine whether the product is actually defective..." 
+                                      required></textarea>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                    	<input type="hidden" id="ArefundId" name="refundId" />
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Confirm approve
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Reject Modal -->
+    <div th:each="refund : ${refunds}" 
+         class="modal fade" 
+         th:id="'adminRejectModal' + ${refund.refundId}" 
+         tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form th:action="@{/admin/refunds/{id}/reject(id=${refund.refundId})}" method="post" id="rejectForm">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-times-circle"></i> Reject Refund
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Node : </strong> When refusing, the Shop will keep the money and is not required to refund the customer.
+                        </div>
+                        
+                        <p>Confirmation of refund request denial <strong th:text="${refund.refundId}">REF-001</strong>?</p>
+                        
+                        <div class="form-group">
+                            <label> Reason Admin declined <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="adminRejectReason" rows="4" id="adminRejectReason"
+                                      placeholder="VD: Sau khi xem xét, xác định khách hàng sử dụng sai hướng dẫn. Shop đã cung cấp đầy đủ bằng chứng..." 
+                                      required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    	<input type="hidden" id="RrefundId" name="refundId" />
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times"></i> Confirm reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Refund Modal (After Admin Approved) -->
+    <div th:each="refund : ${refunds}" 
+         class="modal fade" 
+         th:id="'refundModal' + ${refund.refundId}" 
+         tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form th:action="@{/admin/refunds/{id}/refund(id=${refund.refundId})}" method="post" id="refundForm">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-money-bill-wave"></i> Confirm refund for the customer
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Confirmed refund for request <strong th:text="${refund.refundId}">REF-001</strong>?</p>
+                        <p>Amount of money : <strong class="text-danger h4" th:text="${#numbers.formatDecimal(refund.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">1.000.000 ₫</strong></p>
+                        
+                        <hr>
+                        
+                        <div class="form-group">
+                            <label>Refund method <span class="text-danger">*</span></label>
+                            <select class="form-control" name="refundMethod" required>
+                                <option value="">-- Choose method --</option>
+                                <option value="BANK_TRANSFER">VNPAY</option>
+                                <option value="WALLET">E-wallet</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Refund transaction code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="transactionCode" 
+                                   placeholder="Enter the transaction code from the bank/e-wallet" required>
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <label>Note</label>
+                            <textarea class="form-control" name="refundNote" rows="2" 
+                                      placeholder="Notes on refund transactions (if any)..."></textarea>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note : </strong> After confirmation, the system will automatically deduct the money from 
+                            <span class="font-weight-bold">Shop's wallet</span>
+                            <!-- <span th:if="${refund.refundResponsibility == 'PLATFORM'}" class="font-weight-bold">ví Platform</span> -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    	<input type="hidden" id="refundId" name="refundId" />
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-money-bill-wave"></i> Confirm refund
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div layout:fragment="scripts">
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$('#approveForm').on('submit', function (e) {
+				e.preventDefault();
+				const reason = $('#adminApprovalReason').val();
+				const action = $(this).attr('action');
+				const refundId = $('#ArefundId').val();
+				console.log(refundId);
+
+				// Show loading
+				Swal.fire({
+					title: 'Processing...',
+					text: 'Updating refund status',
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
+
+				$.ajax({
+					url: action,
+					method: 'Post',
+					contentType: 'application/json',
+					data: JSON.stringify({ reason : reason}),
+					success: function (res) {
+						$('#adminApproveModal' + refundId).modal('hide');
+						console.log(res.success)
+						if(res.success){
+							Swal.fire({
+								icon: 'success',
+								title: 'Success!',
+								text: res.message || 'Refund approve successfully',
+								timer: 2000,
+								showConfirmButton: false
+							})
+							
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: res.message || 'Refund approve faile',
+								timer: 2000,
+								showConfirmButton: false
+							})
+						}
+						
+					},
+					error: function (xhr) {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error!',
+							text: 'Failed to refund approve. Please try again.'
+						});
+					}
+				});
+			});	
+			
+			$('#rejectForm').on('submit', function (e) {
+				e.preventDefault();
+				const reason = $('#adminRejectReason').val();
+				const action = $(this).attr('action');
+				const refundId = $('#RrefundId').val();
+				console.log(reason);
+
+				// Show loading
+				Swal.fire({
+					title: 'Processing...',
+					text: 'Updating refund status',
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
+
+				$.ajax({
+					url: action,
+					method: 'Post',
+					contentType: 'application/json',
+					data: JSON.stringify({ reason : reason}),
+					success: function (res) {
+						
+						console.log(res.success)
+						if(res.success){
+							Swal.fire({
+								icon: 'success',
+								title: 'Success!',
+								text: res.message || 'Refund approve successfully',
+								timer: 2000,
+								showConfirmButton: false
+							}).then(() => {
+								$('#adminRejectModal' + refundId).modal('hide');
+								
+							});
+							
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: res.message || 'Refund approve faile',
+								timer: 2000,
+								showConfirmButton: false
+							})
+						}
+						
+					},
+					error: function (xhr) {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error!',
+							text: 'Failed to refund approve. Please try again.'
+						});
+					}
+				});
+			});	
+	})	
+	</script>
+</div>
+    
+</body>
+</html>

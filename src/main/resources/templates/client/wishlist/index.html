@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title">My Wishlist</title>
+  <style>
+    .wl-container       { max-width: 1080px; }
+    .wl-tabs            { border-bottom: 2px solid #e6e6e6; display: flex; gap: 24px; }
+    .wl-tab             { padding: 12px 0; font-weight: 600; color:#666; cursor:pointer; position:relative; }
+    .wl-tab.active      { color:#222; }
+    .wl-tab.active::after { content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; background:#1a73e8; }
+    .wl-addall          { border:1px solid #1a73e8; color:#1a73e8; background:#fff; padding:8px 14px; border-radius:4px; font-weight:600; }
+    .wl-item            { border:1px solid #eee; border-radius:8px; padding:16px; display:flex; align-items:center; gap:16px; }
+    .wl-item + .wl-item { margin-top:12px; }
+    .wl-thumb           { width:120px; height:120px; flex:0 0 120px; border:1px solid #f2f2f2; border-radius:6px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; }
+    .wl-thumb img       { width:100%; height:100%; object-fit:cover; }
+    .wl-middle          { flex:1; min-width:0; }
+    .wl-title           { font-size:16px; font-weight:600; color:#222; margin:0 0 6px; line-height:1.35; }
+    .wl-variant         { color:#777; font-size:12px; }
+    .wl-right           { width:220px; flex:0 0 220px; text-align:right; }
+    .wl-price           { color:#ff5b00; font-size:20px; font-weight:700; }
+    .wl-old             { color:#999; text-decoration:line-through; margin-left:6px; }
+    .wl-off             { color:#00a650; font-weight:600; font-size:12px; display:block; margin-top:4px; }
+    .wl-actions         { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+    .btn-orange         { background:#ff6a00; color:#fff; border:none; padding:8px 12px; border-radius:4px; font-weight:600; text-decoration:none; display:inline-block; }
+    .btn-ghost          { border:1px solid #ddd; background:#fff; color:#444; padding:8px 12px; border-radius:4px; text-decoration:none; display:inline-block; }
+    .wl-empty           { border:1px dashed #cfd8dc; padding:24px; border-radius:8px; text-align:center; color:#607d8b; }
+    @media (max-width: 768px) {
+      .wl-right { width:140px; flex:0 0 140px; }
+      .wl-thumb { width:96px; height:96px; }
+      .wl-price { font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+  <section class="section-padding">
+    <div class="container wl-container">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h2 class="m-0" style="font-weight:700;">My Wishlist &amp; Followed Stores
+          <span class="text-muted" style="font-weight:400;">(
+            <span th:text="${totalWishlist == null ? 0 : totalWishlist}">0</span>
+          )</span>
+        </h2>
+      </div>
+
+      <!-- Tabs -->
+      <div class="wl-tabs mb-3">
+        <div class="wl-tab active">My Wishlist</div>
+        <div class="wl-tab">Past Purchases</div>
+        <div class="wl-tab">Followed Stores</div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="wl-empty" th:if="${#lists.isEmpty(wishlistItems)}">
+        Your wishlist is empty.
+        <a th:href="@{/client/products}" class="ms-1" style="font-weight:600;">Browse products</a>.
+      </div>
+
+      <!-- List -->
+      <div th:if="${!#lists.isEmpty(wishlistItems)}">
+        <!-- Each wishlist item (DTO recommended) -->
+        <div class="wl-item" th:each="w : ${wishlistItems}">
+          <!-- Thumb -->
+          <a class="wl-thumb" th:href="@{/productdetails/{id}(id=${w.productId})}">
+            <img th:src="${w.productImage} != null ?
+                          @{/uploads/{img}(img=${w.productImage})} :
+                          @{/images/no-image.png}"
+                 alt="product">
+          </a>
+
+          <!-- Middle -->
+          <div class="wl-middle">
+            <div class="wl-title">
+              <a th:href="@{/productdetails/{id}(id=${w.productId})}"
+                 th:text="${w.productName != null ? w.productName : 'Product #' + w.productId}">Product name</a>
+            </div>
+            <div class="wl-variant" th:if="${w.variantText != null}"
+                 th:text="${w.variantText}">Color Family: BLUE</div>
+            <div class="wl-off" th:if="${w.priceDropped == true}">Price dropped</div>
+          </div>
+
+          <!-- Right -->
+          <div class="wl-right">
+            <div>
+              <span class="wl-price"
+                    th:text="${w.productPrice != null ?
+                              '₫' + #numbers.formatDecimal(w.productPrice, 0, 'COMMA', 0, 'POINT') :
+                              '—'}">₫0</span>
+              <span class="wl-old"
+                    th:if="${w.productOldPrice != null}"
+                    th:text="${'₫' + #numbers.formatDecimal(w.productOldPrice, 0, 'COMMA', 0, 'POINT')}">₫0</span>
+            </div>
+            <small class="text-success d-inline-block mt-1"
+                   th:if="${w.discountText != null}"
+                   th:text="${w.discountText}">-56%</small>
+
+            <div class="wl-actions">
+              <!-- Changed: go to Product Detail instead of posting to /cart/add -->
+              <a class="btn-orange"
+                 th:href="@{/productdetails/{id}(id=${w.productId})}">
+                Add to cart
+              </a>
+
+              <a class="btn-ghost"
+                 th:href="@{/client/wishlist/delete/{id}(id=${w.wishlistId})}">
+                Remove
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

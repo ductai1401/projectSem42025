@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Create Flash Sale</title>
+<link rel="stylesheet" th:href="@{/admin/style/productStyle.css}" />
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Header -->
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<h3 class="mb-0">Create Flash Sale</h3>
+						<small class="text-muted">Marketing / Flash Sale / Create</small>
+					</div>
+					<div class="d-flex gap-2">
+						<a class="btn btn-light border" th:href="@{/seller/flashsale/}">←
+							Back to list</a>
+					</div>
+				</div>
+				<input type="hidden" id="sessionShopId" th:value="${session.shopId}">
+				<!-- Form card -->
+				<form id="admin" class="card-like" novalidate>
+					<!-- CSRF -->
+					<input type="hidden" th:if="${_csrf != null}" id="_csrf_param"
+						th:value="${_csrf.parameterName}"> <input type="hidden"
+						th:if="${_csrf != null}" id="_csrf_token"
+						th:value="${_csrf.token}">
+
+					<div class="row g-3">
+						<div class="col-12 col-lg-12">
+							<div class="card shadow-sm border-0">
+								<div class="card-header bg-white border-0 pb-0">
+									<div class="d-flex align-items-center justify-content-between">
+										<div>
+											<div class="fw-semibold">Basic Information</div>
+											<div class="text-muted small">Thiết lập tên, thời gian
+												Flash Sale và kiểm tra cửa hàng hiện tại</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="card-body pt-3">
+									<!-- Shop (read-only từ session) -->
+									<div class="mb-3">
+										<label class="form-label">Shop hiện tại</label>
+										<div class="form-control bg-light">
+											<span class="me-2">ID:</span> <strong
+												th:text="${session.shopId} ?: 'N/A'">N/A</strong> <span
+												class="mx-2">|</span> <span class="me-2">Name:</span> <strong
+												th:text="${session.shopName} ?: 'Current Shop'">Current
+												Shop</strong>
+										</div>
+										<div class="form-text">Shop được lấy từ session khi đăng
+											nhập và không thể thay đổi tại đây.</div>
+									</div>
+
+									<!-- Name -->
+									<div class="mb-3">
+										<div class="form-floating">
+											<input type="text" class="form-control" id="flashSaleName"
+												placeholder="Flash sale name"> <label
+												for="flashSaleName">Flash sale name *</label>
+										</div>
+										<div class="text-danger small d-none" id="errName">Vui
+											lòng nhập tên Flash Sale.</div>
+									</div>
+
+									<!-- Time range -->
+									<div class="row g-3">
+										<div class="col-md-6">
+											<label class="form-label">Start date *</label> <input
+												type="datetime-local" class="form-control" id="startDate">
+											<div class="text-danger small d-none" id="errStart">Vui
+												lòng chọn thời gian bắt đầu.</div>
+										</div>
+										<div class="col-md-6">
+											<label class="form-label">End date *</label> <input
+												type="datetime-local" class="form-control" id="endDate">
+											<div class="text-danger small d-none" id="errEnd">Vui
+												lòng chọn thời gian kết thúc.</div>
+										</div>
+										<div class="col-12">
+											<div class="text-danger small d-none" id="errRange">Thời
+												gian kết thúc phải sau thời gian bắt đầu.</div>
+											<div class="form-text">Lưu ý: thời gian theo múi giờ
+												trình duyệt. Backend sẽ nhận dạng ISO-8601.</div>
+										</div>
+									</div>
+
+									<!-- First Item (optional) -->
+									<div class="row g-3 mt-2">
+										<div class="col-12">
+											<div class="fw-semibold">Add first item (optional)</div>
+											<div class="text-muted small">Bạn có thể thêm ngay 1
+												sản phẩm vào Flash Sale này (không bắt buộc).</div>
+										</div>
+
+										<!-- SẢN PHẨM -->
+										<div class="col-md-6">
+											<label class="form-label">Sản phẩm</label> <input type="text"
+												id="productInput" class="form-control"
+												placeholder="Nhập ID hoặc tên sản phẩm"
+												th:value="${prefillProductId} ?: ${param.productId}">
+											<!-- để JS đọc được khi chỉ có ID -->
+
+											<!-- hidden giữ productId từ backend nếu có -->
+											<input type="hidden" id="productId"
+												th:value="${prefillProductId} ?: ${param.productId}">
+
+											<div class="text-danger small d-none" id="errProductId">Vui
+												lòng chọn sản phẩm hợp lệ.</div>
+
+											<!-- Dropdown kết quả -->
+											<ul id="productSuggestions"
+												class="list-group position-absolute w-50 d-none"></ul>
+										</div>
+
+
+
+										<!-- Quantity -->
+										<div class="col-md-3">
+											<div class="form-floating">
+												<input type="number" class="form-control" id="quantity"
+													min="0" placeholder="Quantity"> <label
+													for="quantity">Quantity</label>
+											</div>
+											<div class="text-danger small d-none" id="errQuantity">Quantity
+												phải ≥ 0.</div>
+										</div>
+
+										<!-- Percent -->
+										<div class="col-md-3">
+											<div class="form-floating">
+												<input type="number" class="form-control" id="percern"
+													min="0" max="100" placeholder="Percent (%)"> <label
+													for="percern">Percent (%)</label>
+											</div>
+											<div class="text-danger small d-none" id="errPercern">Percent
+												phải ≥ 0.</div>
+										</div>
+									</div>
+
+									<!-- Note -->
+									<div class="mb-3 mt-3">
+										<div class="alert alert-info">Bạn có thể tạo Flash Sale
+											trước, sau đó gán sản phẩm/thiết lập chi tiết ở bước tiếp
+											theo.</div>
+									</div>
+
+									<div class="d-flex gap-2 justify-content-end mt-3">
+										<a class="btn btn-light border"
+											th:href="@{/seller/flashsale/}">Back</a>
+										<button class="btn btn-primary" type="button"
+											id="btnSubmitCreate">Save & Publish</button>
+									</div>
+
+									<div class="alert alert-danger mt-3 d-none" id="serverErrorBox"></div>
+									<div class="alert alert-success mt-3 d-none" id="serverOkBox"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+
+			</div>
+			<!-- /.container-fluid -->
+		</div>
+		<!-- /.content-wrapper -->
+	</div>
+
+	<!-- Progress Toast -->
+	<div id="progressBox" style="display: none">
+		<header>Đang xử lý…</header>
+		<div class="body">
+			<div class="bar">
+				<div id="progressBar" style="width: 0%"></div>
+			</div>
+			<div class="muted" id="progressText">Bước 1/1</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn        = document.getElementById('btnSubmitCreate');
+  const nameInput  = document.getElementById('flashSaleName');
+  const startInput = document.getElementById('startDate');
+  const endInput   = document.getElementById('endDate');
+
+  const errName  = document.getElementById('errName');
+  const errStart = document.getElementById('errStart');
+  const errEnd   = document.getElementById('errEnd');
+  const errRange = document.getElementById('errRange');
+
+  // Autocomplete elements
+  const inputEl      = document.getElementById('productInput');     // textbox
+  const listEl       = document.getElementById('productSuggestions'); // <ul> dropdown
+  const hiddenPidEl  = document.getElementById('productId');        // hidden giữ id
+
+  const previewBox      = document.getElementById('productPreview');
+  const previewName     = document.getElementById('previewName');
+  const previewId       = document.getElementById('previewId');
+  const previewCategory = document.getElementById('previewCategory');
+  const previewShop     = document.getElementById('previewShop');
+  const errProductId    = document.getElementById('errProductId');
+
+  const qtyInput = document.getElementById('quantity');
+  const percInput= document.getElementById('percern');
+  const errQty   = document.getElementById('errQuantity');
+  const errPerc  = document.getElementById('errPercern');
+
+  const progressBox  = document.getElementById('progressBox');
+  const progressBar  = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+
+  const serverErr = document.getElementById('serverErrorBox');
+  const serverOk  = document.getElementById('serverOkBox');
+
+  const sessionShopId = document.getElementById('sessionShopId')?.value;
+
+  // ---------- Utils ----------
+  function showProgress(){ if(progressBox)progressBox.style.display='block'; if(progressBar)progressBar.style.width='25%'; if(progressText)progressText.textContent='Bước 1/1'; }
+  function hideProgress(){ if(progressBar)progressBar.style.width='100%'; if(progressBox)setTimeout(()=>progressBox.style.display='none',300); }
+  function setError(el,msgEl){ if(el&&msgEl){ el.classList.add('is-invalid'); msgEl.classList.remove('d-none'); } }
+  function clearError(el,msgEl){ if(el&&msgEl){ el.classList.remove('is-invalid'); msgEl.classList.add('d-none'); } }
+  function readCsrf(){ const p=document.getElementById('_csrf_param'); const t=document.getElementById('_csrf_token'); if(!p||!t)return null; return {param:p.value, token:t.value}; }
+  function isoFromLocalDatetime(el){ const v=el?.value?.trim(); return v||null; }
+
+  // ---------- Dropdown helpers ----------
+  function openList(){ if(listEl){ listEl.classList.remove('d-none'); listEl.style.zIndex='1000'; } }
+  function closeList(){ if(listEl) listEl.classList.add('d-none'); }
+  function clearList(){ if(listEl) listEl.innerHTML=''; }
+
+  function parseProductIdFromInput(val){
+    if(!val) return null;
+    const trimmed = val.trim();
+    if (trimmed.includes('-')) {
+      const idStr = trimmed.split('-')[0].trim();
+      return /^\d+$/.test(idStr) ? idStr : null;
+    }
+    return /^\d+$/.test(trimmed) ? trimmed : null;
+  }
+
+  function renderSuggestions(items){
+    clearList();
+    if(!items || !items.length){ closeList(); return; }
+    items.forEach(p=>{
+      const li=document.createElement('li');
+      li.className='list-group-item list-group-item-action';
+      li.style.cursor='pointer';
+      li.textContent=`${p.productId} - ${p.productName || ''}`;
+      li.addEventListener('click', ()=>{
+        inputEl.value = `${p.productId} - ${p.productName || ''}`;
+        hiddenPidEl.value = String(p.productId);
+        closeList();
+        tryPreview();
+      });
+      listEl.appendChild(li);
+    });
+    openList();
+  }
+
+  // debounce search
+  let typingTimer;
+  const DEBOUNCE_MS = 250;
+
+  async function searchProducts(q){
+    try{
+      const params = new URLSearchParams();
+      params.set('keyword', q);
+      params.set('limit', '20');
+      if (sessionShopId && /^\d+$/.test(sessionShopId)) params.set('shopId', sessionShopId);
+      const res = await fetch(`/admin/product/search?${params.toString()}`);
+      if(!res.ok) return [];
+      return await res.json();
+    }catch(_){ return []; }
+  }
+
+  // ----- Preview -----
+  function tryPreview(){
+    const pid = hiddenPidEl?.value?.trim() || parseProductIdFromInput(inputEl.value);
+    if(!pid){
+      hiddenPidEl.value='';
+      previewBox.classList.add('d-none');
+      return;
+    }
+    hiddenPidEl.value = pid;
+    fetch(`/admin/product/${pid}`)
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.ok){
+          previewName.textContent = data.product.productName;
+          previewId.textContent   = data.product.productId;
+          previewCategory.textContent = data.product.categoryName || '';
+          previewShop.textContent = data.product.shopName || '';
+          previewBox.classList.remove('d-none');
+          clearError(inputEl, errProductId);
+        }else{
+          setError(inputEl, errProductId);
+          previewBox.classList.add('d-none');
+        }
+      })
+      .catch(()=>{
+        setError(inputEl, errProductId);
+        previewBox.classList.add('d-none');
+      });
+  }
+
+  // ===== PREFILL & READONLY: nếu đã có productId (từ hidden hoặc từ textbox) thì khoá input =====
+  async function lockReadonlyByIdIfAny(){
+    const initialPid = (hiddenPidEl?.value?.trim()) || parseProductIdFromInput(inputEl.value);
+    if(!initialPid) return;
+
+    // fetch chi tiết -> set tên và khoá
+    try{
+      const res = await fetch(`/admin/product/${initialPid}`);
+      const data = await res.json();
+      if (data?.ok) {
+        const display = `${data.product.productId} - ${data.product.productName || ''}`;
+        inputEl.value = display;
+        hiddenPidEl.value = String(data.product.productId);
+
+        // khoá READONLY
+        inputEl.readOnly = true;
+        inputEl.classList.add('bg-light');
+        inputEl.style.pointerEvents = 'none';
+        clearList(); closeList();
+
+        // hiện preview
+        previewName.textContent = data.product.productName;
+        previewId.textContent   = data.product.productId;
+        previewCategory.textContent = data.product.categoryName || '';
+        previewShop.textContent = data.product.shopName || '';
+        previewBox.classList.remove('d-none');
+      }
+    }catch(_){ /* bỏ qua */ }
+  }
+
+  // gọi ngay khi load trang
+  lockReadonlyByIdIfAny();
+
+  // ----- Wire events cho textbox (chỉ hoạt động khi chưa readonly) -----
+  if (inputEl) {
+    inputEl.addEventListener('input', () => {
+      if (inputEl.readOnly) return;               // đã khoá thì bỏ qua
+      clearError(inputEl, errProductId);
+      clearTimeout(typingTimer);
+      const q = (inputEl.value || '').trim();
+      if (q.length < 1) { clearList(); closeList(); hiddenPidEl.value=''; return; }
+      typingTimer = setTimeout(async () => {
+        const items = await searchProducts(q);
+        renderSuggestions(items);
+      }, DEBOUNCE_MS);
+    });
+
+    inputEl.addEventListener('blur', () => setTimeout(closeList, 150));
+    inputEl.addEventListener('focus', () => { if (!inputEl.readOnly && listEl && listEl.children.length) openList(); });
+    inputEl.addEventListener('change', () => { if (!inputEl.readOnly) tryPreview(); });
+    inputEl.addEventListener('keydown', (e) => {
+      if (inputEl.readOnly) return;
+      if (e.key === 'Enter') { e.preventDefault(); tryPreview(); closeList(); }
+    });
+  }
+
+  // click ra ngoài -> đóng dropdown
+  document.addEventListener('click', (e) => {
+    if (!listEl || !inputEl) return;
+    if (!listEl.contains(e.target) && !inputEl.contains(e.target)) closeList();
+  });
+
+  // ---------- Submit ----------
+  btn?.addEventListener('click', async function () {
+    serverErr?.classList.add('d-none');
+    serverOk?.classList.add('d-none');
+
+    const name = (nameInput?.value || '').trim();
+    if (!name) { setError(nameInput, errName); return; }
+    clearError(nameInput, errName);
+
+    const startVal = startInput?.value?.trim();
+    const endVal   = endInput?.value?.trim();
+    let hasError = false;
+
+    if (!startVal) { setError(startInput, errStart); hasError = true; } else { clearError(startInput, errStart); }
+    if (!endVal)   { setError(endInput,   errEnd);   hasError = true; } else { clearError(endInput,   errEnd); }
+
+    if (!hasError && startVal && endVal) {
+      const start = new Date(startVal.replace(' ', 'T'));
+      const end   = new Date(endVal.replace(' ', 'T'));
+      if (!(end > start)) { errRange?.classList.remove('d-none'); hasError = true; }
+      else { errRange?.classList.add('d-none'); }
+    } else {
+      errRange?.classList.add('d-none');
+    }
+    if (hasError) return;
+
+    const payload = {
+      name: name,
+      startDate: isoFromLocalDatetime(startInput),
+      endDate:   isoFromLocalDatetime(endInput)
+    };
+
+    const pidVal = hiddenPidEl?.value?.trim();
+    const qtyVal = qtyInput?.value?.trim();
+    const perVal = percInput?.value?.trim();
+
+    if (pidVal && /^\d+$/.test(pidVal)) {
+      let ok = true;
+      if (qtyVal && +qtyVal < 0) { setError(qtyInput, errQty); ok = false; } else { clearError(qtyInput, errQty); }
+      if (perVal && (+perVal < 0 || +perVal > 100)) { setError(percInput, errPerc); ok = false; } else { clearError(percInput, errPerc); }
+      if (!ok) return;
+
+      payload.firstItem = {
+        productId: +pidVal,
+        quantity: qtyVal ? +qtyVal : 0,
+        percern:  perVal ? +perVal : 0
+      };
+    }
+
+    const csrf = readCsrf();
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrf) headers['X-CSRF-TOKEN'] = csrf.token;
+
+    try {
+      showProgress();
+      const res = await fetch('/seller/flashsale/create-json', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!data.ok) {
+        if (serverErr) {
+          serverErr.textContent = data.message || 'Tạo Flash Sale thất bại.';
+          serverErr.classList.remove('d-none');
+        }
+      } else {
+        if (serverOk) {
+          serverOk.innerHTML = 'Tạo Flash Sale thành công! ID: <strong>' + (data.flashSaleId || '') + '</strong>';
+          serverOk.classList.remove('d-none');
+        }
+        setTimeout(() => (window.location.href = '/seller/flashsale/'), 800);
+      }
+    } catch (e) {
+      if (serverErr) {
+        serverErr.textContent = 'Lỗi kết nối server: ' + e.message;
+        serverErr.classList.remove('d-none');
+      }
+    } finally {
+      hideProgress();
+    }
+  });
+});
+</script>
+
+	</div>
+</body>
+</html>

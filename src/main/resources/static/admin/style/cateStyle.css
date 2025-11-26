@@ -1,0 +1,151 @@
+/* ========== Category Picker UI ========== */
+.picker-panel {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 14px;
+  padding: 10px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+  min-width: 260px;
+}
+
+.picker-title {
+  font-weight: 600;
+  font-size: .95rem;
+  color: #475569;
+  margin: 4px 6px 8px;
+}
+
+.picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+  flex: 1;
+}
+
+.picker-list .item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: all .15s ease;
+  border: 1px solid transparent;
+}
+
+.picker-list .item:hover {
+  background: #f6f8fb;
+  border-color: #edf1f7;
+}
+
+.picker-list .item.active {
+  background: #eef6ff;
+  border-color: #cfe5ff;
+}
+
+.picker-list .item .chev {
+  opacity: .5;
+}
+
+.badge.bg-light.border {
+  font-weight: 500;
+}
+
+.form-control-lg {
+  border-radius: 12px;
+}
+
+.card {
+  border-radius: 16px;
+}
+
+.placeholder,
+.loading {
+  color: #64748b;
+  font-size: .9rem;
+}
+
+/* Dải cuộn ngang cho nhiều level */
+.levels-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  margin-bottom: -8px;
+  scroll-behavior: smooth;
+}
+
+.levels-strip::-webkit-scrollbar {
+  height: 10px;
+}
+
+.levels-strip::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.levels-strip::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+
+.levels-strip::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.level-col {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 767.98px) {
+  .picker-panel {
+    height: 260px;
+  }
+}
+
+/* ========== Sidebar / Collapse Fix (không “tô trắng”) ========== */
+/* Tuân theo hành vi Bootstrap collapse cho submenu trong sidebar */
+.sidebar .collapse:not(.show) {
+  display: none;
+}
+.sidebar .collapse.show {
+  display: block;
+}
+.sidebar .collapsing {
+  height: 0;
+  overflow: hidden;
+  transition: height .35s ease;
+}
+
+/* Không ghi đè nền của sidebar/submenu thành trắng */
+.sidebar,
+.sidebar .nav,
+.sidebar .nav .nav-item,
+.sidebar .nav .nav-item .nav-link {
+  background-color: inherit;       /* giữ nền theo theme */
+}
+
+/* Submenu trong suốt để lộ nền sidebar hiện tại */
+.sidebar .collapse,
+.sidebar .sub-menu {
+  background-color: transparent;
+  box-shadow: none;
+  border: 0;
+}
+
+/* Màu chữ submenu theo theme (nếu theme đã set thì kế thừa) */
+.sidebar .sub-menu .nav-link {
+  color: inherit;
+}
+
+/* Tuỳ chọn: giữ khoảng cách submenu gọn gàng theo theme */
+.sidebar .sub-menu .nav-link {
+  padding-left: 2rem;
+  line-height: 1.25rem;
+}

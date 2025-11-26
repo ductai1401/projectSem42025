@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title">Shop Coupons</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="content-wrapper pt-3">
+    <div class="container-fluid">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h3>🏷️ Shop Coupons</h3>
+          <small class="text-muted">Seller / Coupons / List</small>
+        </div>
+        <a th:href="@{/seller/coupons/create}" class="btn btn-primary">+ Create</a>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+          <form class="row g-2 mb-3" method="get" th:action="@{/seller/coupons}">
+            <div class="col-auto">
+              <input class="form-control" type="text" name="q" placeholder="Search code..." th:value="${q}">
+            </div>
+            <div class="col-auto">
+              <select class="form-select" name="size">
+                <option th:value="10" th:selected="${size == 10}">10</option>
+                <option th:value="20" th:selected="${size == 20}">20</option>
+                <option th:value="50" th:selected="${size == 50}">50</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-outline-secondary" type="submit">Filter</button>
+            </div>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Discount</th>
+                <th>Min Order</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Used/Limit</th>
+                <th>Status</th>
+                <th style="width: 160px;">Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="c, iStat : ${coupons}">
+                <td th:text="${iStat.index + 1 + (page*size)}"></td>
+                <td th:text="${c.code}"></td>
+                <td th:text="${c.couponType}"></td>
+                <td>
+                  <span th:text="${c.discountType}"></span>
+                  <span th:text="${c.discountValue}"></span>
+                  <span th:if="${c.maxDiscount != null}"> (max <span th:text="${c.maxDiscount}"></span>)</span>
+                </td>
+                <td th:text="${c.minOrderAmount}"></td>
+                <td th:text="${#temporals.format(c.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${#temporals.format(c.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+                <td>
+                  <span th:text="${c.usedCount}"></span>/<span th:text="${c.usageLimit}"></span>
+                </td>
+                <td>
+                  <span th:text="${c.status == 1 ? 'Active' : 'Inactive'}"></span>
+                </td>
+                <td>
+                  <a class="btn btn-sm btn-warning"
+                     th:href="@{'/seller/coupons/' + ${c.couponId} + '/edit'}">Edit</a>
+
+                  <form th:action="@{'/seller/coupons/' + ${c.couponId} + '/delete'}"
+                        method="post" style="display:inline"
+                        onsubmit="return confirm('Delete this coupon?')">
+                    <input type="hidden" th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(coupons)}">
+                <td colspan="10" class="text-center text-muted">No data</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Simple pager -->
+          <div class="d-flex justify-content-between">
+            <a class="btn btn-outline-secondary"
+               th:classappend="${page == 0} ? ' disabled'"
+               th:href="@{/seller/coupons(page=${page-1}, size=${size}, q=${q})}">« Prev</a>
+            <a class="btn btn-outline-secondary"
+               th:classappend="${(page+1)*size >= total} ? ' disabled'"
+               th:href="@{/seller/coupons(page=${page+1}, size=${size}, q=${q})}">Next »</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

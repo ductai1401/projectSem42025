@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+<title layout:fragment="title">Category Management</title>
+
+<style>
+:root {
+	--lz-primary: #1a9cb7;
+	--lz-deep: #6b4bff;
+	--lz-bg: #f7f9fb;
+	--lz-card: #fff;
+	--lz-text: #1f2937;
+	--lz-muted: #6b7280;
+	--lz-border: #e5e7eb;
+}
+
+body {
+	background: var(--lz-bg);
+}
+
+.lz-hero {
+	background: linear-gradient(135deg, var(--lz-primary), var(--lz-deep));
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-shadow: 0 10px 25px rgba(27, 86, 143, .15);
+}
+
+.lz-hero h3 {
+	margin: 0;
+	font-weight: 700;
+	letter-spacing: .2px
+}
+
+.btn-lz {
+	background: #fff;
+	color: var(--lz-deep);
+	border: none;
+	border-radius: 999px;
+	padding: .55rem 1rem;
+}
+
+.btn-lz:hover {
+	color: #fff;
+	background: #ff5a7d;
+}
+
+.lz-card {
+	background: var(--lz-card);
+	border: 1px solid var(--lz-border);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+	overflow: hidden;
+}
+
+.lz-toolbar {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--lz-border);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: flex-end;
+	background: linear-gradient(180deg, #fff, #fafbff);
+}
+
+.lz-input {
+	position: relative;
+	min-width: 320px;
+}
+
+.lz-input input {
+	padding-left: 42px;
+	border-radius: 999px;
+	border: 1px solid var(--lz-border);
+	height: 42px;
+}
+
+.lz-input .icon {
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--lz-muted);
+}
+
+.lz-input input:focus {
+	border-color: var(--lz-primary);
+	box-shadow: 0 0 0 4px rgba(26, 156, 183, .12);
+}
+
+.table-category thead th {
+	background: #fbfbff;
+	color: #64748b;
+	border-bottom-color: var(--lz-border);
+	font-weight: 600;
+}
+
+.table-category tbody td {
+	vertical-align: middle;
+}
+
+.category-toggle {
+	user-select: none;
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	cursor: pointer;
+}
+
+.category-toggle .caret {
+	display: inline-flex;
+	width: 22px;
+	height: 22px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: #eef6ff;
+	color: var(--lz-primary);
+	font-weight: 700;
+	transition: transform .2s ease, background .2s ease;
+}
+
+tr.open>td .category-toggle .caret {
+	transform: rotate(90deg);
+	background: #e7f8fb;
+}
+
+.btn-chip {
+	border-radius: 999px;
+	padding: .35rem .7rem;
+	font-size: .875rem;
+	border: 1px solid var(--lz-border);
+	background: #fff;
+}
+
+.btn-chip:hover {
+	border-color: var(--lz-primary);
+	color: var(--lz-primary);
+}
+
+.pagination .page-link {
+	border-radius: 10px;
+	margin: 0 4px;
+	border: 1px solid var(--lz-border);
+}
+
+.pagination .active .page-link {
+	background: var(--lz-primary);
+	border-color: var(--lz-primary);
+}
+
+tr[data-level] td.name-cell {
+	padding-left: calc(12px + var(--level, 0)* 18px);
+}
+
+tr[data-level]:not([data-level="0"]) td.name-cell {
+	position: relative;
+}
+
+tr[data-level]:not([data-level="0"]) td.name-cell::before {
+	content: "";
+	position: absolute;
+	left: calc(var(--level, 1)* -10px);
+	top: -14px;
+	bottom: -14px;
+	width: 2px;
+	background: linear-gradient(180deg, #eaf1ff, #e9fbff);
+	border-radius: 2px;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<!-- Hero -->
+		<div class="lz-hero mb-3">
+			<h3 class="mb-0">📂 Product Category</h3>
+			<div class="actions">
+				<a class="btn btn-lz" th:href="@{/category/create}">➕ Add
+					Category</a>
+			</div>
+		</div>
+
+		<!-- Card -->
+		<div class="lz-card">
+			<div class="lz-toolbar">
+				<form class="d-flex gap-2 align-items-center" method="get"
+					th:action="@{/category/}">
+					<div class="lz-input">
+						<span class="icon">🔎</span> <input type="text" name="keyword"
+							class="form-control" placeholder="Search category name…"
+							th:value="${keyword}">
+					</div>
+					<button type="submit" class="btn btn-outline-primary">Search</button>
+				</form>
+			</div>
+
+			<div class="px-3 pt-3">
+				<div th:if="${success}" class="alert alert-success"
+					th:text="${success}"></div>
+				<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+			</div>
+
+			<div class="table-responsive px-2 pb-2">
+				<table class="table table-bordered table-hover table-category mb-0">
+					<thead>
+						<tr>
+							<th style="width: 90px">#</th>
+							<th>Category Name</th>
+							<th style="width: 260px">Parent Category</th>
+							<th style="width: 340px">Actions</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr th:each="cat, stat : ${categories}"
+							th:with="
+       pid=${cat.parentCategory},
+       parentName=${pid == null} ? '—' : (${#maps.containsKey(nameById, pid)} ? ${nameById[pid]} : '--'),
+       isLeaf=${!#maps.containsKey(childrenCount, cat.categoryId)}
+    "
+							th:attr="data-id=${cat.categoryId},
+             data-parent=${pid == null ? 'null' : pid},
+             data-level=${pid == null ? 0 : 1}"
+							th:style="${pid == null} ? '' : 'display:none'">
+
+							<td th:text="${stat.count}"></td>
+
+							<td class="name-cell">
+								<div class="category-toggle"
+									th:classappend="${isLeaf} ? ' no-children'">
+									<span class="caret"
+										th:style="${isLeaf} ? 'visibility:hidden' : ''">›</span> <span
+										class="fw-semibold" th:text="${cat.categoryName}"></span> <span
+										class="badge text-bg-light ms-2"
+										style="border: 1px solid var(--lz-border);"
+										th:text="${pid == null ? 'Top level' : 'Child'}"></span>
+								</div>
+							</td>
+
+							<td th:text="${parentName}"></td>
+
+							<td class="d-flex flex-wrap gap-2"><a
+								class="btn btn-sm btn-outline-primary btn-chip"
+								th:href="@{/admin/products(category=${cat.categoryId})}"
+								th:if="${isLeaf}">🛒 View Products</a>
+
+								<button class="btn btn-sm btn-outline-warning btn-chip"
+									data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+									th:attr="data-id=${cat.categoryId}, data-name=${cat.categoryName}, data-parent=${pid}"
+									th:if="${isLeaf}">✏️ Edit</button>
+
+								<button class="btn btn-sm btn-outline-danger btn-chip"
+									data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
+									th:attr="data-id=${cat.categoryId}, data-name=${cat.categoryName}"
+									th:if="${isLeaf}">🗑 Delete</button></td>
+						</tr>
+					</tbody>
+
+				</table>
+			</div>
+
+			<!-- Pagination -->
+			<div class="p-3">
+				<nav th:if="${totalPages > 1}">
+					<ul class="pagination mb-0">
+						<li class="page-item"
+							th:classappend="${currentPage == 1} ? 'disabled'"><a
+							class="page-link"
+							th:href="@{/category/(page=${currentPage - 1})}">«</a></li>
+						<li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+							th:classappend="${pageNum == currentPage} ? 'active'"
+							class="page-item"><a class="page-link" th:text="${pageNum}"
+							th:href="@{/category/(page=${pageNum})}">1</a></li>
+						<li class="page-item"
+							th:classappend="${currentPage == totalPages} ? 'disabled'">
+							<a class="page-link"
+							th:href="@{/category/(page=${currentPage + 1})}">»</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+
+		<!-- Edit Modal -->
+		<div class="modal fade" id="editCategoryModal" tabindex="-1"
+			aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<form id="editCategoryForm" th:action="@{/admin/categories/edit}"
+						method="post">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editCategoryModalLabel">✏️ Edit
+								Category</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+						</div>
+						<div class="modal-body">
+							<input type="hidden" name="categoryId" id="editCategoryId">
+							<div class="mb-3">
+								<label class="form-label">Category Name</label> <input
+									type="text" name="categoryName" id="editCategoryName"
+									class="form-control" required>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Parent Category</label> <select
+									name="parentID" id="editCategoryParent" class="form-select">
+									<option value="">-- None --</option>
+									<option th:each="p : ${categories}" th:value="${p.categoryId}"
+										th:text="${p.categoryName}"></option>
+								</select>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary">Update</button>
+							<button type="button" class="btn btn-secondary"
+								data-bs-dismiss="modal">Cancel</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Delete Modal -->
+		<div class="modal fade" id="deleteCategoryModal" tabindex="-1"
+			aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="deleteCategoryModalLabel">🗑
+							Confirm Delete</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<p>
+							Are you sure you want to delete category: <strong
+								id="categoryToDeleteName">...</strong>?
+						</p>
+						<p class="text-danger">
+							<small>Note: This may fail if the category has products
+								or subcategories.</small>
+						</p>
+					</div>
+					<div class="modal-footer">
+						<a href="#" class="btn btn-danger" id="confirmDeleteBtn">Delete</a>
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<div layout:fragment="scripts">
+		<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const $  = (sel, root=document)=>root.querySelector(sel);
+  const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+
+  const rows = new Map();
+  const allRows = $$('tbody tr[data-id]');
+  allRows.forEach(r => rows.set(r.dataset.id, r));
+
+  const setLevel = (row, level) => { row.dataset.level = level; row.style.setProperty('--level', level); };
+  const getLevel = (row) => Number(row.dataset.level || 0);
+  const childrenOf = (pid) => $$(`tbody tr[data-parent="${pid}"]`);
+
+  const hideBranch = (row) => {
+    childrenOf(row.dataset.id).forEach(k => {
+      k.style.display = 'none';
+      k.classList.remove('open');
+      hideBranch(k);
+    });
+  };
+
+  const showDirectChildren = (row) => {
+    const parentLevel = getLevel(row);
+    const kids = childrenOf(row.dataset.id).sort((a, b) => {
+      const na = a.querySelector('.fw-semibold')?.textContent?.trim() || '';
+      const nb = b.querySelector('.fw-semibold')?.textContent?.trim() || '';
+      return na.localeCompare(nb, undefined, {sensitivity: 'base'});
+    });
+
+    let anchor = row;
+    kids.forEach(k => {
+      setLevel(k, parentLevel + 1);
+      anchor.insertAdjacentElement('afterend', k);
+      anchor = k;
+      k.style.display = '';
+    });
+  };
+
+  const closeOtherRoots = (keepRow) => {
+    $$('tbody tr[data-parent="null"], tbody tr:not([data-parent])').forEach(root => {
+      if (root !== keepRow && root.classList.contains('open')) {
+        root.classList.remove('open');
+        hideBranch(root);
+      }
+    });
+  };
+
+  const toggleRow = (row) => {
+    if (row.classList.contains('open')) {
+      row.classList.remove('open');
+      hideBranch(row);
+    } else {
+      const isRoot = (row.dataset.parent === 'null' || row.dataset.parent === '' || row.dataset.parent == null);
+      if (isRoot) closeOtherRoots(row);
+      row.classList.add('open');
+      showDirectChildren(row);
+    }
+  };
+
+  allRows.forEach(r => {
+    const toggle = r.querySelector('.category-toggle');
+    const isRoot = (r.dataset.parent === 'null' || r.dataset.parent === '' || r.dataset.parent == null);
+    if (isRoot) setLevel(r, 0);
+
+    const hasKids = childrenOf(r.dataset.id).length > 0;
+    if (!hasKids && toggle) {
+      toggle.style.cursor = 'default';
+      const caret = toggle.querySelector('.caret');
+      if (caret) caret.style.visibility = 'hidden';
+    }
+    if (toggle && hasKids) {
+      toggle.addEventListener('click', () => toggleRow(r));
+    }
+  });
+
+  const deleteModal = document.getElementById('deleteCategoryModal');
+  if (deleteModal) {
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      document.getElementById('categoryToDeleteName').textContent = button.getAttribute('data-name');
+      document.getElementById('confirmDeleteBtn').href = '/category/delete/' + button.getAttribute('data-id');
+    });
+  }
+
+  const editModal = document.getElementById('editCategoryModal');
+  if (editModal) {
+    editModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      document.getElementById('editCategoryId').value = button.getAttribute('data-id');
+      document.getElementById('editCategoryName').value = button.getAttribute('data-name');
+      document.getElementById('editCategoryParent').value = button.getAttribute('data-parent') || '';
+      document.getElementById('editCategoryForm').action = '/admin/categories/edit/' + button.getAttribute('data-id');
+    });
+  }
+});
+</script>
+	</div>
+</body>
+</html>

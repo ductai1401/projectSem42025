@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<meta charset="UTF-8">
+<title layout:fragment="title">Shop Profile</title>
+<style>
+/* Modern Profile Styling */
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 15px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 5px solid white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    object-fit: cover;
+}
+
+.profile-info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.profile-info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-left-width: 6px;
+    padding-left: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f6f8fb 100%);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.stat-icon.products { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.stat-icon.orders { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-icon.revenue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.stat-icon.ratings { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.info-value {
+    color: #333;
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+/* Modern Form Styling */
+.modern-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.card-header-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    border: none;
+}
+
+.card-header-custom h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-body-custom {
+    padding: 30px;
+}
+
+.nav-tabs-modern {
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 30px;
+}
+
+.nav-tabs-modern .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs-modern .nav-link {
+    border: none;
+    color: #666;
+    padding: 12px 25px;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs-modern .nav-link:hover {
+    color: #667eea;
+    background: transparent;
+}
+
+.nav-tabs-modern .nav-link.active {
+    color: #667eea;
+    background: transparent;
+    border: none;
+}
+
+.nav-tabs-modern .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 3px 3px 0 0;
+}
+
+.form-group-modern {
+    margin-bottom: 25px;
+}
+
+.form-group-modern label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control-modern {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-control-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+.form-select-modern {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23667eea' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.form-select-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+.btn-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-gradient-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-gradient-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border: none;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 233, 123, 0.4);
+}
+
+.btn-outline-primary-custom {
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary-custom:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.social-link {
+    color: #667eea;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.upload-area {
+    border: 2px dashed #e8e8e8;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #667eea;
+    background: #f6f8fb;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #667eea;
+    margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-header {
+        text-align: center;
+    }
+    
+    .stat-card {
+        margin-bottom: 15px;
+    }
+    
+    .card-body-custom {
+        padding: 20px;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease;
+}
+</style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="content-wrapper">
+        <!-- Profile Header -->
+        <div class="profile-header animate-fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-auto text-center">
+                    <img th:src="@{/assets/images/shop-logo.png}" 
+                         alt="Shop Logo" 
+                         class="profile-avatar" />
+                </div>
+                <div class="col-md">
+                    <h2 class="mb-2" th:text="${shopProfile.shopName}">Shop Name</h2>
+                    <p class="mb-3 opacity-75" th:text="${shopProfile.description}">
+                        We provide quality products at the best price for our customers.
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-gradient-success">
+                            <i class="bi bi-grid me-2"></i>View Products
+                        </button>
+                        <button class="btn btn-outline-primary-custom bg-white">
+                            <i class="bi bi-envelope me-2"></i>Contact
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-lg-4">
+                <!-- Statistics Cards -->
+                <div class="profile-info-card animate-fade-in">
+                    <h5 class="mb-4 font-weight-bold">Shop Statistics</h5>
+                    
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon products text-white">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Total Products</div>
+                                <h4 class="mb-0 font-weight-bold">120</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon orders text-white">
+                                <i class="bi bi-cart-check"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Total Orders</div>
+                                <h4 class="mb-0 font-weight-bold">350</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon revenue text-white">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Total Revenue</div>
+                                <h4 class="mb-0 font-weight-bold">$45,230</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon ratings text-white">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Average Rating</div>
+                                <h4 class="mb-0 font-weight-bold">4.8 / 5.0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="profile-info-card animate-fade-in mt-4">
+                    <h5 class="mb-4 font-weight-bold">Contact Information</h5>
+                    
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-circle-fill me-2" style="font-size: 0.5rem;"></i>Status
+                        </span>
+                        <span th:if="${shopProfile.status == 1}" class="status-badge status-active">
+                            <i class="bi bi-check-circle me-1"></i>Active
+                        </span>
+                        <span th:unless="${shopProfile.status == 1}" class="status-badge status-inactive">
+                            <i class="bi bi-x-circle me-1"></i>Inactive
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-telephone me-2"></i>Phone
+                        </span>
+                        <span class="info-value" th:text="${shopProfile.phone}">+84 123 456 789</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-envelope me-2"></i>Email
+                        </span>
+                        <span class="info-value" th:text="${shopProfile.email}">shop@example.com</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-globe me-2"></i>Website
+                        </span>
+                        <a href="#" class="social-link">www.shopname.com</a>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-facebook me-2"></i>Facebook
+                        </span>
+                        <a href="#" class="social-link">facebook.com/shop</a>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-geo-alt me-2"></i>Address
+                        </span>
+                        <span class="info-value" th:text="${addressStr}">Warehouse Address</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-gradient-primary w-100 mt-4">
+                    <i class="bi bi-eye me-2"></i>Preview Shop Page
+                </button>
+            </div>
+
+            <!-- Right Content -->
+            <div class="col-lg-8">
+                <!-- Shop Information Card -->
+                <div class="modern-card animate-fade-in">
+                    <div class="card-header-custom">
+                        <h4><i class="bi bi-shop me-2"></i>Shop Information</h4>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Shop Name</div>
+                                <div class="h5 mt-2" th:text="${shopProfile.shopName}">My Shop</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Phone Number</div>
+                                <div class="h5 mt-2" th:text="${shopProfile.phone}">+84 123 456 789</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Email Address</div>
+                                <div class="h5 mt-2" th:text="${shopProfile.email}">shop@example.com</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Warehouse Address</div>
+                                <div class="h5 mt-2" th:text="${addressStr}">123 Street, Ward, District, City</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Forms Card -->
+                <div class="modern-card animate-fade-in mt-4">
+                    <div class="card-header-custom">
+                        <h4><i class="bi bi-pencil-square me-2"></i>Update Shop Information</h4>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Modern Tabs -->
+                        <ul class="nav nav-tabs-modern" id="shopTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info" role="tab">
+                                    <i class="bi bi-info-circle me-2"></i>Basic Information
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="address-tab" data-toggle="tab" href="#address" role="tab">
+                                    <i class="bi bi-geo-alt me-2"></i>Warehouse Address
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content mt-4" id="shopTabsContent">
+                            <!-- Tab 1: Update Basic Info -->
+                            <div class="tab-pane fade show active" id="info" role="tabpanel">
+                                <form id="updateInfo">
+                                    <div class="form-group-modern">
+                                        <label for="shopName">
+                                            <i class="bi bi-shop me-2"></i>Shop Name
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="shopName" 
+                                               th:value="${shopProfile.shopName}"
+                                               placeholder="Enter your shop name">
+                                        <span class="error-message" id="error-shopName"></span>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label for="shopPhone">
+                                            <i class="bi bi-telephone me-2"></i>Phone Number
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="shopPhone" 
+                                               th:value="${shopProfile.phone}"
+                                               placeholder="+84 123 456 789">
+                                        <span class="error-message" id="error-phone"></span>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label for="description">
+                                            <i class="bi bi-card-text me-2"></i>Shop Description
+                                        </label>
+                                        <textarea class="form-control form-control-modern" 
+                                                  id="description" 
+                                                  rows="4"
+                                                  placeholder="Describe your shop and products..."
+                                                  th:text="${shopProfile.description}"></textarea>
+                                        <span class="error-message" id="error-description"></span>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-gradient-primary">
+                                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-primary-custom">
+                                            <i class="bi bi-x-circle me-2"></i>Reset
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Tab 2: Update Address -->
+                            <div class="tab-pane fade" id="address" role="tabpanel">
+                                <form id="updateAddressForm" th:object="${address}">
+                                    <div class="form-group-modern">
+                                        <label for="provinceSelect">
+                                            <i class="bi bi-building me-2"></i>City / Province
+                                        </label>
+                                        <select class="form-control form-select-modern" 
+                                                id="provinceSelect" 
+                                                th:field="*{provinceId}">
+                                            <option value="">-- Select Province/City --</option>
+                                        </select>
+                                        <input type="hidden" id="provinceName" th:field="*{provinceName}">
+                                        <span class="error-message" id="error-provinceId"></span>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label for="districtSelect">
+                                            <i class="bi bi-signpost me-2"></i>District
+                                        </label>
+                                        <select class="form-control form-select-modern" 
+                                                id="districtSelect" 
+                                                th:field="*{districtId}" 
+                                                disabled>
+                                            <option value="">-- Select District --</option>
+                                        </select>
+                                        <input type="hidden" id="districtName" th:field="*{districtName}">
+                                        <span class="error-message" id="error-districtId"></span>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label for="wardSelect">
+                                            <i class="bi bi-geo me-2"></i>Ward
+                                        </label>
+                                        <select class="form-control form-select-modern" 
+                                                id="wardSelect" 
+                                                th:field="*{wardCode}" 
+                                                disabled>
+                                            <option value="">-- Select Ward --</option>
+                                        </select>
+                                        <input type="hidden" id="wardName" th:field="*{wardName}">
+                                        <span class="error-message" id="error-wardCode"></span>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label for="addressDetail">
+                                            <i class="bi bi-house-door me-2"></i>Detailed Address
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="addressDetail" 
+                                               th:field="*{street}"
+                                               placeholder="Street number, building name...">
+                                        <span class="error-message" id="error-street"></span>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-gradient-primary">
+                                            <i class="bi bi-check-circle me-2"></i>Update Address
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-primary-custom">
+                                            <i class="bi bi-x-circle me-2"></i>Reset
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript">
+    $(document).ready(function () {
+        // Lấy dữ liệu từ Thymeleaf
+        let address = '[[${address}]]';
+        let savedProvinceId = 0;
+        let savedDistrictId = 0;
+        let savedWardCode = 0;
+        
+        if(address != ""){
+            savedProvinceId = '[[${address.provinceId}]]';
+            savedDistrictId = '[[${address.districtId}]]';
+            savedWardCode = '[[${address.wardCode}]]';
+        }
+
+        // Load danh sách tỉnh
+        $.get("/api/ghn/provinces", function (data) {
+            let provinces = data.data || [];
+            provinces.forEach(p => {
+                let selected = (p.ProvinceID == savedProvinceId) ? 'selected' : '';
+                $("#provinceSelect").append(`<option value="${p.ProvinceID}" ${selected}>${p.ProvinceName}</option>`);
+            });
+            $("#provinceName").val($("#provinceSelect option:selected").text());
+            if (savedProvinceId) {
+                loadDistricts(savedProvinceId);
+            }
+        });
+
+        // Load huyện
+        function loadDistricts(provinceId) {
+            $.post("/api/ghn/districts", { provinceId: provinceId }, function (data) {
+                let districts = data.data || [];
+                $("#districtSelect").empty().append('<option value="">-- Select District --</option>');
+                districts.forEach(d => {
+                    let selected = (d.DistrictID == savedDistrictId) ? 'selected' : '';
+                    $("#districtSelect").append(`<option value="${d.DistrictID}" ${selected}>${d.DistrictName}</option>`);
+                });
+                $("#districtName").val($("#districtSelect option:selected").text());
+                $("#districtSelect").prop("disabled", false);
+                if (savedDistrictId) {
+                    loadWards(savedDistrictId);
+                }
+            });
+        }
+
+        // Load xã
+        function loadWards(districtId) {
+            $.post("/api/ghn/wards", { districtId: districtId }, function (data) {
+                let wards = data.data || [];
+                $("#wardSelect").empty().append('<option value="">-- Select Ward --</option>');
+                wards.forEach(w => {
+                    let selected = (w.WardCode == savedWardCode) ? 'selected' : '';
+                    $("#wardSelect").append(`<option value="${w.WardCode}" ${selected}>${w.WardName}</option>`);
+                });
+                $("#wardName").val($("#wardSelect option:selected").text());
+                $("#wardSelect").prop("disabled", false);
+            });
+        }
+
+        // Cập nhật name khi chọn
+        $("#provinceSelect").change(function () {
+            $("#provinceName").val($("#provinceSelect option:selected").text());
+            loadDistricts($(this).val());
+        });
+
+        $("#districtSelect").change(function () {
+            $("#districtName").val($("#districtSelect option:selected").text());
+            loadWards($(this).val());
+        });
+
+        $("#wardSelect").change(function () {
+            $("#wardName").val($("#wardSelect option:selected").text());
+        });
+
+        // Submit Update Address
+        $("#updateAddressForm").on("submit", function (e) {
+            e.preventDefault();
+            $(".error-message").text("");
+            
+            let newAddress = {
+                provinceId: $("#provinceSelect").val(),
+                provinceName: $("#provinceName").val(),
+                districtId: $("#districtSelect").val(),
+                districtName: $("#districtName").val(),
+                wardCode: $("#wardSelect").val(),
+                wardName: $("#wardName").val(),
+                street: $("#addressDetail").val().trim()
+            };
+
+            $.ajax({
+                url: "/seller/updateAddress",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(newAddress),
+                success: function (data) {
+                    if(data.success){
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Address updated successfully!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        if(data.errors){
+                            for (const key in data.errors) {
+                                $("#error-" + key).text(data.errors[key]);
+                            }
+                        }
+                        if(data.message){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message
+                            });
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while updating address.'
+                    });
+                }
+            });
+        });
+
+        // Submit Update Info
+        $("#updateInfo").on("submit", function (e) {
+            e.preventDefault();
+            $(".error-message").text("");
+            
+            let shop = {
+                shopName: $("#shopName").val(),
+                description: $("#description").val()
+            };
+            let phone = $("#shopPhone").val();
+
+            $.ajax({
+                url: "/seller/updateInfo",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    shop: shop,
+                    phone: phone
+                }),
+                success: function (data) {
+                    if(data.success){
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Shop information updated successfully!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        if(data.errors){
+                            for (const key in data.errors) {
+                                $("#error-" + key).text(data.errors[key]);
+                            }
+                        }
+                        if(data.message){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message
+                            });
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while updating shop information.'
+                    });
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    });
+    </script>
+</div>
+</body>
+</html>

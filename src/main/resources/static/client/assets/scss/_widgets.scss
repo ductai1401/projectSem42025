@@ -1,0 +1,127 @@
+.sidebar-widget {
+  & + .sidebar-widget {
+    margin-top: 60px;
+  }
+}
+
+.widget-title {
+  color: $dark;
+  font-weight: 600;
+  font-size: 18px;
+  text-transform: capitalize;
+  margin-bottom: 35px;
+}
+
+.price-filter {
+ position: relative;
+ margin-right: 15px;
+}
+#amount {
+  font-weight: 600;
+  border: 0;
+  color: $dark;
+  font-size: 14px;
+  margin-top: 15px;
+  &:focus-visible {
+    outline: 0;
+  }
+}
+
+#slider-range .ui-widget-content {
+  border: 1px solid $danger;
+}
+#slider-range.ui-slider-horizontal {
+  height: 6px;
+  background: #dbdbdb;
+  border-color: #dbdbdb;
+}
+#slider-range .ui-widget-header {
+  background: $danger;
+}
+#slider-range .ui-slider-handle {
+  height: 15px;
+  line-height: 15px;
+  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+  margin: -8px 0 0;
+  text-align: center;
+  top: 50%;
+  width: 15px;
+  border-radius: 100%;
+  border: 3px solid $dark;
+  &:hover {
+    background: $danger;
+    border-color: $danger;
+  }
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+  top: 0;
+}
+
+// colors
+
+.colors {
+  li {
+    a {
+      display: inline-block;
+      font-size: 14px;
+      color: $dark;
+      text-transform: capitalize;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: 14px;
+      &:hover {
+        color: $danger;
+      }
+    }
+  }
+}
+
+// tag clouds
+
+.tag-clouds {
+  a {
+    font-weight: 400;
+    display: inline-block;
+    color: $dark;
+    font-size: 14px;
+    padding: 7px 25px;
+    margin: 0 10px 10px 0;
+    border: 1px solid #e7e7e7;
+    border-radius: 20px;
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
+  }
+}
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  @include max-screen(992, 1199) {
+    justify-content: end;
+  }
+  @include max-screen(991) {
+    justify-content: center;
+  }
+  & .social-link {
+    & + .social-link {
+      margin-left: 20px;
+      @include max-screen(1199) {
+        margin-left: 15px;
+      }
+    }
+    display: block;
+    font-size: 16px;
+    line-height: 1;
+    &:hover {
+      color: $danger;
+    }
+  }
+}
+
+.social-links-dark {
+  & .social-link {
+    color: $body-color;
+  }
+}

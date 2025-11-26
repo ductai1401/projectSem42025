@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+<style>
+/* Category: vuông 120x120, canh giữa nội dung */
+.img-square-120 {
+	width: 120px;
+	height: 120px;
+	object-fit: contain; /* đổi thành cover nếu muốn cắt tràn */
+	background: #fff;
+	display: block;
+}
+
+/* Product: đồng bộ chiều cao (responsive một chút) */
+.product-thumb img {
+	width: 100%;
+	height: 220px; /* chiều cao cố định để các thẻ bằng nhau */
+	object-fit: contain; /* đổi thành cover nếu muốn khoe đầy khung */
+	background: #fff;
+	display: block;
+}
+
+@media ( min-width : 992px) {
+	.product-thumb img {
+		height: 260px;
+	}
+}
+</style>
+
+<title layout:fragment="title">Home</title>
+</head>
+<body>
+	<div layout:fragment="content">
+		<!-- main content start -->
+
+		<!-- Hero Slider Start -->
+		<section class="hero-section">
+			<div class="hero-slider">
+				<div class="swiper-container">
+					<div class="swiper-wrapper">
+						<!-- swiper-slide start -->
+						<div class="hero-slide-item slider-height1 swiper-slide slide-bg1">
+							<div class="container">
+								<div class="row">
+									<div class="col-12">
+										<div class="hero-slide-content">
+											<p class="text text-white animated">new collection</p>
+											<br>
+											<h2 class="title text-dark delay1 animated">New arrivals
+												just dropped!</h2>
+											<br />
+											<h2 class="title text-dark delay2 animated">Be the first
+												to own them.</h2>
+											<br /> <a href="shop-grid-3-column.html"
+												class="btn animated btn-outline-dark">Shop Now</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- swiper-slide end-->
+
+						<!-- swiper-slide start -->
+						<div class="hero-slide-item slider-height1 swiper-slide slide-bg2">
+							<div class="container">
+								<div class="row">
+									<div class="col-12">
+										<div class="hero-slide-content">
+											<p class="text text-white animated">our new design</p>
+											<br>
+											<h2 class="title text-dark delay1 animated">Happiness
+												comes in a box</h2>
+											<br />
+											<h2 class="title text-dark delay2 animated">filled with
+												toys!</h2>
+											<br /> <a href="shop-grid-3-column.html"
+												class="btn animated btn-outline-dark">Shop Now</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- swiper-slide end-->
+
+						<!-- swiper-slide start -->
+						<div class="hero-slide-item slider-height1 swiper-slide slide-bg3">
+							<div class="container">
+								<div class="row">
+									<div class="col-12">
+										<div class="hero-slide-content">
+											<p class="text text-white animated">our new design</p>
+											<br>
+											<h2 class="title text-white delay1 animated">Why wait?</h2>
+											<br />
+											<h2 class="title text-white delay2 animated">Level up
+												your setup now.</h2>
+											<br /> <a href="shop-grid-3-column.html"
+												class="btn animated btn-outline-dark text-white">Shop
+												Now</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- swiper-slide end-->
+
+						<!-- swiper-slide start -->
+						<div class="hero-slide-item slider-height1 swiper-slide slide-bg4">
+							<div class="container">
+								<div class="row">
+									<div class="col-12">
+										<div class="hero-slide-content">
+											<p class="text text-white animated">our new design</p>
+											<br>
+											<h2 class="title text-dark delay1 animated">Cook with
+												style</h2>
+											<br />
+											<h2 class="title text-dark delay2 animated">serve with
+												love.</h2>
+											<br /> <a href="shop-grid-3-column.html"
+												class="btn animated btn-outline-dark">Shop Now</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- swiper-slide end-->
+					</div>
+				</div>
+
+				<!-- Add Pagination -->
+				<div class="swiper-pagination"></div>
+				<!-- swiper navigation -->
+				<div class="d-none d-lg-block">
+					<div class="swiper-button-prev">
+						<i class="ion-chevron-left"></i>
+					</div>
+					<div class="swiper-button-next">
+						<i class="ion-chevron-right"></i>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- Hero Slider End -->
+
+		<!-- shop events start -->
+		<div class="brand-section bg-light py-4">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<div class="brand-carousel swiper-arrow arrow-position-center">
+							<div class="swiper-container">
+								<div class="swiper-wrapper text-center">
+
+									<!-- swiper-slide 1 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/1.png}"
+											alt="Coupon Codes"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Coupon Codes</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 2 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/2.png}"
+											alt="Value Picks"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Value Picks</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 3 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/3.png}"
+											alt="Hot Deals"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Hot Deals</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 4 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/4.png}"
+											alt="Shop Style Voucher"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Style Vouchers</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 5 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/5.png}"
+											alt="Coin Hunt"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Coin Hunt</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 6 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/6.png}"
+											alt="Loyalty Program"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Loyalty Program</p>
+										</a>
+									</div>
+
+									<!-- swiper-slide 7 -->
+									<div class="brand-carousel-item swiper-slide">
+										<a href="#"> <img
+											th:src="@{/client/assets/images/events/7.png}"
+											alt="Categories"
+											style="width: 200px; height: 120px; object-fit: contain;">
+											<p class="mt-2 fw-semibold text-dark">Categories</p>
+										</a>
+									</div>
+
+								</div>
+							</div>
+
+							<!-- swiper navigation -->
+							<div class="swiper-button-prev"></div>
+							<div class="swiper-button-next"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- shop events end -->
+		<div class="d-flex flex-wrap justify-content-center gap-4">
+			<div th:each="c : ${rootCategories}"
+				th:with="
+         file=${c.image == null ? '' : #strings.trim(c.image)},
+         srcRaw=${#strings.isEmpty(file) ? '/images/no-image.png'
+                 : (#strings.startsWith(file,'http') ? file
+                    : (#strings.startsWith(file,'/uploads/') ? file
+                       : (#strings.startsWith(file,'category/')
+                          ? '/uploads/' + file
+                          : '/uploads/category/' + file)))}
+       "
+				class="text-center" style="width: 120px;">
+				<a th:href="@{/client/category/{id}(id=${c.categoryId})}"> <!-- Dùng @{${...}} để auto-encode & tự thêm context-path -->
+					<img th:src="@{${srcRaw}}" alt="Category" loading="lazy"
+					style="width: 120px; height: 120px; object-fit: contain;"
+					onerror="this.onerror=null;this.src='/images/no-image.png';" />
+					<p class="mt-1 fw-semibold text-dark" th:text="${c.categoryName}">Category
+						Name</p>
+				</a>
+				<!-- Debug nếu cần: -->
+				<!-- <small class="text-muted d-block">[[${srcRaw}]]</small> -->
+			</div>
+		</div>
+		<!-- shop categories end -->
+
+		<!-- Swiper Init -->
+		<script>
+			document
+					.addEventListener(
+							"DOMContentLoaded",
+							function() {
+								new Swiper(
+										'.shop-categories-carousel .swiper-container',
+										{
+											slidesPerView : 1,
+											spaceBetween : 30,
+											navigation : {
+												nextEl : '.shop-categories-carousel .swiper-button-next',
+												prevEl : '.shop-categories-carousel .swiper-button-prev',
+											},
+										});
+							});
+		</script>
+
+		<!-- product tab section start -->
+		<section class="product-tab-section section-padding-bottom mt-5">
+			<div class="container">
+				<div class="row">
+					<!-- tabs liks start -->
+					<div class="col-12">
+						<ul class="nav nav-pills product-tab-nav" id="pills-tab"
+							role="tablist">
+							<li class="nav-item">
+								<button class="nav-link active" data-bs-toggle="pill"
+									data-bs-target="#pills-arrivals">New Arrivals</button>
+							</li>
+							<li class="nav-item">
+								<button class="nav-link" data-bs-toggle="pill"
+									data-bs-target="#pills-seller">Best Sellers</button>
+							</li>
+							<li class="nav-item">
+								<button class="nav-link" data-bs-toggle="pill"
+									data-bs-target="#pills-onsale">On Sale</button>
+							</li>
+						</ul>
+					</div>
+					<!-- tabs liks end -->
+					<div class="col-12">
+						<div class="tab-content" id="pills-tabContent">
+							<!-- tab-pane one -->
+							<div class="tab-pane fade show active" id="pills-arrivals">
+								<div class="product-tab-list swiper-arrow arrow-position-center">
+									<div class="swiper-container">
+										<div class="swiper-wrapper">
+											<!-- Mỗi sản phẩm là 1 slide -->
+											<div class="swiper-slide" th:each="p : ${arrivals}">
+												<div class="product-list">
+													<div class="product-card">
+														<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+															class="product-thumb"> <img
+															th:src="${#strings.isEmpty(p.image) ? '/images/no-image.png' : '/uploads/' + p.image}"
+															alt="product" loading="lazy"
+															onerror="this.onerror=null;this.src='/images/no-image.png';" />
+														</a>
+
+														<div class="product-content">
+															<h4>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-title" th:text="${p.productName}">Product
+																	name</a>
+															</h4>
+
+															<!-- FLASH SALE BADGE -->
+															<!-- FLASH SALE BADGE -->
+															<div
+																th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null}"
+																class="mb-1">
+																<span class="badge bg-danger"> Flash Sale <span
+																	th:if="${flashSaleMap[p.productId].percern != null}">
+																		-<span th:text="${flashSaleMap[p.productId].percern}">0</span>%
+																</span>
+																</span>
+
+																<!-- COUNTDOWN -->
+																<div class="fs-countdown mt-1 small"
+																	th:attr="data-start=${#temporals.format(flashSaleMap[p.productId].startDate,'yyyy-MM-dd''T''HH:mm:ss')},
+                data-end=${#temporals.format(flashSaleMap[p.productId].endDate,'yyyy-MM-dd''T''HH:mm:ss')}">
+																	<span class="state fw-semibold text-danger">—</span> <span
+																		class="clock ms-1 text-danger">--:--:--</span>
+																</div>
+															</div>
+
+
+															<div class="product-group">
+																<h5 class="product-price">
+																	<!-- GIÁ HIỂN THỊ (đã bị đè nếu có sale) -->
+																	<span class="new-price"
+																		th:text="${priceMap[p.productId] != null ? '₫' + #numbers.formatDecimal(priceMap[p.productId], 0, 'COMMA', 0, 'POINT') : '—'}">—</span>
+
+																	<!-- GIÁ GỐC (gạch) khi có FS -->
+																	<del class="text-muted small ms-2"
+																		th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null and flashSaleMap[p.productId].basePrice != null}"
+																		th:text="${'₫' + #numbers.formatDecimal(flashSaleMap[p.productId].basePrice, 0, 'COMMA', 0, 'POINT')}">₫0</del>
+																</h5>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-btn">View</a>
+															</div>
+														</div>
+														<ul class="actions actions-verticale">
+															<li class="action whish-list"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}">
+																	<i class="ion-ios-heart-outline"></i>
+															</a></li>
+															<li class="action quick-view"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}">
+																	<i class="ion-ios-eye-outline"></i>
+															</a></li>
+															<li class="action compare"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}">
+																	<i class="ion-android-sync"></i>
+															</a></li>
+														</ul>
+													</div>
+												</div>
+											</div>
+											<!-- /each -->
+										</div>
+									</div>
+									<div class="product-tab-list swiper-button-prev"></div>
+									<div class="product-tab-list swiper-button-next"></div>
+								</div>
+							</div>
+
+							<div class="tab-pane fade" id="pills-seller">
+								<div class="product-tab-list swiper-arrow arrow-position-center">
+									<div class="swiper-container">
+										<div class="swiper-wrapper">
+											<div class="swiper-slide" th:each="p : ${bestSellers}">
+												<div class="product-list">
+													<div class="product-card">
+														<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+															class="product-thumb"> <img
+															th:src="${#strings.isEmpty(p.image) ? '/images/no-image.png' : '/uploads/' + p.image}"
+															alt="product">
+														</a>
+														<div class="product-content">
+															<h4>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-title" th:text="${p.productName}">Product
+																	name</a>
+															</h4>
+
+															<!-- FLASH SALE BADGE -->
+															<div
+																th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null}"
+																class="mb-1">
+																<span class="badge bg-danger"> Flash Sale <span
+																	th:if="${flashSaleMap[p.productId].percern != null}">
+																		-<span th:text="${flashSaleMap[p.productId].percern}">0</span>%
+																</span>
+																</span>
+															</div>
+
+															<div class="product-group">
+																<h5 class="product-price">
+																	<span class="new-price"
+																		th:text="${priceMap[p.productId] != null ? '₫' + #numbers.formatDecimal(priceMap[p.productId], 0, 'COMMA', 0, 'POINT') : '—'}">—</span>
+																	<del class="text-muted small ms-2"
+																		th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null and flashSaleMap[p.productId].basePrice != null}"
+																		th:text="${'₫' + #numbers.formatDecimal(flashSaleMap[p.productId].basePrice, 0, 'COMMA', 0, 'POINT')}">₫0</del>
+																</h5>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-btn">View</a>
+															</div>
+														</div>
+														<ul class="actions actions-verticale">
+															<li class="action whish-list"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-ios-heart-outline"></i></a></li>
+															<li class="action quick-view"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-ios-eye-outline"></i></a></li>
+															<li class="action compare"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-android-sync"></i></a></li>
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="product-tab-list swiper-button-prev"></div>
+									<div class="product-tab-list swiper-button-next"></div>
+								</div>
+							</div>
+
+							<div class="tab-pane fade" id="pills-onsale">
+								<div class="product-tab-list swiper-arrow arrow-position-center">
+									<div class="swiper-container">
+										<div class="swiper-wrapper">
+											<div class="swiper-slide" th:each="p : ${onSale}">
+												<div class="product-list">
+													<div class="product-card">
+														<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+															class="product-thumb"> <img
+															th:src="${#strings.isEmpty(p.image) ? '/images/no-image.png' : '/uploads/' + p.image}"
+															alt="product">
+														</a>
+														<div class="product-content">
+															<h4>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-title" th:text="${p.productName}">Product
+																	name</a>
+															</h4>
+
+															<!-- FLASH SALE BADGE -->
+															<div
+																th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null}"
+																class="mb-1">
+																<span class="badge bg-danger"> Flash Sale <span
+																	th:if="${flashSaleMap[p.productId].percern != null}">
+																		-<span th:text="${flashSaleMap[p.productId].percern}">0</span>%
+																</span>
+																</span>
+															</div>
+
+															<div class="product-group">
+																<h5 class="product-price">
+																	<span class="new-price"
+																		th:text="${priceMap[p.productId] != null ? '₫' + #numbers.formatDecimal(priceMap[p.productId], 0, 'COMMA', 0, 'POINT') : '—'}">—</span>
+																	<del class="text-muted small ms-2"
+																		th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null and flashSaleMap[p.productId].basePrice != null}"
+																		th:text="${'₫' + #numbers.formatDecimal(flashSaleMap[p.productId].basePrice, 0, 'COMMA', 0, 'POINT')}">₫0</del>
+																</h5>
+																<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+																	class="product-btn">View</a>
+															</div>
+														</div>
+														<ul class="actions actions-verticale">
+															<li class="action whish-list"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-ios-heart-outline"></i></a></li>
+															<li class="action quick-view"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-ios-eye-outline"></i></a></li>
+															<li class="action compare"><a
+																th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+																	class="ion-android-sync"></i></a></li>
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="product-tab-list swiper-button-prev"></div>
+									<div class="product-tab-list swiper-button-next"></div>
+								</div>
+							</div>
+							<!-- tab-pane end -->
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- product tab section end -->
+
+		<!-- Today's Suggestions start -->
+		<div class="featured-product-section section-padding-bottom">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<section class="section-title text-center">
+							<h3 class="title">Today's Suggestions</h3>
+						</section>
+					</div>
+				</div>
+
+				<!-- Product Grid -->
+				<div class="row">
+					<div class="col-md-3 col-sm-6 mb-4" th:each="p : ${suggestions}">
+						<div class="product-list">
+							<div class="product-card">
+								<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+									class="product-thumb"> <img
+									th:src="${#strings.isEmpty(p.image) ? '/images/no-image.png' : '/uploads/' + p.image}"
+									alt="product">
+								</a>
+								<div class="product-content">
+									<h4>
+										<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+											class="product-title" th:text="${p.productName}">Product</a>
+									</h4>
+
+									<!-- FLASH SALE BADGE -->
+									<div
+										th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null}"
+										class="mb-1">
+										<span class="badge bg-danger"> Flash Sale <span
+											th:if="${flashSaleMap[p.productId].percern != null}">
+												-<span th:text="${flashSaleMap[p.productId].percern}">0</span>%
+										</span>
+										</span>
+									</div>
+
+									<div class="product-group">
+										<h5 class="product-price">
+											<span class="new-price"
+												th:text="${priceMap[p.productId] != null ? '₫' + #numbers.formatDecimal(priceMap[p.productId], 0, 'COMMA', 0, 'POINT') : '—'}">—</span>
+											<del class="text-muted small ms-2"
+												th:if="${flashSaleMap != null and flashSaleMap[p.productId] != null and flashSaleMap[p.productId].basePrice != null}"
+												th:text="${'₫' + #numbers.formatDecimal(flashSaleMap[p.productId].basePrice, 0, 'COMMA', 0, 'POINT')}">₫0</del>
+										</h5>
+										<a th:href="@{/productdetails/{id}(id=${p.productId})}"
+											class="product-btn">View</a>
+									</div>
+								</div>
+
+								<ul class="actions actions-verticale">
+									<li class="action whish-list"><a
+										th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+											class="ion-ios-heart-outline"></i></a></li>
+									<li class="action quick-view"><a
+										th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+											class="ion-ios-eye-outline"></i></a></li>
+									<li class="action compare"><a
+										th:href="@{/productdetails/{id}(id=${p.productId})}"><i
+											class="ion-android-sync"></i></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<!-- End each product -->
+
+					<!-- pagination -->
+					<div class="col-12 mb-5">
+						<nav aria-label="Page navigation">
+							<ul class="pagination justify-content-center">
+								<li class="page-item active"><a class="page-link" href="#">
+										<span class="ion-android-arrow-dropleft"></span>
+								</a></li>
+								<li class="page-item"><a class="page-link" href="#">1</a></li>
+								<li class="page-item"><a class="page-link" href="#">2</a></li>
+								<li class="page-item"><a class="page-link" href="#">3</a></li>
+								<li class="page-item"><a class="page-link" href="#"> <span
+										class="ion-android-arrow-dropright"></span>
+								</a></li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Today's Suggestions end -->
+		<script>
+(function(){
+  // Quét tất cả countdowns
+  const nodes = document.querySelectorAll('.fs-countdown');
+  if (!nodes.length) return;
+
+  const parseDT = (s) => {
+    if (!s) return null;
+    const d = new Date(s.replace(' ', 'T'));
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const fmtRemain = (ms) => {
+    if (ms < 0) ms = 0;
+    const sec = Math.floor(ms/1000);
+    const d = Math.floor(sec/86400);
+    const h = Math.floor((sec%86400)/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s = sec%60;
+    const pad = (n)=>String(n).padStart(2,'0');
+    return (d>0? (d+'d '):'') + [pad(h),pad(m),pad(s)].join(':');
+  };
+
+  const endUI = (root) => {
+    const state = root.querySelector('.state');
+    const clock = root.querySelector('.clock');
+    if (state) { state.textContent = 'Đã kết thúc'; state.classList.remove('text-danger'); state.classList.add('text-muted'); }
+    if (clock) { clock.textContent = ''; clock.classList.remove('text-danger'); }
+    // Đổi badge (nếu cùng card)
+    const badge = root.parentElement?.querySelector('.badge.bg-danger, .badge.bg-warning');
+    if (badge) { badge.classList.remove('bg-danger','bg-warning'); badge.classList.add('bg-secondary'); badge.textContent = 'Ended'; }
+  };
+
+  const updateOne = (root) => {
+    const start = parseDT(root.getAttribute('data-start'));
+    const end   = parseDT(root.getAttribute('data-end'));
+    if (!start || !end) { endUI(root); return false; }
+
+    const now = new Date();
+    const state = root.querySelector('.state');
+    const clock = root.querySelector('.clock');
+    const badge = root.parentElement?.querySelector('.badge');
+
+    if (now < start) {
+      state.textContent = 'Bắt đầu sau:';
+      clock.textContent = fmtRemain(start - now);
+      badge?.classList.remove('bg-danger');
+      badge?.classList.add('bg-warning'); // vàng trước khi bắt đầu
+      return true;
+    } else if (now >= start && now <= end) {
+      state.textContent = 'Kết thúc sau:';
+      clock.textContent = fmtRemain(end - now);
+      badge?.classList.remove('bg-warning');
+      badge?.classList.add('bg-danger'); // đỏ khi đang chạy
+      return true;
+    } else {
+      endUI(root);
+      return false;
+    }
+  };
+
+  // Tick tất cả
+  const tickAll = () => {
+    let anyRunning = false;
+    nodes.forEach(n => { if (updateOne(n)) anyRunning = true; });
+    if (!anyRunning) clearInterval(timer);
+  };
+
+  const timer = setInterval(tickAll, 1000);
+  tickAll();
+})();
+</script>
+
+	</div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" th:href="@{/css/admin-product.css}">
+</head>
+
+<body>
+<section layout:fragment="content">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-4 text-center">
+                <img th:src="${product.mainImage}" class="img-fluid rounded shadow" style="max-height: 250px;">
+                <div class="mt-2 d-flex justify-content-center">
+                    <img th:each="img : ${product.subImages}"
+                         th:src="${img}"
+                         class="img-thumbnail mx-1" style="width: 60px; height: 60px;">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h3><i class="fas fa-box"></i> <span th:text="${product.name}">Tên sản phẩm</span></h3>
+                <p><strong>Mã SP:</strong> <span th:text="${product.code}"></span></p>
+                <p><strong>Ngành hàng:</strong> <span th:text="${product.categoryName}"></span></p>
+                <p><strong>Giá:</strong>
+                    <span class="text-danger font-weight-bold" th:text="${#numbers.formatDecimal(product.salePrice,0,'POINT',',')} + ' ₫'"></span>
+                    <del class="text-muted ml-2" th:text="${#numbers.formatDecimal(product.price,0,'POINT',',')} + ' ₫'"></del>
+                </p>
+                <p><strong>Trạng thái:</strong>
+                    <span th:classappend="${product.status == 'ACTIVE'} ? 'badge badge-success' : 'badge badge-secondary'"
+                          th:text="${product.status}"></span>
+                </p>
+                <p><strong>Ngày tạo:</strong> <span th:text="${#dates.format(product.createdAt,'dd/MM/yyyy')}"></span></p>
+            </div>
+        </div>
+
+        <!-- Thông tin chi tiết -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> Thông tin chi tiết</div>
+            <div class="card-body">
+                <h5>Mô tả sản phẩm</h5>
+                <p th:utext="${product.description}"></p>
+                <h5>Đặc điểm nổi bật</h5>
+                <ul>
+                    <li th:each="feature : ${product.features}" th:text="${feature}"></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-3" id="product-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="variants-tab" data-toggle="pill" href="#variants" role="tab">
+                    <i class="fas fa-puzzle-piece"></i> Biến thể sản phẩm
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="reviews-tab" data-toggle="pill" href="#reviews" role="tab">
+                    <i class="fas fa-star"></i> Đánh giá
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="history-tab" data-toggle="pill" href="#history" role="tab">
+                    <i class="fas fa-history"></i> Lịch sử thay đổi
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="product-tabs-content">
+            <!-- Tab biến thể -->
+            <div class="tab-pane fade show active" id="variants" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Thuộc tính</th>
+                            <th>Giá</th>
+                            <th>Tồn kho</th>
+                            <th>SKU</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="variant : ${product.variants}">
+                            <td><img th:src="${variant.image}" style="width:50px;height:50px;"></td>
+                            <td th:text="${variant.attributes}"></td>
+                            <td th:text="${#numbers.formatDecimal(variant.price,0,'POINT',',')} + ' ₫'"></td>
+                            <td th:text="${variant.stock}"></td>
+                            <td th:text="${variant.sku}"></td>
+                            <td>
+                                <span th:classappend="${variant.status == 'ACTIVE'} ? 'badge badge-success' : 'badge badge-secondary'"
+                                      th:text="${variant.status}"></span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/admin/product/variant/' + ${variant.id}}" class="btn btn-sm btn-info">👁 Xem</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab đánh giá -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div th:if="${#lists.isEmpty(product.reviews)}">Chưa có đánh giá nào</div>
+                <div th:each="review : ${product.reviews}" class="border-bottom py-2">
+                    <strong th:text="${review.customerName}"></strong> - 
+                    <span th:text="${#dates.format(review.date,'dd/MM/yyyy')}"></span>
+                    <div>⭐ <span th:text="${review.rating}"></span></div>
+                    <p th:text="${review.comment}"></p>
+                </div>
+            </div>
+
+            <!-- Tab lịch sử thay đổi -->
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <ul>
+                    <li th:each="h : ${product.history}">
+                        <span th:text="${#dates.format(h.date,'dd/MM/yyyy HH:mm')}"></span> - 
+                        <span th:text="${h.action}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="mt-4">
+            <a th:href="@{'/admin/product/edit/' + ${product.id}}" class="btn btn-primary">✏ Sửa</a>
+            <a th:if="${product.status == 'ACTIVE'}" th:href="@{'/admin/product/hide/' + ${product.id}}" class="btn btn-warning">🚫 Ẩn</a>
+            <a th:if="${product.status != 'ACTIVE'}" th:href="@{'/admin/product/show/' + ${product.id}}" class="btn btn-success">✅ Hiển thị</a>
+            <a th:href="@{'/admin/product/delete/' + ${product.id}}" class="btn btn-danger">🗑 Xóa</a>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

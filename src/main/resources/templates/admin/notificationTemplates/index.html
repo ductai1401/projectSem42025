@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{admin/_layoutAdmin}">
+<head>
+<title layout:fragment="title">Quản lý Template Thông báo</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" th:href="@{/admin/style/style.css}" />
+
+<style>
+.lz-hero {
+	background: linear-gradient(135deg, #1a9cb7, #6b4bff);
+	border-radius: 18px;
+	padding: 18px 20px;
+	color: #fff;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.btn-lz {
+	background: #fff;
+	color: #6b4bff;
+	border-radius: 999px;
+	padding: .55rem 1rem;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.btn-lz:hover {
+	background: #6b4bff;
+	color: #fff;
+	transition: 0.25s;
+}
+
+.lz-card {
+	background: #fff;
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.template-table thead th {
+	background: #f8f9fa;
+	font-weight: 600;
+}
+
+.template-table tbody td {
+	vertical-align: middle;
+}
+
+.badge-active {
+	background: #28a745;
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 8px;
+}
+
+.badge-inactive {
+	background: #6c757d;
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 8px;
+}
+
+.action-icons a {
+	margin: 0 6px;
+	text-decoration: none;
+	font-size: 18px;
+}
+
+.action-icons .edit {
+	color: #ffc107;
+}
+
+.action-icons .delete {
+	color: #dc3545;
+}
+
+.action-icons a:hover {
+	opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="content-wrapper pt-3">
+			<div class="container-fluid">
+
+				<!-- Hero -->
+				<div class="lz-hero mb-3">
+					<h3 class="mb-0">📑 Quản lý Template Thông báo</h3>
+					<div>
+						<a class="btn btn-lz"
+							th:href="@{/admin/notification-templates/create}">➕ Tạo
+							Template</a>
+					</div>
+				</div>
+
+				<!-- Table -->
+				<div class="lz-card p-3">
+					<div class="table-responsive">
+						<table class="table template-table align-middle">
+							<thead>
+								<tr>
+									<th style="width: 50px">#</th>
+									<th>Mã code</th>
+									<th>Tiêu đề</th>
+									<th>Nội dung</th>
+									<th>Loại</th>
+									<th>Trạng thái</th>
+									<th style="width: 120px" class="text-center">Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="t, st : ${templates}">
+									<td th:text="${st.count}">1</td>
+									<td th:text="${t.code}">CODE</td>
+									<td th:text="${t.title}">Tiêu đề</td>
+									<td th:text="${t.content}">Nội dung mẫu thông báo</td>
+									<td><span th:switch="${t.type}"> <span th:case="0">GENERAL</span>
+											<span th:case="1">PROMO</span> <span th:case="2">ORDER</span>
+											<span th:case="3">SYSTEM</span> <span th:case="*">Khác</span>
+									</span></td>
+									<td><span th:if="${t.active}" class="badge badge-active">Đang
+											dùng</span> <span th:unless="${t.active}"
+										class="badge badge-inactive">Ngưng</span></td>
+									<td class="action-icons text-center"><a class="edit"
+										th:href="@{'/admin/notification-templates/' + ${t.templateId} + '/edit'}"
+										title="Chỉnh sửa">✏️</a>
+
+										<form
+											th:action="@{'/admin/notification-templates/' + ${t.templateId} + '/delete'}"
+											method="post" style="display: inline"
+											onsubmit="return confirm('Bạn có chắc muốn xóa template này?');">
+											<button type="submit" class="btn btn-link p-0 m-0 delete"
+												title="Xóa">🗑</button>
+										</form></td>
+								</tr>
+
+								<tr th:if="${#lists.isEmpty(templates)}">
+									<td colspan="7" class="text-center text-muted py-3">Chưa
+										có template nào</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- /Table -->
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>

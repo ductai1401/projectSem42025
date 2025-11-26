@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/client_layout/_layoutClient}">
+<head>
+  <title layout:fragment="title"
+        th:text="${category != null} ? ${category.categoryName} : 'Category Detail'">Category Detail</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <div class="shop-page-layout section-padding-bottom">
+    <div class="container">
+
+      <!-- ===== Breadcrumb ===== -->
+      <div class="row">
+        <div class="col-12">
+          <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a th:href="@{/home}">Home</a>
+              </li>
+
+              <!-- Nếu có breadcrumbChain (cha -> con -> hiện tại) -->
+              <th:block th:if="${breadcrumbChain != null}">
+                <li class="breadcrumb-item"
+                    th:each="c : ${breadcrumbChain}"
+                    th:classappend="${c.categoryId} == ${categoryId} ? 'active'">
+                  <a th:if="${c.categoryId} != ${categoryId}"
+                     th:href="@{/client/category/{id}(id=${c.categoryId})}"
+                     th:text="${c.categoryName}">Category</a>
+                  <span th:if="${c.categoryId} == ${categoryId}"
+                        th:text="${c.categoryName}">Current</span>
+                </li>
+              </th:block>
+
+              <!-- Fallback khi không có breadcrumbChain -->
+              <th:block th:if="${breadcrumbChain == null}">
+                <li class="breadcrumb-item">
+                  <a th:href="@{/client/category/{id}(id=${categoryId})}"
+                     th:text="${category != null} ? ${category.categoryName} : 'Category'">Category</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Listing</li>
+              </th:block>
+            </ol>
+          </nav>
+
+          <h2 class="mb-4"
+              th:text="${category != null} ? ${category.categoryName} : 'Category'">Category</h2>
+        </div>
+      </div>
+
+      <div class="row mb-n5">
+        <!-- ===== Main ===== -->
+        <div class="col-lg-9 mb-5">
+
+          <!-- Top bar -->
+          <div class="row align-items-center mb-4 g-3">
+            <div class="col-12 col-md-6">
+              <nav class="shop-grid-nav">
+                <ul class="nav nav-tabs align-items-center" id="myTab" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link grid active" id="grid-tab" data-bs-toggle="tab" href="#grid" role="tab"
+                       aria-selected="true"></a>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link list" id="list-tab" data-bs-toggle="tab" href="#list" role="tab"
+                       aria-selected="false"></a>
+                  </li>
+                  <li>
+                    <span class="total-products text-capitalize ms-2"
+                          th:text="${from != null and to != null and total != null} ? 'Showing ' + ${from} + '–' + ${to} + ' of ' + ${total} + ' results' : 'Showing 0 results'">
+                      Showing 1–12 of 0 results
+                    </span>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <form class="d-flex justify-content-md-end align-items-center gap-2"
+                    method="get"
+                    th:action="@{/client/category/{id}(id=${categoryId})}">
+                <input type="hidden" name="page" th:value="${page}" />
+                <input type="hidden" name="size" th:value="${size}" />
+                <input class="form-control" type="text" name="q"
+                       placeholder="Search in category" th:value="${q}" style="max-width: 220px;">
+                <span class="sort-by">Sort by:</span>
+                <select class="form-select" name="sort" aria-label="Sort select" onchange="this.form.submit()"
+                        style="max-width: 200px;">
+                  <option th:value="${null}" th:selected="${sort == null}">Default sorting</option>
+                  <option value="latest" th:selected="${sort=='latest'}">Sort by latest</option>
+                  <option value="name_az" th:selected="${sort=='name_az'}">Sort by name: A → Z</option>
+                  <option value="price_low_high" th:selected="${sort=='price_low_high'}">Sort by price: low to high</option>
+                  <option value="price_high_low" th:selected="${sort=='price_high_low'}">Sort by price: high to low</option>
+                </select>
+                <button class="btn btn-primary">Apply</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- ===== Tab content ===== -->
+          <div class="tab-content" id="myTabContent">
+            <!-- ==== Grid ==== -->
+            <div class="tab-pane fade show active" id="grid" role="tabpanel" aria-labelledby="grid-tab">
+              <div class="row grid-view mb-n5">
+
+                <div class="col-sm-6 col-md-4 mb-5" th:each="p : ${products}">
+                  <div class="product-card h-100 d-flex flex-column">
+                    <a th:href="@{/productdetails/{id}(id=${p.productId})}" class="product-thumb">
+                      <!-- Có ảnh -->
+                      <img th:if="${p.image}" th:src="@{'/uploads/' + ${p.image}}"
+                           th:alt="${p.productName}"
+                           style="width: 100%; height: 260px; object-fit: cover;">
+                      <!-- Không có ảnh -> fallback -->
+                      <img th:unless="${p.image}" th:src="@{/images/no-image.png}" alt="no-image"
+                           style="width: 100%; height: 260px; object-fit: cover;">
+                    </a>
+
+                    <div class="product-content mt-3"
+                         th:with="pPrice=${priceMap != null ? priceMap[p.productId] : null}">
+                      <h4 class="mb-2">
+                        <a th:href="@{/productdetails/{id}(id=${p.productId})}"
+                           th:text="${p.productName}" class="product-title">Product name</a>
+                      </h4>
+
+                      <div class="product-group d-flex justify-content-between align-items-center">
+                        <h5 class="product-price mb-0">
+                          <span class="new-price"
+                                th:if="${pPrice != null}"
+                                th:text="${#numbers.formatDecimal(pPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                          <span class="new-price" th:unless="${pPrice != null}">Contact</span>
+                        </h5>
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/productdetails/{id}(id=${p.productId})}">View</a>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <ul class="actions actions-verticale mt-auto">
+                      <li class="action whish-list">
+                        <button type="button"><i class="ion-ios-heart-outline"></i></button>
+                      </li>
+                      <li class="action quick-view">
+                        <button type="button"><i class="ion-ios-eye-outline"></i></button>
+                      </li>
+                      <li class="action compare">
+                        <button type="button"><i class="ion-android-sync"></i></button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="col-12" th:if="${#lists.isEmpty(products)}">
+                  <div class="alert alert-info">No products found in this category.</div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="col-12 mt-3">
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center"
+                        th:with="tp=${totalPages != null ? totalPages : 1},
+                                 cur=${page != null ? page : 1}">
+                      <!-- Prev -->
+                      <li class="page-item" th:classappend="${cur==1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${cur > 1 ? cur - 1 : 1},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">
+                          <span class="ion-android-arrow-dropleft"></span>
+                        </a>
+                      </li>
+
+                      <!-- Page numbers -->
+                      <li class="page-item"
+                          th:each="pNo : ${#numbers.sequence(1, tp)}"
+                          th:classappend="${pNo==cur} ? 'active'">
+                        <a class="page-link" th:text="${pNo}"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${pNo},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">1</a>
+                      </li>
+
+                      <!-- Next -->
+                      <li class="page-item" th:classappend="${cur==tp || tp==0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${cur < tp ? cur + 1 : tp},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">
+                          <span class="ion-android-arrow-dropright"></span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ==== List ==== -->
+            <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+              <div class="row mb-n4" th:if="${!#lists.isEmpty(products)}">
+                <div class="col-12 mb-4" th:each="p : ${products}">
+                  <div class="d-flex gap-3 border p-3 rounded"
+                       th:with="pPrice=${priceMap != null ? priceMap[p.productId] : null}">
+                    <a th:href="@{/productdetails/{id}(id=${p.productId})}" style="flex: 0 0 180px">
+                      <!-- Có ảnh -->
+                      <img th:if="${p.image}" th:src="@{'/uploads/' + ${p.image}}"
+                           th:alt="${p.productName}"
+                           style="width: 180px; height: 180px; object-fit: cover;">
+                      <!-- Không có ảnh -> fallback -->
+                      <img th:unless="${p.image}" th:src="@{/images/no-image.png}" alt="no-image"
+                           style="width: 180px; height: 180px; object-fit: cover;">
+                    </a>
+
+                    <div class="flex-grow-1">
+                      <h5 class="mb-2">
+                        <a th:href="@{/productdetails/{id}(id=${p.productId})}"
+                           th:text="${p.productName}">Product</a>
+                      </h5>
+                      <p class="text-muted mb-2" th:text="${p.description}">Short description...</p>
+
+                      <div class="d-flex align-items-center justify-content-between">
+                        <div class="h5 mb-0">
+                          <span th:if="${pPrice != null}"
+                                th:text="${#numbers.formatDecimal(pPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                          <span th:unless="${pPrice != null}">Contact</span>
+                        </div>
+
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/productdetails/{id}(id=${p.productId})}">View</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pagination (same as grid) -->
+                <div class="col-12 mt-3">
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center"
+                        th:with="tp=${totalPages != null ? totalPages : 1},
+                                 cur=${page != null ? page : 1}">
+                      <li class="page-item" th:classappend="${cur==1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${cur > 1 ? cur - 1 : 1},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">
+                          <span class="ion-android-arrow-dropleft"></span>
+                        </a>
+                      </li>
+                      <li class="page-item"
+                          th:each="pNo : ${#numbers.sequence(1, tp)}"
+                          th:classappend="${pNo==cur} ? 'active'">
+                        <a class="page-link" th:text="${pNo}"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${pNo},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">1</a>
+                      </li>
+                      <li class="page-item" th:classappend="${cur==tp || tp==0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/client/category/{id}(id=${categoryId},
+                                   page=${cur < tp ? cur + 1 : tp},
+                                   size=${size},
+                                   sort=${sort},
+                                   q=${q})}">
+                          <span class="ion-android-arrow-dropright"></span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+
+              <div th:if="${#lists.isEmpty(products)}" class="alert alert-info">No products found.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Sidebar ===== -->
+        <div class="col-lg-3 mb-5">
+          <aside class="aside">
+            <div class="sidebar-widget">
+              <h3 class="widget-title">Categories</h3>
+
+              <nav id="shop-dropdown" class="offcanvas-menu offcanvas-menu-sm">
+                <!-- Fragment đệ quy render cây danh mục -->
+                <th:block th:replace="~{::catList(${catTree})}"></th:block>
+              </nav>
+            </div>
+
+            <div class="sidebar-widget">
+              <h3 class="widget-title">Price Filter</h3>
+              <div class="price-filter">
+                <div id="slider-range"></div>
+                <div class="price-slider-amount">
+                  <span class="price-range">Price:</span>
+                  <input type="text" id="amount" name="price" readonly placeholder="Add Your Price" />
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+      <!-- /row -->
+
+    </div>
+    <!-- /container -->
+  </div>
+  <!-- /shop-page-layout -->
+</div>
+
+<!-- ================= Fragment đệ quy cho cây danh mục ================= -->
+<!-- Truyền vào 'nodes' = List<CatNode> -->
+<th:block th:fragment="catList(nodes)">
+  <ul>
+    <li th:each="node : ${nodes}">
+      <a th:href="@{/client/category/{id}(id=${node.category.categoryId})}">
+        <span th:text="${node.category.categoryName}">Category</span>
+        <span>(
+          <span th:text="${
+                     (categoryCounts != null and
+                      #maps.containsKey(categoryCounts, node.category.categoryId))
+                       ? categoryCounts[node.category.categoryId] : 0
+                   }">0</span>
+          )
+        </span>
+      </a>
+
+      <!-- Nếu có con, gọi lại chính fragment này -->
+      <th:block th:if="${!#lists.isEmpty(node.children)}"
+                th:replace="~{::catList(${node.children})}"></th:block>
+    </li>
+  </ul>
+</th:block>
+<!-- ==================================================================== -->
+
+<div layout:fragment="scripts">
+  <script th:src="@{/client/script/productDetailScript.js}"></script>
+</div>
+</body>
+</html>

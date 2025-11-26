@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/_layoutAdmin}">
+
+<head>
+    <title layout:fragment="title">Quản lý sản phẩm vi phạm</title>
+    <style>
+        .report-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid #dee2e6;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+        .report-section .form-label {
+            font-weight: 600;
+        }
+        .report-section .form-control,
+        .report-section .form-select {
+            border: none;
+            border-bottom: 2px solid #0d6efd;
+            border-radius: 0;
+            background-color: transparent;
+            padding-left: 0;
+        }
+        .report-section .form-control:focus,
+        .report-section .form-select:focus {
+            box-shadow: none;
+            border-color: #0a58ca;
+        }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .modal-dialog {
+            max-width: 800px;
+            margin: 6rem auto;
+        }
+        .evidence-preview img,
+        .evidence-preview video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            border-top: none;
+        }
+        .modal-footer .btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="report-section container-fluid">
+        <h3 class="mb-4">🚫 Danh sách sản phẩm vi phạm</h3>
+
+        <!-- Bộ lọc -->
+        <form class="row row-cols-lg-auto g-3 align-items-end mb-3 justify-content-end" method="get" th:action="@{/admin/reports/products}">
+            <div class="col-md-3">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" placeholder="Tên sản phẩm / người bán" th:value="${keyword}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Lý do</label>
+                <select name="reason" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="fake">Hàng giả</option>
+                    <option value="prohibited">Hàng cấm</option>
+                    <option value="misleading">Mô tả sai</option>
+                    <option value="other">Khác</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+            </div>
+        </form>
+
+        <!-- Danh sách sản phẩm -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Người bán</th>
+                    <th>Lý do</th>
+                    <th>Ngày</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="report, iter : ${reports}">
+                    <td th:text="${iter.count}">1</td>
+                    <td th:text="${report.productName}">Áo fake LV</td>
+                    <td th:text="${report.sellerName}">shopabc</td>
+                    <td th:text="${report.reason}">Hàng giả</td>
+                    <td th:text="${#dates.format(report.createdAt, 'dd/MM/yyyy')}">11/07/2025</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#reportProductModal"
+                                th:attr="data-id=${report.id}, data-product=${report.productName}, data-seller=${report.sellerName}, data-reason=${report.reason}, data-description=${report.description}, data-date=${#dates.format(report.createdAt, 'dd/MM/yyyy')}, data-image=${report.image}, data-video=${report.video}">👁 Xem</button>
+                        <a th:href="@{'/admin/reports/products/delete/' + ${report.id}}" class="btn btn-danger btn-sm">🗑 Xóa</a>
+                    </td>
+                </tr>
+                <tr>
+    <td>1</td>
+    <td>iPhone 15 Pro Max</td>
+    <td>Shop ABC</td>
+    <td>Sản phẩm giả mạo</td>
+    <td>11/07/2025</td>
+    <td>
+        <button class="btn btn-info btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#reportProductModal"
+            data-id="101"
+            data-product="iPhone 15 Pro Max"
+            data-shop="Shop ABC"
+            data-reason="Sản phẩm giả mạo"
+            data-date="11/07/2025"
+            data-image="/uploads/evidence/fake_iphone.jpg"
+            data-video="">
+            👁 Xem
+        </button>
+        <a href="/admin/products/delete/101" class="btn btn-danger btn-sm">🗑 Xóa</a>
+    </td>
+</tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Modal chi tiết -->
+<div class="modal fade" id="reportProductModal" tabindex="-1" aria-labelledby="reportProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết sản phẩm vi phạm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Sản phẩm:</strong> <span id="modalProduct"></span></p>
+                <p><strong>Người bán:</strong> <span id="modalSeller"></span></p>
+                <p><strong>Lý do:</strong> <span id="modalReason"></span></p>
+                <p><strong>Mô tả:</strong></p>
+                <p id="modalDescription"></p>
+                <p><strong>Ngày báo cáo:</strong> <span id="modalDate"></span></p>
+                <div class="evidence-preview">
+                    <p><strong>Chứng cứ:</strong></p>
+                    <img id="modalImage" style="display:none;" />
+                    <video id="modalVideo" style="display:none;" controls></video>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form th:action="@{/admin/reports/products/resolve}" method="post">
+                    <input type="hidden" name="reportId" id="footerReportId" />
+                    <button type="submit" name="action" value="approve" class="btn btn-success">✅ Hợp lệ</button>
+                    <button type="submit" name="action" value="remove" class="btn btn-danger">❌ Gỡ sản phẩm</button>
+                    <button type="submit" name="action" value="warn" class="btn btn-warning">⚠️ Cảnh báo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<div layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('reportProductModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                document.getElementById('modalProduct').textContent = button.getAttribute('data-product');
+                document.getElementById('modalSeller').textContent = button.getAttribute('data-seller');
+                document.getElementById('modalReason').textContent = button.getAttribute('data-reason');
+                document.getElementById('modalDescription').textContent = button.getAttribute('data-description');
+                document.getElementById('modalDate').textContent = button.getAttribute('data-date');
+                document.getElementById('footerReportId').value = button.getAttribute('data-id');
+
+                const image = document.getElementById('modalImage');
+                const video = document.getElementById('modalVideo');
+                const imageUrl = button.getAttribute('data-image');
+                const videoUrl = button.getAttribute('data-video');
+
+                if (imageUrl) {
+                    image.src = imageUrl;
+                    image.style.display = 'block';
+                } else {
+                    image.style.display = 'none';
+                }
+
+                if (videoUrl) {
+                    video.src = videoUrl;
+                    video.style.display = 'block';
+                } else {
+                    video.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+</div>
+</body>
+</html>
