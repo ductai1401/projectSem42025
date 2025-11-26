@@ -1,19 +1,15 @@
 # Exported from Render on 2025-11-26T07:44:34Z
-version: "1"
-projects:
-- name: projectSem4
-  environments:
-  - name: Production
-    services:
+
+  
+  	services:
     - type: web
-      name: OmniShop
-      runtime: node
-      repo: https://github.com/ductai1401/projectSem42025
+      name: projectSem42025
+      runtime: docker
       plan: free
+      buildCommand: docker build -t omnishop .
+      startCommand: docker run -p 8989:8989 projectSem42025
       envVars:
-      - key: SERVER_PORT
-        sync: false
+        - key: SERVER_PORT
+          value: 8989
       region: oregon
-      buildCommand: mvn clean package -DskipTests
-      startCommand: java -jar target/projectSem4-0.0.1.jar
       autoDeployTrigger: commit
