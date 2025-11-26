@@ -6,7 +6,7 @@
       name: projectSem42025
       runtime: docker
       plan: free
-      buildCommand: docker build -t omnishop .
+      buildCommand: docker build -t projectSem42025 .
       startCommand: docker run -p 8989:8989 projectSem42025
       envVars:
         - key: SERVER_PORT
